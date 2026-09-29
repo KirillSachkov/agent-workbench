@@ -191,6 +191,16 @@ Decisions from the harness requirements map, one ticket per decision.
   automated in this repository's own CI through headless modes (`claude -p`, `codex exec`,
   `opencode run`). Open point for E20: OpenCode expresses user-only skills only through `permission`
   rules on its skill tool. Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §1–3, §8.
+- **No role files for now: one agent, behaviour set by the skill** (E21, #26). Roles are not declared
+  as data and no subagent definition files are shipped. One agent works in a session and behaves
+  according to the skill it follows; skills may start ordinary fresh-context subagents (as Matt
+  Pocock's `code-review` does), which already gives non-author review in Claude Code, Codex and
+  OpenCode. "The reviewer does not edit" and "one writer per task" are conventions; the command
+  center may show two agents on one branch. Revisit role files — neutral Markdown rendered into
+  `.claude/agents`, `.codex/agents`, `.opencode/agents` with a native read-only field — if reviewers
+  start editing code in practice or when an orchestrator (A4) needs roles as data, as Harness of
+  Harness does. Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §6;
+  `docs/research/2026-09-29-hoh-harness-design.md` §2.1, §3.
 
 ## 2026-09-29 (open questions from the brief)
 
