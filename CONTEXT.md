@@ -28,3 +28,13 @@ _Avoid_: process, workflow, methodology
 
 **Default method**:
 The method shipped with the harness and used unless a project chooses otherwise.
+
+**Upstream**:
+The external project a forked part of the harness was copied from, recorded by the commit it was
+forked at so that later upstream changes can be reviewed and adopted selectively.
+_Avoid_: vendor, source repo
+
+**Invocation policy**:
+Who may start a skill: only the user by name (user-invoked), or also the model on its own
+(model-invoked). A user-invoked skill may call model-invoked skills, never another user-invoked one.
+_Avoid_: visibility, trigger mode

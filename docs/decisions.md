@@ -11,6 +11,20 @@ Decisions from the harness requirements map, one ticket per decision.
   passes the contract, whatever produced it. No adapters to spec-kit, OpenSpec or BMAD are built or
   maintained. Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §11.2.6, §11.3;
   ADR `docs/adr/0001-method-neutral-artifact-contract.md`.
+- **Matt Pocock's skills are a tracked fork** (A2, #7). The `mattpocock/skills` set (MIT) in the
+  default method is our fork: we edit it as we need, record the upstream commit each skill was forked
+  at, follow upstream changes and adopt useful ones selectively after review. Update mechanics belong
+  to "Local edits across updates" and "Release channels for our skills". ADR
+  `docs/adr/0002-tracked-fork-of-mattpocock-skills.md`.
+- **Our skills follow the suite's conventions** (A2, #7): the user-invoked / model-invoked split,
+  cross-skill calls phrased as "Call the Skill tool with ...", and a user-invoked skill never calls
+  another user-invoked one. Requirement from the owner: the invocation policy must work on every
+  supported agent runtime, not only Claude Code. Runtimes express it differently (Claude Code
+  `disable-model-invocation`, Codex `policy.allow_implicit_invocation` in `agents/openai.yaml`,
+  none per skill in Gemini CLI), so the harness renders one policy into each runtime's native form and
+  states degradation explicitly (to be decided in E17 and E20). Evidence:
+  `docs/research/2026-09-29-cross-runtime-portability.md` §3.3;
+  `docs/research/2026-09-29-mattpocock-skills-design.md` §2.2, §5.
 
 ## 2026-09-29 (open questions from the brief)
 
