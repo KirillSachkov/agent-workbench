@@ -4,8 +4,29 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 ## 2026-09-29 (command center, wayfinder #41)
 
-Decisions taken while charting the command center map (#41), before its tickets.
+Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **Jobs of the command center** (CC12, #56). Fifteen jobs, all in scope, in four groups the first
+  slice will order: attention (who waits for me now, what happened while I was away, notifications),
+  checking and feedback (check a finished result, send remarks back to the same agent and keep them
+  in the PR, review a spec or plan before code), map of work (which agent works where — agent, task,
+  branch, worktree, PR — and orphaned worktrees; the pipeline state of a project; clean-up after
+  merge), memory and spend (past results and artifacts, notes, tokens and provider limits). Starting
+  work, jumps and notifications mostly exist in Herdr already and are adopted, not rebuilt. The graph
+  of relations (spec → tickets → branches) belongs to the later own UI; for now a simple tree with
+  states. The result card is a terminal view (a scrollable popup with few key hints, prototype A on
+  the `prototype/45-result-card` branch) plus the full report in the PR; a local review page and a
+  guided step-by-step check were rejected.
+- **Layers and their order** (CC12, #56). Herdr is the workspace where agents work and is improved
+  first and as far as possible; GitHub organises the harness and the workflows across projects;
+  artifacts and files are organised so they are easy to read and to leave feedback on. Our own UI
+  comes last: a web dashboard for observation, with quick jumps into Herdr, copyable commands and
+  perhaps tasks and notes, canvas-like. This keeps the 2026-09-29 "TUI and web on one core" as a
+  direction but moves the web part to the end.
+- **Two trackers per project** (raised in CC12, #56; decided in CC14, #58). Besides the agents'
+  tracker that follows the harness pipeline (G28 unchanged), the owner wants a tracker for human tasks
+  per project, possibly one personal board across projects, and a one-click start of agent work from
+  a human task. Research is CC13 (#57).
 - **Destination of the map** (#41). The map ends when the owner can start `/to-spec` for the first
   slice of the command center: its jobs, its form and how the parts combine (Herdr plugin, own TUI,
   web, canvas), the harness seam, the home repository and the first useful slice are decided. Later
