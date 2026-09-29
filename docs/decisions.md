@@ -287,6 +287,13 @@ Decisions from the harness requirements map, one ticket per decision.
   without a profile system (B5). ADR `docs/adr/0005-forkable-harness-and-three-way-updates.md`.
   Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §3.1, §6.1, §9.1, §11.1.1–2,
   §11.1.9; `docs/research/2026-09-29-mattpocock-skills-design.md` §3.
+- **Version skew: content is shared through git; the lock guards only the tool** (F25, #30). Since
+  everything agents need is committed (F23), every teammate who pulls has the same harness content,
+  whatever binary they run. The harness lock records the harness source, its version and the minimum
+  `workbench` binary version; an older binary refuses to write harness files (`sync`, `update`) and
+  asks to be upgraded, to avoid corrupting derived files. Agents and the pipeline are never blocked
+  (ADR 0004); the command center shows each project's harness version. Evidence:
+  `docs/research/2026-09-29-harness-frameworks-compared.md` §11.3.4.
 
 ## 2026-09-29 (open questions from the brief)
 
