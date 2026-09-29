@@ -312,6 +312,22 @@ Decisions from the harness requirements map, one ticket per decision.
   project, its description and the router are updated, and the changelog records it. Every release
   carries a changelog and the rename/removal map (F24). Evidence:
   `docs/research/2026-09-29-mattpocock-skills-design.md` §3.
+- **No orchestrator of our own** (A4, #38). The owner does not want a heavy orchestration system; the
+  brief's exclusion of launching and orchestrating agents stands. The harness stays compatible with
+  external runners the owner starts (Matt Pocock's `implement-spec`, a Ralph loop, others): tickets
+  with blocking edges and the ready nodes of the artifact graph (ADR 0003) are the queue they consume.
+  Role files and roles as data (E21) return only if such a runner needs them.
+- **Deviations from the pipeline are visible facts, not permissions** (D17, #37). Since the harness
+  enforces nothing (ADR 0004), a deviation is recorded rather than allowed: per task, the
+  `acceptance:auto` label (D13); per project, a default acceptance mode in the project configuration;
+  work outside the pipeline is simply a PR with no linked task or spec, which the command center shows
+  as "outside the pipeline".
+- **The shell around the harness is the next effort** (closing the map, #5). With the harness
+  requirements settled, the owner's next focus is a flexible shell for working with agents —
+  terminal-first and built on Herdr, possibly with a canvas-like overview — to check agents' results
+  quickly: open artifacts and changed files, see branches and worktrees. It must stay light (no
+  monolithic agent platforms) and adaptable to any harness. Tickets C12 (result package) and G30
+  (label vocabulary) move to that effort; the handoff is on #3.
 
 ## 2026-09-29 (open questions from the brief)
 
