@@ -2,6 +2,16 @@
 
 Owner decisions, newest first. Each entry has a date, the decision and where it came from.
 
+## 2026-09-29 (harness requirements, wayfinder #5)
+
+Decisions from the harness requirements map, one ticket per decision.
+
+- **The artifact contract is the core, neutral to method** (A1, #6). agent-workbench defines its
+  own artifact contract and stage model and ships a default method. A stage counts when its artifact
+  passes the contract, whatever produced it. No adapters to spec-kit, OpenSpec or BMAD are built or
+  maintained. Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §11.2.6, §11.3;
+  ADR `docs/adr/0001-method-neutral-artifact-contract.md`.
+
 ## 2026-09-29 (open questions from the brief)
 
 Answers to the five open questions of `docs/brief.md`, given by the owner in a working session.
