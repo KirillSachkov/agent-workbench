@@ -42,6 +42,13 @@ Decisions from the harness requirements map, one ticket per decision.
   needs became tickets: a result package the owner can open in one step instead of hunting for PRs and
   files, and batch execution of a ticket set by an orchestrator (which touches the brief's "launching
   and orchestrating agents" exclusion).
+- **The pipeline is an artifact graph** (B4, #9). Each track is declared as data: nodes (artifacts
+  and facts such as "spec PR merged" or "CI green"), their dependencies, the checks each must pass and
+  where the artifact lives. The harness computes each node's state (done, ready, blocked) from facts;
+  it runs no steps and keeps no state of its own. How to produce a node stays in skills and is chosen
+  per task. No fixed loop with extension points (GSD) and no workflow engine with control flow
+  (spec-kit). Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §1.3, §2.3–2.4,
+  §6.3, §11.1.5; ADR `docs/adr/0003-pipeline-as-artifact-graph.md`.
 
 ## 2026-09-29 (open questions from the brief)
 

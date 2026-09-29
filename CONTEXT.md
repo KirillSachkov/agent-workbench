@@ -43,8 +43,19 @@ _Avoid_: visibility, trigger mode
 
 **Track**:
 The path a task takes through the pipeline, chosen once by its size: small (the task itself states
-the intent, one PR), medium (a spec, then tickets) or large (a map of decisions first).
+the intent, one PR), medium (a spec, then tickets) or large (a map of decisions first). Each track is
+an artifact graph.
 _Avoid_: flow, lane, mode
+
+**Artifact graph**:
+The declared pipeline of a track: which artifacts and facts must exist, what each depends on and which
+checks it must pass. The harness computes each node's state from facts; it does not run steps.
+_Avoid_: workflow, state machine
+
+**Node state**:
+The state of one node in an artifact graph, computed from facts: done, ready (all dependencies done)
+or blocked.
+_Avoid_: status, stage status
 
 **Intent approval**:
 The owner's approval, before any code, of what will be done, what must not break and how done will be
