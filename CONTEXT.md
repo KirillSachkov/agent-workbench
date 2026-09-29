@@ -118,8 +118,13 @@ _Avoid_: constraints, non-goals
 
 ### Configuration
 
+**Harness source**:
+The repository a project's harness is installed from and updated against: agent-workbench itself or
+a fork of it.
+_Avoid_: template, distribution
+
 **Harness lock**:
-The committed record of which harness version a project uses, the upstream commit of each forked
+The committed record of which harness source and version a project uses, the upstream commit of each forked
 skill and the hashes of the files the harness wrote.
 _Avoid_: manifest, lockfile
 

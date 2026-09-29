@@ -274,6 +274,19 @@ Decisions from the harness requirements map, one ticket per decision.
   machine (1 of 46 sampled repositories does that). Evidence:
   `docs/research/2026-09-29-agent-instructions-in-repos.md` §2.2–2.4;
   `docs/research/2026-09-29-harness-frameworks-compared.md` §9.1.
+- **The harness is a forkable repository; updates are three-way merges** (F24, #29). Anyone makes
+  their own harness by forking agent-workbench or creating a repository from it as a template, and
+  edits anything. Upstream changes reach a fork through plain git (`git merge upstream/main`, GitHub
+  "Sync fork"). A fork — or agent-workbench itself by default — is installed into projects with
+  `workbench init --from <repo>@<ref>`, recorded in the harness lock; `workbench update` brings a new
+  version into a project on its own branch and pull request: files the project did not touch are
+  replaced, files it edited are merged three-way against the base recorded in the lock, conflicts are
+  ordinary git conflicts (the fork's `resolving-merge-conflicts` skill helps), and a rename/removal map
+  in each release retires old skills. The same model runs on every level: Matt Pocock's skills → our
+  harness → a user's fork → projects. A fork is also how a person or team gets "their own variant"
+  without a profile system (B5). ADR `docs/adr/0005-forkable-harness-and-three-way-updates.md`.
+  Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §3.1, §6.1, §9.1, §11.1.1–2,
+  §11.1.9; `docs/research/2026-09-29-mattpocock-skills-design.md` §3.
 
 ## 2026-09-29 (open questions from the brief)
 
