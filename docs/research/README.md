@@ -20,4 +20,5 @@ is marked "unconfirmed". The owner's local paths are anonymized.
 | [mattpocock-skills-design](2026-09-29-mattpocock-skills-design.md) | Matt Pocock's skills: philosophy, distribution, per-repo configuration, evolution |
 | [harness-frameworks-compared](2026-09-29-harness-frameworks-compared.md) | spec-kit, OpenSpec, BMAD, Superpowers, Kiro, GSD, Ruflo, Agent OS as products |
 | [cross-runtime-portability](2026-09-29-cross-runtime-portability.md) | AGENTS.md, Agent Skills, plugins, hooks, MCP, headless modes: parity across runtimes |
+| [agent-instructions-in-repos](2026-09-29-agent-instructions-in-repos.md) | AGENTS.md, CLAUDE.md and skills in 46 popular repositories; skill installers; component inventory of 19 harnesses |
 | [harness-requirements-agenda](2026-09-29-harness-requirements-agenda.md) | Synthesis: 33 open questions for the harness requirements grilling |
