@@ -303,6 +303,15 @@ Decisions from the harness requirements map, one ticket per decision.
   plugins) is a separate explicit command that shows what it will change and asks for confirmation.
   Evidence: `docs/research/2026-09-29-mattpocock-skills-design.md` §2.7;
   `docs/research/2026-09-29-cross-runtime-portability.md` §5.1, §10.4.
+- **Release channels are refs; beta skills are opt-in** (F27, #32). The stable channel is semver git
+  tags of the harness source, pinned in the harness lock and offered by `update`. Following `@main` is
+  allowed as a deliberate, recorded choice, which avoids upstream's drift between pinned plugin users
+  and skills.sh users pulling `main`. Beta skills live in a separate directory of the harness
+  repository (like Matt Pocock's `in-progress/`), are not installed by default, and are enabled one by
+  one in the project configuration. Promotion is a convention: the skill has been used in a real
+  project, its description and the router are updated, and the changelog records it. Every release
+  carries a changelog and the rename/removal map (F24). Evidence:
+  `docs/research/2026-09-29-mattpocock-skills-design.md` §3.
 
 ## 2026-09-29 (open questions from the brief)
 
