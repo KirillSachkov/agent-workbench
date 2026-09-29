@@ -179,6 +179,18 @@ Decisions from the harness requirements map, one ticket per decision.
   or by another agent; a project may add an AI reviewer to its own CI if it wants. Withdraws the
   example CI workflow from D12. Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §8;
   `docs/research/2026-09-27-agent-products-human-artifacts.md` §8.
+- **Runtime tiers: Claude Code, Codex and OpenCode are tier 1** (E17, #22). For a runtime, harness
+  support means: it reads the project instructions (`AGENTS.md`, bridged for Claude Code by
+  `CLAUDE.md`), discovers the skills, and honours the invocation policy. Tier 1 is verified before
+  every harness release. Every other runtime (Cursor, Copilot, Gemini CLI, Kimi and others) is tier 2:
+  it gets the same files in the standard locations (`AGENTS.md`, `.agents/skills`) with no guarantee
+  and with its limits listed explicitly (for example Gemini CLI has no per-skill user-only field). A
+  runtime moves to tier 1 once it is actually used and passes the same proof. Proof of support is a
+  smoke check in a fresh session: the agent sees the project instructions, lists the model-invoked
+  skills, does not start user-invoked skills on its own and runs one when called by name; it can be
+  automated in this repository's own CI through headless modes (`claude -p`, `codex exec`,
+  `opencode run`). Open point for E20: OpenCode expresses user-only skills only through `permission`
+  rules on its skill tool. Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §1–3, §8.
 
 ## 2026-09-29 (open questions from the brief)
 

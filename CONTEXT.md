@@ -60,6 +60,11 @@ Who may start a skill: only the user by name (user-invoked), or also the model o
 (model-invoked). A user-invoked skill may call model-invoked skills, never another user-invoked one.
 _Avoid_: visibility, trigger mode
 
+**Runtime tier**:
+How firmly the harness supports an agent runtime: tier 1 is verified before every release; tier 2
+gets the same files without a guarantee and with its limits listed.
+_Avoid_: support level, compatibility
+
 ### Work shape
 
 **Track**:
