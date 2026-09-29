@@ -1,10 +1,13 @@
 # agent-workbench
 
-Рабочее место для разработки с AI-агентами: харнесс, конвейер разработки с артефактами этапов,
-настройка агентов и терминала, командный центр в терминале и браузере. Универсально для Claude
-Code, Codex и других агентов, для одного разработчика и для команды. Ставится одной командой.
+A workbench for development with AI agents: a harness, a development pipeline with stage artifacts,
+agent and terminal setup, and a command center in the terminal and the browser. Works with Claude
+Code, Codex and other agents, for a single developer and for a team. Installs with one command.
 
-**Статус: seed.** Идёт обсуждение и оформление, реализации ещё нет. Цель, границы и открытые
-решения — в [brief](docs/brief.md), принятые решения — в [decisions](docs/decisions.md),
-исследования — в [docs/research](docs/research/README.md). Задачи ведутся в GitHub Issues
-этого репозитория.
+**Status: seed.** Decisions and research are done; implementation has not started. Goal and scope
+are in the [brief](docs/brief.md), owner decisions in [decisions](docs/decisions.md), research in
+[docs/research](docs/research/README.md). Tasks live in this repository's GitHub Issues.
+
+## License
+
+[MIT](LICENSE)

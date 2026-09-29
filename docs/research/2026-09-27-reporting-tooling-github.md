@@ -1,111 +1,111 @@
-# Инструменты для понятных владельцу результатов по каждой поставке (GitHub, дёшево)
+# Tools for owner-readable results for every delivery (GitHub, cheap)
 
-Дата: 2026-09-27. Цель: для каждой поставки дать владельцу долговечную и понятную карточку: что
-изменилось, что запускалось, pass/fail, что проверено, скриншоты или видео, где попробовать.
-Источники первичные, URL приведены. Где факт не удалось подтвердить, стоит пометка «не подтверждено».
+Date: 2026-09-27. Goal: for every delivery, give the owner a durable and understandable card: what
+changed, what was run, pass/fail, what was verified, screenshots or video, where to try it.
+Sources are primary, URLs are given. Where a fact could not be confirmed, it is marked "unconfirmed".
 
-## 0. Проверки на месте (read-only)
+## 0. On-site checks (read-only)
 
-| Факт | Значение | Как получено |
+| Fact | Value | How obtained |
 |---|---|---|
-| `platform`: видимость / Pages | `public`, `has_pages=false` | `gh api repos/sachkov-inside/platform` |
-| План организации | `free` | `gh api orgs/sachkov-inside --jq .plan.name` |
+| `platform`: visibility / Pages | `public`, `has_pages=false` | `gh api repos/sachkov-inside/platform` |
+| Organization plan | `free` | `gh api orgs/sachkov-inside --jq .plan.name` |
 | Workflows | `add-to-inside-project`, `ci`, `deploy`, `inside-agent-sessions`, `inside-harness-health`, `nightly-fullstack`, `release`, `workshop-evaluator` + dependabot | `gh api .../actions/workflows` |
-| Environments | только `Production` (`deploy.yml`, `workflow_dispatch`, immutable releases `vN`) | `gh api .../environments` |
-| Retention артефактов/логов | `days=90`, `maximum_allowed_days=90` | `gh api .../actions/permissions/artifact-and-log-retention` |
-| `docs/evidence` в рабочем дереве | 103 MB, 807 PNG, 82 каталога, 0 видео | `du -sh`, `find` |
-| `docs/evidence` в истории git | 1087 blobs, ~109 MiB raw / ~101 MiB на диске; 86 коммитов | `git rev-list --objects --all -- docs/evidence` + `cat-file` |
-| Весь репозиторий | `size-pack` 185 MiB, `.git` 219 MB | `git count-objects -vH` |
-| Playwright сейчас | `reporter: [["list"],["html"]]`, `screenshot: "only-on-failure"`, `trace: "retain-on-failure"`; отчёт выгружается `upload-artifact@v7` с `retention-days: 7` | `apps/web/playwright.config.ts`, `.github/workflows/ci.yml` |
-| PR body | «Отчёт о реализации» 5–12 тыс. символов (#779, #783, #784) | `gh pr list --state merged` |
+| Environments | only `Production` (`deploy.yml`, `workflow_dispatch`, immutable releases `vN`) | `gh api .../environments` |
+| Artifact/log retention | `days=90`, `maximum_allowed_days=90` | `gh api .../actions/permissions/artifact-and-log-retention` |
+| `docs/evidence` in the working tree | 103 MB, 807 PNG, 82 directories, 0 videos | `du -sh`, `find` |
+| `docs/evidence` in git history | 1087 blobs, ~109 MiB raw / ~101 MiB on disk; 86 commits | `git rev-list --objects --all -- docs/evidence` + `cat-file` |
+| The whole repository | `size-pack` 185 MiB, `.git` 219 MB | `git count-objects -vH` |
+| Playwright now | `reporter: [["list"],["html"]]`, `screenshot: "only-on-failure"`, `trace: "retain-on-failure"`; the report is uploaded with `upload-artifact@v7` with `retention-days: 7` | `apps/web/playwright.config.ts`, `.github/workflows/ci.yml` |
+| PR body | "Implementation report" of 5–12 thousand characters (#779, #783, #784) | `gh pr list --state merged` |
 
-Вывод: скриншоты доказательств уже занимают около половины упакованной истории `platform`
-(~101 из 185 MiB). Историю переписывать нельзя (force-push заблокирован), но новые PNG можно
-перестать класть в git. CI-отчёт Playwright живёт 7 дней, то есть для владельца его фактически нет.
+Conclusion: evidence screenshots already take up about half of the packed history of `platform`
+(~101 of 185 MiB). History cannot be rewritten (force-push is blocked), but new PNGs can stop being
+put into git. The Playwright CI report lives for 7 days, so for the owner it effectively does not exist.
 
-### Что переживёт retention с 2026-10-01
+### What survives retention from 2026-10-01
 
-GitHub с 1 октября 2026 распространяет Actions retention (по умолчанию 90 дней, для public
-максимум 90) на checks (check suites/runs), workflow runs и commit statuses, включая созданные
-сторонними приложениями; действие не ретроактивное.
+From October 1, 2026, GitHub extends Actions retention (90 days by default, maximum 90 for public)
+to checks (check suites/runs), workflow runs and commit statuses, including those created by
+third-party apps; the change is not retroactive.
 https://github.blog/changelog/2026-08-27-actions-retention-will-cover-checks-workflow-runs-and-statuses/
-Настройка: https://docs.github.com/en/organizations/managing-organization-settings/configuring-the-retention-period-for-github-actions-artifacts-and-logs-in-your-organization
+Setting: https://docs.github.com/en/organizations/managing-organization-settings/configuring-the-retention-period-for-github-actions-artifacts-and-logs-in-your-organization
 
-| Носитель | Живёт после 90 дней? |
+| Medium | Lives past 90 days? |
 |---|---|
-| PR body, PR/issue comments, review comments | да (это контент issue/PR, под retention Actions не попадает; в анонсе не упомянуты) |
-| Job summary (`$GITHUB_STEP_SUMMARY`) | нет: часть workflow run → удаляется вместе с run (вывод из анонса; прямой формулировки нет — не подтверждено) |
-| Check run output (summary/text/annotations/images), commit statuses | нет, ≤90 дней |
-| Actions artifacts и logs | нет, ≤90 дней (у `platform` сейчас 7) |
-| Deployments / deployment statuses (`environment_url`) | в анонсе не названы — не подтверждено |
-| Release + assets, GitHub Pages, git, внешнее хранилище (R2/S3) | да |
+| PR body, PR/issue comments, review comments | yes (this is issue/PR content, not covered by Actions retention; not mentioned in the announcement) |
+| Job summary (`$GITHUB_STEP_SUMMARY`) | no: part of a workflow run → deleted together with the run (an inference from the announcement; there is no direct wording — unconfirmed) |
+| Check run output (summary/text/annotations/images), commit statuses | no, ≤90 days |
+| Actions artifacts and logs | no, ≤90 days (7 for `platform` now) |
+| Deployments / deployment statuses (`environment_url`) | not named in the announcement — unconfirmed |
+| Release + assets, GitHub Pages, git, external storage (R2/S3) | yes |
 
-Следствие: всё, что владелец должен найти через полгода, должно попасть в PR comment/body, в
-релиз или во внешнее хранилище. Checks и summaries годятся только как оперативный вид.
+Consequence: everything the owner must be able to find in six months must go into a PR comment/body,
+a release or external storage. Checks and summaries are suitable only as an operational view.
 
 ---
 
-## 1. Поверхности GitHub для «карточки результата»
+## 1. GitHub surfaces for a "result card"
 
 ### 1.1 Job summary (`$GITHUB_STEP_SUMMARY`)
 
-- Что видит владелец: Markdown-страницу на странице run (Actions → run → Summary). Из PR —
-  через «Details» у check.
-- Лимиты: 1 MiB на step, отображается максимум 20 summaries из steps на job; GFM; summaries
-  шагов склеиваются в один job summary, jobs упорядочены по времени завершения.
+- What the owner sees: a Markdown page on the run page (Actions → run → Summary). From a PR —
+  via "Details" on a check.
+- Limits: 1 MiB per step, at most 20 step summaries are displayed per job; GFM; step summaries
+  are concatenated into one job summary, jobs are ordered by completion time.
   https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands
-- Поддерживает HTML, таблицы, Mermaid.
+- Supports HTML, tables, Mermaid.
   https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/
-- Картинки: только по внешнему https-URL (проксируются через Camo); `data:`-URI не рендерятся,
-  внешние ссылки иногда переписываются. Официальной спецификации по картинкам нет — не подтверждено;
-  обсуждения: https://github.com/orgs/community/discussions/35932 ,
-  https://github.com/orgs/community/discussions/60247 . Про Camo:
+- Images: only by an external https URL (proxied through Camo); `data:` URIs are not rendered,
+  external links are sometimes rewritten. There is no official specification on images — unconfirmed;
+  discussions: https://github.com/orgs/community/discussions/35932 ,
+  https://github.com/orgs/community/discussions/60247 . On Camo:
   https://docs.github.com/en/enterprise-cloud@latest/authentication/keeping-your-account-and-data-secure/about-anonymized-urls
-- Долговечность: ≤90 дней (см. выше).
-- Сниппет:
+- Durability: ≤90 days (see above).
+- Snippet:
 
 ```yaml
 - name: Result summary
   if: ${{ !cancelled() }}
   run: |
     {
-      echo "## Результат проверки"
-      echo "| Проверка | Итог |"
+      echo "## Check result"
+      echo "| Check | Result |"
       echo "|---|---|"
       echo "| unit (Vitest) | ${{ steps.unit.outcome }} |"
       echo "| e2e (Playwright) | ${{ steps.e2e.outcome }} |"
-      echo "[HTML-отчёт](https://sachkov-inside.github.io/platform-evidence/pr-${{ github.event.pull_request.number }}/)"
+      echo "[HTML report](https://sachkov-inside.github.io/platform-evidence/pr-${{ github.event.pull_request.number }}/)"
     } >> "$GITHUB_STEP_SUMMARY"
 ```
 
-- Бесплатно готовое: Vitest reporter `github-actions` сам пишет job summary (статистика, flaky) и
-  annotations; опции `jobSummary.enabled/outputPath/title/fileLinks`.
+- Free out of the box: the Vitest reporter `github-actions` itself writes a job summary (statistics,
+  flaky) and annotations; options `jobSummary.enabled/outputPath/title/fileLinks`.
   https://vitest.dev/guide/reporters
-- Подводный камень: владелец не видит summary в самом PR, нужен клик; через 90 дней пропадёт.
+- Pitfall: the owner does not see the summary in the PR itself, a click is needed; it will disappear after 90 days.
 
 ### 1.2 Check run output (Checks API)
 
-- Поля `output`: `title` (обяз.), `summary` (обяз., Markdown), `text` (Markdown), `annotations`
-  (до 50 за запрос; `message` до 64 KB, `title` до 255 символов), `images[]` (`alt`, `image_url`,
-  `caption`). https://docs.github.com/en/rest/checks/runs
-- Длина `summary`/`text` — 65 535 символов (указано в README dorny/test-reporter как предел
-  отчёта; в REST-доке число не найдено — не подтверждено).
-- Что видит владелец: отдельную вкладку check в PR с Markdown и картинками, annotations прямо в
-  diff «Files changed».
-- Долговечность: ≤90 дней. Подходит для pass/fail и аннотаций, не для архива.
-- Нужен `permissions: checks: write`; у PR из форков токен read-only (у нас агенты работают в
-  ветках основного repo, не критично).
+- `output` fields: `title` (required), `summary` (required, Markdown), `text` (Markdown), `annotations`
+  (up to 50 per request; `message` up to 64 KB, `title` up to 255 characters), `images[]` (`alt`,
+  `image_url`, `caption`). https://docs.github.com/en/rest/checks/runs
+- The length of `summary`/`text` is 65,535 characters (stated in the dorny/test-reporter README as the
+  report limit; the number was not found in the REST docs — unconfirmed).
+- What the owner sees: a separate check tab in the PR with Markdown and images, annotations right in
+  the "Files changed" diff.
+- Durability: ≤90 days. Suitable for pass/fail and annotations, not for an archive.
+- Needs `permissions: checks: write`; for PRs from forks the token is read-only (our agents work in
+  branches of the main repo, not critical).
 
-### 1.3 Sticky PR comment — главный кандидат
+### 1.3 Sticky PR comment — the main candidate
 
-- `marocchino/sticky-pull-request-comment@v3`: один комментарий по `header`, обновляется при
-  каждом push; входы `message`/`path`, `recreate`, `append`, `hide_and_recreate`, `only_update`,
-  `delete`; `permissions: pull-requests: write`.
+- `marocchino/sticky-pull-request-comment@v3`: one comment per `header`, updated on every push;
+  inputs `message`/`path`, `recreate`, `append`, `hide_and_recreate`, `only_update`, `delete`;
+  `permissions: pull-requests: write`.
   https://github.com/marocchino/sticky-pull-request-comment
-- Что видит владелец: на вкладке Conversation одну карточку «что изменилось / что прогнали /
-  итог / что проверено / где попробовать / картинки», которая остаётся после merge и после
+- What the owner sees: on the Conversation tab a single card "what changed / what was run /
+  result / what was verified / where to try it / images", which remains after merge and after
   retention.
-- Сниппет:
+- Snippet:
 
 ```yaml
 permissions:
@@ -117,29 +117,29 @@ jobs:
     if: ${{ !cancelled() && github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v8   # результаты quality/e2e (JUnit, JSON)
-      - run: node scripts/result-card.mjs > result-card.md   # собирает Markdown из JUnit/JSON/verification
+      - uses: actions/download-artifact@v8   # quality/e2e results (JUnit, JSON)
+      - run: node scripts/result-card.mjs > result-card.md   # builds Markdown from JUnit/JSON/verification
       - uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: result-card
           path: result-card.md
 ```
 
-- Лимит комментария: 65 536 символов (в доках REST не нашёл — не подтверждено).
-- Картинки в комментарии: только ссылки на внешние URL (см. §5). Официального API загрузки
-  изображений в комментарий нет.
-- Pitfall: в merge queue (`merge_group`) PR-контекста нет — карточку публиковать в
-  `pull_request`-workflow, а не в прогоне очереди.
+- Comment limit: 65,536 characters (not found in the REST docs — unconfirmed).
+- Images in a comment: only links to external URLs (see §5). There is no official API for uploading
+  images into a comment.
+- Pitfall: in a merge queue (`merge_group`) there is no PR context — publish the card in a
+  `pull_request` workflow, not in a queue run.
 
 ### 1.4 GitHub Deployments / Environments
 
-- `jobs.<id>.environment: { name, url }`; URL можно брать из outputs шага. Отображается на
-  странице deployments и в PR, связанном с развёртыванием (кнопка «View deployment»).
+- `jobs.<id>.environment: { name, url }`; the URL can be taken from step outputs. Shown on the
+  deployments page and in the PR linked to the deployment ("View deployment" button).
   https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
-- Free: environments доступны только для public repos (для `platform` и `inside-telegram` — да;
-  для private `ai-engineering` и др. — нет).
+- Free: environments are available only for public repos (yes for `platform` and `inside-telegram`;
+  no for private `ai-engineering` and others).
   https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments
-- Сниппет для preview:
+- Snippet for a preview:
 
 ```yaml
 deploy-preview:
@@ -151,28 +151,28 @@ deploy-preview:
       run: echo "url=https://pr-${{ github.event.pull_request.number }}.preview.example.ru" >> "$GITHUB_OUTPUT"
 ```
 
-- Альтернатива без workflow-уровня: REST `POST /repos/{o}/{r}/deployments` +
-  `POST .../deployments/{id}/statuses` с `environment_url`, `log_url`, `transient_environment`.
+- Alternative without the workflow level: REST `POST /repos/{o}/{r}/deployments` +
+  `POST .../deployments/{id}/statuses` with `environment_url`, `log_url`, `transient_environment`.
   https://docs.github.com/en/rest/deployments/deployments
-- Pitfall: каждое `pr-N` environment остаётся в списке environments — удалять при закрытии PR
+- Pitfall: every `pr-N` environment stays in the list of environments — delete on PR close
   (`DELETE /repos/{o}/{r}/environments/{name}`).
 
 ---
 
-## 2. Отчёты тестов
+## 2. Test reports
 
 ### 2.1 Playwright HTML report + trace viewer
 
-- Режимы `video`/`trace`: `off`, `on`, `retain-on-failure`, `retain-on-first-failure`,
+- `video`/`trace` modes: `off`, `on`, `retain-on-failure`, `retain-on-first-failure`,
   `retain-on-failure-and-retries`, `on-first-retry`, `on-all-retries`; `screenshot`: `off`, `on`,
   `only-on-failure`. https://playwright.dev/docs/test-use-options
-- Видео по умолчанию масштабируется в 800×800; `video.size`; для ручного контекста
-  `browser.newContext({ recordVideo: { dir } })`, файл появляется после `context.close()`.
-  Есть подписи на видео: `video.show.actions` (подсветка элемента + подпись действия) и
-  `video.show.test` (название теста/шага) — удобно владельцу. https://playwright.dev/docs/videos
+- Video is scaled to 800×800 by default; `video.size`; for a manual context
+  `browser.newContext({ recordVideo: { dir } })`, the file appears after `context.close()`.
+  There are captions on video: `video.show.actions` (element highlight + action caption) and
+  `video.show.test` (test/step name) — convenient for the owner. https://playwright.dev/docs/videos
 
 ```ts
-// apps/web/playwright.config.ts — отдельный проект «evidence» для приёмочных сценариев
+// apps/web/playwright.config.ts — a separate "evidence" project for acceptance scenarios
 projects: [
   { name: "chromium", use: { screenshot: "only-on-failure", trace: "retain-on-failure" } },
   {
@@ -192,45 +192,46 @@ projects: [
 reporter: [["list"], ["html", { open: "never", title: "platform e2e" }], ["junit", { outputFile: "results/e2e.xml" }], ["github"]],
 ```
 
-- HTML report: `outputFolder`, `open`, `title`, `attachmentsBaseURL` (вложения можно держать во
-  внешнем хранилище); `blob` + `merge-reports` для шардов; `junit`; `github` → annotations.
+- HTML report: `outputFolder`, `open`, `title`, `attachmentsBaseURL` (attachments can be kept in
+  external storage); `blob` + `merge-reports` for shards; `junit`; `github` → annotations.
   https://playwright.dev/docs/test-reporters
-- Trace viewer встроен в HTML report; `trace.playwright.dev` — статическая версия, трасса
-  грузится в браузере и никуда не отправляется; можно открыть по `?trace=<https-URL>`, но нужен
-  CORS у хранилища. https://playwright.dev/docs/trace-viewer
-- Официальная рекомендация Playwright — `upload-artifact` (пример с `retention-days: 30`) или
-  статический хостинг (Azure). https://playwright.dev/docs/ci-intro
-- Одиночный файл можно выгрузить без zip (`upload-artifact@v7`, `archive: false`), тогда
-  картинка/HTML без внешних CSS/JS открывается прямо в браузере; ссылка требует логина и живёт до
-  истечения retention. https://github.blog/changelog/2026-02-26-github-actions-now-supports-uploading-and-downloading-non-zipped-artifacts/ ,
+- The trace viewer is built into the HTML report; `trace.playwright.dev` is a static version, the trace
+  is loaded in the browser and is not sent anywhere; it can be opened via `?trace=<https-URL>`, but
+  the storage needs CORS. https://playwright.dev/docs/trace-viewer
+- The official Playwright recommendation is `upload-artifact` (example with `retention-days: 30`) or
+  static hosting (Azure). https://playwright.dev/docs/ci-intro
+- A single file can be uploaded without zip (`upload-artifact@v7`, `archive: false`), then an
+  image/HTML without external CSS/JS opens directly in the browser; the link requires a login and lives until
+  retention expires. https://github.blog/changelog/2026-02-26-github-actions-now-supports-uploading-and-downloading-non-zipped-artifacts/ ,
   https://github.com/actions/upload-artifact
-- Pitfall: HTML report — SPA с десятками МБ вложений; для Pages нужен per-PR каталог и чистка.
+- Pitfall: the HTML report is an SPA with tens of MB of attachments; for Pages a per-PR directory and cleanup are needed.
 
-### 2.2 Публикация отчётов на GitHub Pages
+### 2.2 Publishing reports to GitHub Pages
 
-- Лимиты Pages: сайт ≤1 GB, source repo рекомендовано ≤1 GB, деплой ≤10 минут, мягкий лимит
-  100 GB/мес трафика и 10 builds/час.
+- Pages limits: site ≤1 GB, source repo recommended ≤1 GB, deploy ≤10 minutes, soft limit
+  100 GB/month of traffic and 10 builds/hour.
   https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits
-- Free для организаций: Pages только в public repos (для private — нет), по
-  https://docs.github.com/en/get-started/learning-about-github/githubs-plans . Сайт Pages всегда
-  публичен (приватный доступ — только Enterprise Cloud; на странице не найдено — не подтверждено).
-- Варианты:
+- Free for organizations: Pages only in public repos (not for private), per
+  https://docs.github.com/en/get-started/learning-about-github/githubs-plans . A Pages site is always
+  public (private access — only Enterprise Cloud; not found on that page — unconfirmed).
+- Options:
   - `actions/upload-pages-artifact` + `actions/deploy-pages@v4` (`pages: write`, `id-token: write`,
-    `environment: github-pages`). Каждый деплой публикует один артефакт целиком, то есть истории
-    per-PR нет без собственной сборки всего сайта (вывод; в README не сказано — не подтверждено).
+    `environment: github-pages`). Each deploy publishes one artifact as a whole, so there is no
+    per-PR history without building the whole site yourself (an inference; the README does not say —
+    unconfirmed).
     https://github.com/actions/deploy-pages
-  - Ветка `gh-pages` с каталогами на PR: `rossjrw/pr-preview-action@v1` кладёт в
-    `pr-preview/pr-N/`, удаляет при закрытии PR, сам пишет sticky comment (с QR); требует
-    источник Pages = branch, не «GitHub Actions»; форки не поддерживаются.
+  - The `gh-pages` branch with per-PR directories: `rossjrw/pr-preview-action@v1` puts into
+    `pr-preview/pr-N/`, deletes on PR close, writes a sticky comment itself (with a QR code); requires
+    the Pages source = branch, not "GitHub Actions"; forks are not supported.
     https://github.com/rossjrw/pr-preview-action
-- Рекомендация: отдельный public repo `sachkov-inside/platform-evidence` с Pages из ветки,
-  каталоги `pr-<N>/` (HTML report, screenshots, video), cron-чистка старше N дней, а долгоживущие
-  ключевые кадры — в release assets/R2. Так git `platform` не растёт, а 1 GB лимит изолирован.
+- Recommendation: a separate public repo `sachkov-inside/platform-evidence` with Pages from a branch,
+  `pr-<N>/` directories (HTML report, screenshots, video), a cron cleanup of anything older than N days, and
+  long-lived key frames in release assets/R2. This way the `platform` git does not grow, and the 1 GB limit is isolated.
 
 ### 2.3 Allure Report 3
 
-- Стабильный, переписан на TypeScript, плагины `awesome`, `dashboard`, `classic`, quality gates,
-  история в `historyPath` (JSONL), `historyLimit`, `variables`.
+- Stable, rewritten in TypeScript, plugins `awesome`, `dashboard`, `classic`, quality gates,
+  history in `historyPath` (JSONL), `historyLimit`, `variables`.
   https://allurereport.org/docs/v3/ , https://allurereport.org/docs/v3/configure/
 
 ```js
@@ -245,130 +246,130 @@ export default defineConfig({
 });
 ```
 
-- Pages: официальный гайд для Allure 3 прямо предупреждает, что пример не переносит историю
-  между прогонами; для истории предлагают свой storage service (Docker/Cloudflare Workers).
-  Allure 2 имеет `simple-elf/allure-report-action` с `allure_history`.
+- Pages: the official guide for Allure 3 explicitly warns that the example does not carry history
+  between runs; for history they suggest their own storage service (Docker/Cloudflare Workers).
+  Allure 2 has `simple-elf/allure-report-action` with `allure_history`.
   https://allurereport.org/docs/guides/github-pages/
-- Плюсы: тренды, flaky, категории, вложения (скриншоты, видео, trace). Минусы: второй формат
-  отчёта рядом с Playwright HTML, адаптеры `allure-playwright`/`allure-vitest`, своё хранилище
-  истории. Для одного владельца избыточно.
+- Pros: trends, flaky, categories, attachments (screenshots, video, trace). Cons: a second report
+  format next to Playwright HTML, the adapters `allure-playwright`/`allure-vitest`, its own history
+  storage. Excessive for a single owner.
 
 ### 2.4 JUnit → check run / annotations
 
-- `dorny/test-reporter@v3`: создаёт check run из JUnit и др., `use-actions-summary` (по умолчанию
-  `true`), `max-annotations` (по умолчанию 10, максимум 50), отчёт ≤65 535 байт; нужен
-  `checks: write`; для форков — схема через `workflow_run`. В списке форматов есть `jest-junit`,
-  `java-junit`; Vitest/Playwright JUnit явно не перечислены — совместимость не подтверждена.
+- `dorny/test-reporter@v3`: creates a check run from JUnit and others, `use-actions-summary` (default
+  `true`), `max-annotations` (default 10, maximum 50), report ≤65,535 bytes; needs
+  `checks: write`; for forks — a scheme via `workflow_run`. The list of formats includes `jest-junit`,
+  `java-junit`; Vitest/Playwright JUnit are not listed explicitly — compatibility unconfirmed.
   https://github.com/dorny/test-reporter
-- Для Vitest проще встроенный `github-actions` reporter (§1.1), для Playwright — встроенный
-  `github` reporter. Всё это живёт ≤90 дней.
+- For Vitest the built-in `github-actions` reporter is simpler (§1.1), for Playwright — the built-in
+  `github` reporter. All of this lives ≤90 days.
 
-### 2.5 Hosted dashboards (кратко)
+### 2.5 Hosted dashboards (brief)
 
-- Currents: от $49/мес, 10K результатов, retention до 1 года; постоянного free нет (только trial).
+- Currents: from $49/month, 10K results, retention up to 1 year; no permanent free tier (trial only).
   https://currents.dev/pricing
-- Argos (см. §3) тоже принимает Playwright traces и failure screenshots.
+- Argos (see §3) also accepts Playwright traces and failure screenshots.
 
 ---
 
-## 3. Visual review с «approve в один клик»
+## 3. Visual review with "one-click approve"
 
-| Инструмент | Что видит владелец | Бесплатно | Коммерческий public repo | Pitfalls |
+| Tool | What the owner sees | Free | Commercial public repo | Pitfalls |
 |---|---|---|---|---|
-| Chromatic (Storybook) | PR checks «UI Tests» и «UI Review»; в веб-UI diff, Accept/Deny, Approve | Free: 5 000 snapshots/мес, только Chrome, visual + interaction tests; UI Review на Free — страница pricing противоречива (не подтверждено); TurboSnap на Free — «Not included» (не подтверждено) | OSS-программа «по заявке»; Starter $179/мес, 35 000 snapshots | Нужен `fetch-depth: 0`; docs советуют `on: push`; merge queue (`merge_group`) — поддержка не проверена |
-| Argos | Diff в Argos, статус в PR, Approve/Reject | Hobby: 5 000 screenshots/мес «для personal projects» | OSS-спонсорство только «not for commercial use» → `platform` не подходит; Pro $100/мес, 35 000 | Hobby для org — не подтверждено |
-| Percy (BrowserStack) | Diff в Percy, статус в PR | 5 000 screenshots/мес, unlimited users | считается browser×width | точные цены paid не опубликованы |
-| Lost Pixel OSS | CI падает, baselines обновляются PR-ом | бесплатно (OSS) | — | baselines в git = снова PNG в repo |
-| Playwright `toHaveScreenshot` | failing test + diff в HTML report; approve = коммит обновлённых baselines (`--update-snapshots`) | бесплатно | — | PNG в git, зависимость от ОС/шрифтов, нет кнопки approve |
+| Chromatic (Storybook) | PR checks "UI Tests" and "UI Review"; in the web UI a diff, Accept/Deny, Approve | Free: 5,000 snapshots/month, Chrome only, visual + interaction tests; UI Review on Free — the pricing page is contradictory (unconfirmed); TurboSnap on Free — "Not included" (unconfirmed) | OSS program "by application"; Starter $179/month, 35,000 snapshots | Needs `fetch-depth: 0`; the docs advise `on: push`; merge queue (`merge_group`) — support not checked |
+| Argos | A diff in Argos, a status in the PR, Approve/Reject | Hobby: 5,000 screenshots/month "for personal projects" | OSS sponsorship only "not for commercial use" → not suitable for `platform`; Pro $100/month, 35,000 | Hobby for an org — unconfirmed |
+| Percy (BrowserStack) | A diff in Percy, a status in the PR | 5,000 screenshots/month, unlimited users | counted as browser×width | exact paid prices are not published |
+| Lost Pixel OSS | CI fails, baselines are updated by a PR | free (OSS) | — | baselines in git = PNGs in the repo again |
+| Playwright `toHaveScreenshot` | a failing test + a diff in the HTML report; approve = a commit of updated baselines (`--update-snapshots`) | free | — | PNG in git, dependence on OS/fonts, no approve button |
 
-Источники: https://www.chromatic.com/pricing , https://www.chromatic.com/docs/review/ ,
+Sources: https://www.chromatic.com/pricing , https://www.chromatic.com/docs/review/ ,
 https://www.chromatic.com/docs/turbosnap/ (copied snapshot = 0.2 billed),
 https://www.chromatic.com/docs/github-actions/ , https://argos-ci.com/pricing ,
 https://argos-ci.com/docs/learn/billing-and-subscription/open-source.md ,
 https://argos-ci.com/docs/reference/playwright.md ,
 https://www.browserstack.com/docs/percy/overview/plans-and-billing , https://docs.lost-pixel.com/user-docs
 
-Chromatic сниппет:
+Chromatic snippet:
 
 ```yaml
 - uses: actions/checkout@v7
   with: { fetch-depth: 0 }
-- uses: chromaui/action@<SHA>   # закрепить SHA текущего мажора; docs допускают @latest/@vX
+- uses: chromaui/action@<SHA>   # pin the SHA of the current major; the docs allow @latest/@vX
   with:
     projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-    exitZeroOnChanges: true      # не валить CI, ждать решения владельца в UI
+    exitZeroOnChanges: true      # do not fail CI, wait for the owner's decision in the UI
     autoAcceptChanges: main
-    onlyChanged: true            # TurboSnap, если доступен на плане
-# outputs: buildUrl, storybookUrl, changeCount → в sticky comment
+    onlyChanged: true            # TurboSnap, if available on the plan
+# outputs: buildUrl, storybookUrl, changeCount → into the sticky comment
 ```
 
-Argos сниппет (Playwright):
+Argos snippet (Playwright):
 
 ```ts
 reporter: [["@argos-ci/playwright/reporter", createArgosReporterOptions({ uploadToArgos: !!process.env.CI })]],
-// в тесте: await argosScreenshot(page, "checkout-success");
+// in a test: await argosScreenshot(page, "checkout-success");
 ```
 
-Вывод: «click-to-approve» дёшево даёт только Chromatic Free (если Storybook покрывает UI). Для
-коммерческого проекта OSS-программы Argos не применимы. `storybookUrl` Chromatic — ещё и
-бесплатный хостинг Storybook ветки для владельца.
+Conclusion: "click-to-approve" is cheaply provided only by Chromatic Free (if Storybook covers the UI). For
+a commercial project the Argos OSS programs do not apply. Chromatic's `storybookUrl` is also a
+free hosting of the branch's Storybook for the owner.
 
 ---
 
 ## 4. Preview environments
 
-| Вариант | Для чего | Цена | URL на PR | Pitfalls |
+| Option | For what | Price | URL on the PR | Pitfalls |
 |---|---|---|---|---|
-| Vercel Preview | Next.js | Hobby — только non-commercial; коммерция требует Pro ($20/dev seat) | комментарий + deployment | web без backend почти бесполезен |
-| Netlify Deploy Previews | Next.js | Free-план: наличие previews на странице не указано — не подтверждено | status check + comment + deployment | то же |
-| Render Preview Environments | NestJS + Postgres + web | нужен Pro workspace; БД в preview пустая (seed через `initialDeployHook`); `expireAfterDays` | «View deployment» | цена Pro — не подтверждена |
-| Railway PR environments | весь стек | Hobby $5/мес (включено $5 usage), Pro $20; PR envs на Hobby — не подтверждено; есть Bot PR environments (Claude Code и др.) | GitHub deployment — не подтверждено | usage-биллинг |
-| Fly review apps | весь стек | usage | `environment.url` в PR | Postgres/cleanup — надо писать самим |
-| Coolify (self-hosted) | docker compose на своём VPS | стоимость VPS | GitHub App комментирует PR URL `{{pr_id}}.{{domain}}` | PR-код исполняется на сервере |
-| Свой docker compose на VPS | как сейчас стенд | стоимость VPS | `environment: {name, url}` | чистка, порты, секреты |
+| Vercel Preview | Next.js | Hobby — non-commercial only; commercial use requires Pro ($20/dev seat) | a comment + deployment | a web app without a backend is almost useless |
+| Netlify Deploy Previews | Next.js | Free plan: the availability of previews is not stated on the page — unconfirmed | status check + comment + deployment | same |
+| Render Preview Environments | NestJS + Postgres + web | a Pro workspace is required; the DB in a preview is empty (seed via `initialDeployHook`); `expireAfterDays` | "View deployment" | Pro price — unconfirmed |
+| Railway PR environments | the whole stack | Hobby $5/month ($5 usage included), Pro $20; PR envs on Hobby — unconfirmed; there are Bot PR environments (Claude Code and others) | GitHub deployment — unconfirmed | usage billing |
+| Fly review apps | the whole stack | usage | `environment.url` in the PR | Postgres/cleanup — you have to write them yourself |
+| Coolify (self-hosted) | docker compose on your own VPS | the cost of the VPS | the GitHub App comments the PR URL `{{pr_id}}.{{domain}}` | PR code is executed on the server |
+| Your own docker compose on a VPS | like the current stand | the cost of the VPS | `environment: {name, url}` | cleanup, ports, secrets |
 
-Источники: https://vercel.com/docs/limits/fair-use-guidelines , https://vercel.com/pricing ,
+Sources: https://vercel.com/docs/limits/fair-use-guidelines , https://vercel.com/pricing ,
 https://docs.netlify.com/deploy/deploy-types/deploy-previews/ ,
 https://render.com/docs/preview-environments , https://docs.railway.com/guides/environments ,
 https://railway.com/pricing , https://docs.fly.io/blueprints/review-apps-guide/ ,
 https://coolify.io/docs/applications/ci-cd/github/preview-deploy
 
-Вывод для `platform`: backend + PostgreSQL + object storage + платежи Т-Банка делают SaaS-previews
-дорогими и неполными. Реалистично: per-PR compose-стек на имеющемся VPS (или Coolify поверх него)
-по метке `preview`, с GitHub environment `pr-N` и URL в sticky comment; уничтожение при закрытии.
-Бесплатный минимум — ссылка `storybookUrl` от Chromatic или Storybook на Pages.
+Conclusion for `platform`: a backend + PostgreSQL + object storage + T-Bank payments make SaaS
+previews expensive and incomplete. Realistic: a per-PR compose stack on the existing VPS (or Coolify on top of it)
+triggered by a `preview` label, with a GitHub environment `pr-N` and the URL in a sticky comment; teardown on close.
+The free minimum is the `storybookUrl` link from Chromatic or Storybook on Pages.
 
 ---
 
-## 5. Хранение медиа вне git
+## 5. Media storage outside git
 
-| Носитель | Лимиты/цена | Публичность | Долговечность | Замечание |
+| Medium | Limits/price | Visibility | Durability | Note |
 |---|---|---|---|---|
-| Git (как сейчас) | файл: рекомендация 1 MB, жёсткий лимит 100 MB; repo on-disk рекомендовано ≤10 GB | как repo | вечно, нельзя удалить без rewrite | уже ~101 MiB истории `platform` |
-| Git LFS (Free) | 10 GiB storage + 10 GiB bandwidth/мес на аккаунт, public тоже считается; при превышении без оплаты — только pointer-файлы / LFS выключается до конца месяца | как repo | вечно | CI checkout тратит bandwidth |
-| Release assets | ≤2 GiB на файл, ≤1000 assets на release, лимитов на общий объём и трафик нет | как repo | вечно | `platform` использует immutable releases — для evidence нужен отдельный repo или pre-release с тегом `evidence-pr-N` |
-| Отдельная ветка/repo `evidence` + Pages | Pages ≤1 GB сайт, 100 GB/мес | public | пока не удалено | ротация обязательна |
-| Cloudflare R2 | free: 10 GB-мес, 1M Class A, 10M Class B, egress бесплатно; далее $0.015/GB-мес | public bucket / r2.dev или custom domain; или presigned | пока платите | нужен секрет в Actions; CORS для trace viewer |
-| Actions artifacts | ≤90 дней; public — бесплатно, private Free — 500 MB | только с логином | ≤90 дней | не архив |
+| Git (as now) | file: recommendation 1 MB, hard limit 100 MB; repo on-disk recommended ≤10 GB | as the repo | forever, cannot be deleted without a rewrite | already ~101 MiB of `platform` history |
+| Git LFS (Free) | 10 GiB storage + 10 GiB bandwidth/month per account, public counts too; on exceeding without payment — only pointer files / LFS is disabled until the end of the month | as the repo | forever | CI checkout spends bandwidth |
+| Release assets | ≤2 GiB per file, ≤1000 assets per release, no limits on total size and traffic | as the repo | forever | `platform` uses immutable releases — evidence needs a separate repo or a pre-release with the tag `evidence-pr-N` |
+| A separate branch/repo `evidence` + Pages | Pages ≤1 GB site, 100 GB/month | public | until deleted | rotation is mandatory |
+| Cloudflare R2 | free: 10 GB-month, 1M Class A, 10M Class B, egress free; then $0.015/GB-month | public bucket / r2.dev or a custom domain; or presigned | as long as you pay | a secret in Actions is needed; CORS for the trace viewer |
+| Actions artifacts | ≤90 days; public — free, private Free — 500 MB | login only | ≤90 days | not an archive |
 
-Источники: https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits ,
+Sources: https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-limits ,
 https://docs.github.com/en/billing/concepts/product-billing/git-lfs ,
 https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases ,
 https://developers.cloudflare.com/r2/pricing/ ,
 https://docs.github.com/en/billing/concepts/product-billing/github-actions
 
-Загрузка картинок в PR comment программно:
-- Официального API нет; запросы в community без ответа GitHub, считается сознательным
-  ограничением. https://github.com/orgs/community/discussions/28219 ,
+Uploading images into a PR comment programmatically:
+- There is no official API; requests in the community got no response from GitHub, considered a deliberate
+  limitation. https://github.com/orgs/community/discussions/28219 ,
   https://github.com/orgs/community/discussions/29993
-- Неофициальный endpoint `https://uploads.github.com/user-attachments/assets` с Bearer token
-  (описан в августе 2026, автор сам не уверен в стабильности), расширение `gh-image`.
+- The unofficial endpoint `https://uploads.github.com/user-attachments/assets` with a Bearer token
+  (described in August 2026, the author himself is unsure of its stability), the `gh-image` extension.
   https://island94.org/2026/08/programmatically-upload-attachments-to-github-issues-pull-requests-comments
-  Для harness не использовать: недокументировано, может исчезнуть.
-- Рабочий путь: загрузить в R2/Pages/release asset и вставить `![alt](https://...)` в sticky
-  comment; GitHub проксирует через Camo.
+  Do not use for the harness: undocumented, may disappear.
+- A working path: upload to R2/Pages/a release asset and insert `![alt](https://...)` into a sticky
+  comment; GitHub proxies through Camo.
 
-Сниппет (release asset как долговечное хранилище в отдельном repo):
+Snippet (a release asset as durable storage in a separate repo):
 
 ```bash
 gh release create "evidence-pr-$PR" --repo sachkov-inside/platform-evidence \
@@ -377,29 +378,29 @@ gh release upload "evidence-pr-$PR" evidence/*.png evidence/*.webm --repo sachko
 # URL: https://github.com/sachkov-inside/platform-evidence/releases/download/evidence-pr-$PR/<file>
 ```
 
-Проверить до внедрения: отображаются ли `releases/download/...` PNG инлайн в комментарии (редирект
-на objects.githubusercontent.com; через Camo обычно работает — не подтверждено), и воспроизводится ли
-`.webm` (GitHub инлайн-плеер работает для загруженных через UI видео; для внешних ссылок — только
-ссылка, не подтверждено). Надёжно для видео: ссылка «▶ видео» + GIF-превью.
+Check before adopting: whether `releases/download/...` PNGs are displayed inline in a comment (a redirect
+to objects.githubusercontent.com; through Camo it usually works — unconfirmed), and whether
+`.webm` plays (GitHub's inline player works for videos uploaded via the UI; for external links — only
+a link, unconfirmed). Reliable for video: a "▶ video" link + a GIF preview.
 
 ---
 
-## 6. Дашборды по многим задачам
+## 6. Dashboards across many tasks
 
-- GitHub Projects: поля (Status, Iteration, текстовое «Evidence URL», single-select «Приёмка»),
-  views table/board/roadmap; Iteration field — любая длина, перерывы, фильтры `@current`,
-  `@previous`, `@next`, группировка по итерации.
+- GitHub Projects: fields (Status, Iteration, a text "Evidence URL", a single-select "Acceptance"),
+  views table/board/roadmap; the Iteration field — any length, breaks, filters `@current`,
+  `@previous`, `@next`, grouping by iteration.
   https://docs.github.com/en/issues/planning-and-tracking-with-projects/understanding-fields/about-iteration-fields
-- Insights: current charts и historical (по умолчанию Burn up; Open/Completed/Closed PR/Not
-  planned). Ограничения исторических графиков на Free не найдены — не подтверждено.
+- Insights: current charts and historical (Burn up by default; Open/Completed/Closed PR/Not
+  planned). Limitations of the historical charts on Free were not found — unconfirmed.
   https://docs.github.com/en/issues/planning-and-tracking-with-projects/viewing-insights-from-your-project/about-insights-for-projects
-- Weekly digest: scheduled workflow (`on: schedule: cron`) → `gh pr list --search "merged:>=$(date -d '7 days ago' +%F)" --json number,title,url`
-  + ссылки на sticky comments → issue/Discussion «Неделя N» или job summary. Дёшево и долговечно,
-  если писать в issue, а не в summary.
-- Release notes: `.github/release.yml` с `changelog.exclude.labels/authors` и
+- Weekly digest: a scheduled workflow (`on: schedule: cron`) → `gh pr list --search "merged:>=$(date -d '7 days ago' +%F)" --json number,title,url`
+  + links to sticky comments → an issue/Discussion "Week N" or a job summary. Cheap and durable,
+  if written to an issue rather than a summary.
+- Release notes: `.github/release.yml` with `changelog.exclude.labels/authors` and
   `categories[].labels`, `"*"` — catch-all. https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
-  У `platform` уже есть immutable releases `v7..v9` от `release.yml` workflow — достаточно
-  `gh release create --generate-notes` и меток на PR.
+  `platform` already has immutable releases `v7..v9` from the `release.yml` workflow —
+  `gh release create --generate-notes` and PR labels are enough.
 
 ```yaml
 # .github/release.yml
@@ -408,56 +409,55 @@ changelog:
     labels: [skip-release-notes]
     authors: [dependabot]
   categories:
-    - title: Для участников
+    - title: For participants
       labels: [user-facing]
-    - title: Оплата и доступ
+    - title: Payments and access
       labels: [payments]
-    - title: Внутреннее
+    - title: Internal
       labels: ["*"]
 ```
 
-- Keep a Changelog (Added/Changed/Deprecated/Removed/Fixed/Security, раздел Unreleased):
-  https://keepachangelog.com/en/1.1.0/ . Для agent-driven потока лучше генерировать из PR, а не
-  вести руками; ручной CHANGELOG дублирует release notes.
+- Keep a Changelog (Added/Changed/Deprecated/Removed/Fixed/Security, an Unreleased section):
+  https://keepachangelog.com/en/1.1.0/ . For an agent-driven flow it is better to generate from PRs than
+  to maintain by hand; a manual CHANGELOG duplicates release notes.
 
 ---
 
-## 7. Запись ручной проверки агента и CLI-демо
+## 7. Recording the agent's manual verification and CLI demos
 
-- Браузер: тот же Playwright `recordVideo` (или `video.show` с подписями шагов) в сценарии
-  приёмки; итог — `.webm` + `trace.zip`. Ссылка «открыть trace» =
-  `https://trace.playwright.dev/?trace=<публичный URL trace.zip>` (нужен CORS у хранилища).
+- Browser: the same Playwright `recordVideo` (or `video.show` with step captions) in an acceptance
+  scenario; the result is `.webm` + `trace.zip`. The "open trace" link =
+  `https://trace.playwright.dev/?trace=<public URL of trace.zip>` (the storage needs CORS).
   https://playwright.dev/docs/videos , https://playwright.dev/docs/trace-viewer
-- GIF-превью для комментария: `ffmpeg -i video.webm -vf "fps=8,scale=800:-1" preview.gif`
-  (инлайн в Markdown как картинка; видео — ссылкой).
-- CLI: asciinema запись `.cast`; asciinema.org — бесплатный публичный хостинг с visibility
-  public/unlisted/private, есть self-host. https://docs.asciinema.org/manual/server/
-  `agg demo.cast demo.gif` — GIF для встраивания в PR. https://docs.asciinema.org/manual/agg/
-  Политика хранения неприкреплённых (unclaimed) записей на asciinema.org — не подтверждено.
+- A GIF preview for a comment: `ffmpeg -i video.webm -vf "fps=8,scale=800:-1" preview.gif`
+  (inline in Markdown as an image; the video as a link).
+- CLI: asciinema records `.cast`; asciinema.org is a free public hosting with visibility
+  public/unlisted/private, self-hosting is possible. https://docs.asciinema.org/manual/server/
+  `agg demo.cast demo.gif` — a GIF for embedding in a PR. https://docs.asciinema.org/manual/agg/
+  The retention policy for unclaimed recordings on asciinema.org — unconfirmed.
 
 ---
 
-## 8. Рекомендуемый стек (по отношению ценность/стоимость)
+## 8. Recommended stack (by value/cost ratio)
 
-1. **Sticky «карточка результата» в PR** (marocchino v3) из машинных входов: JUnit (Vitest,
-   Playwright), `docs/verification/*.json`, список `@evidence`-сценариев, ссылки на медиа и stand.
-   Цена 0, переживает retention, владелец видит всё в одном месте. PR body сократить до «что и
-   зачем», а pass/fail и проверки перенести в карточку, которую пишет CI, а не агент по памяти.
-2. **Медиа вне git**: public repo `platform-evidence` (Pages из ветки, `pr-N/` с HTML report,
-   скриншотами, видео; ротация ~90–180 дней) + долговечные ключевые кадры в release assets того же
-   repo (`evidence-pr-N`). Приватные repos (Pages на Free недоступны) → Cloudflare R2 (10 GB free).
-   Перестать добавлять PNG в `docs/evidence` (историю не трогать).
-3. **Playwright проект `evidence`**: `screenshot: on`, `video: on` с подписями шагов, `trace: on`
-   только для приёмочных сценариев; HTML report публиковать в `pr-N/`; `github` reporter и
-   Vitest `github-actions` reporter для оперативного вида (summary/annotations, ≤90 дней).
-4. **Release notes** через `.github/release.yml` + метки; weekly digest в issue по cron.
-   Projects: поле «Evidence URL» и view «Ждёт приёмки».
-5. **Visual review**: Chromatic Free (5 000 snapshots, Chrome) — только если Storybook уже
-   покрывает ключевые экраны; проверить совместимость с merge queue и реальный расход snapshots.
-   Argos/Percy — не раньше, чем упрёмся в лимит; OSS-программы для коммерческого `platform` не
-   применимы.
-6. **Preview на PR**: per-PR docker compose на имеющемся VPS (или Coolify) с `environment.url` —
-   высокая ценность для приёмки, но заметная стоимость работ и безопасность (код PR на сервере).
-   Vercel Hobby запрещён для коммерции; Render previews требуют Pro.
-7. **Allure 3 / Currents** — отложить: ценность (тренды, flaky) не окупает второй формат отчёта и
-   хранилище истории при одном владельце.
+1. **A sticky "result card" in the PR** (marocchino v3) from machine inputs: JUnit (Vitest,
+   Playwright), `docs/verification/*.json`, the list of `@evidence` scenarios, links to media and the stand.
+   Cost 0, survives retention, the owner sees everything in one place. Shorten the PR body to "what and
+   why", and move pass/fail and checks into the card, which is written by CI, not by the agent from memory.
+2. **Media outside git**: a public repo `platform-evidence` (Pages from a branch, `pr-N/` with the HTML report,
+   screenshots, video; rotation ~90–180 days) + durable key frames in release assets of the same
+   repo (`evidence-pr-N`). Private repos (Pages unavailable on Free) → Cloudflare R2 (10 GB free).
+   Stop adding PNGs to `docs/evidence` (leave history alone).
+3. **A Playwright `evidence` project**: `screenshot: on`, `video: on` with step captions, `trace: on`
+   only for acceptance scenarios; publish the HTML report into `pr-N/`; the `github` reporter and the
+   Vitest `github-actions` reporter for an operational view (summary/annotations, ≤90 days).
+4. **Release notes** via `.github/release.yml` + labels; a weekly digest in an issue by cron.
+   Projects: an "Evidence URL" field and an "Awaiting acceptance" view.
+5. **Visual review**: Chromatic Free (5,000 snapshots, Chrome) — only if Storybook already
+   covers the key screens; check merge queue compatibility and the actual snapshot consumption.
+   Argos/Percy — not until we hit the limit; OSS programs do not apply to the commercial `platform`.
+6. **Preview on a PR**: a per-PR docker compose on the existing VPS (or Coolify) with `environment.url` —
+   high value for acceptance, but a noticeable cost of work and a security concern (PR code on the server).
+   Vercel Hobby is prohibited for commercial use; Render previews require Pro.
+7. **Allure 3 / Currents** — postpone: the value (trends, flaky) does not justify a second report format and
+   history storage with a single owner.

@@ -1,17 +1,18 @@
-# Исследования
+# Research
 
-Заметки собраны в сессиях 25–29.09.2026. У каждого утверждения — источник; непроверенное
-помечено «не подтверждено». Локальные пути владельца обезличены.
+Notes collected in sessions on 25–29.09.2026. Every claim has a source; anything unverified
+is marked "unconfirmed". The owner's local paths are anonymized.
 
-| Заметка | О чём |
+| Note | About |
 |---|---|
-| [artifact-pipelines-industry](2026-09-25-artifact-pipelines-industry.md) | Артефакты у Anthropic, OpenAI, spec-kit, Kiro, BMAD, Tessl, Matt Pocock |
-| [artifact-pipelines-academic](2026-09-25-artifact-pipelines-academic.md) | Proof-or-Stop, MetaGPT, HoH и другие: что измерено про артефакты и доказательства |
-| [artifact-mechanics-classic](2026-09-25-artifact-mechanics-classic.md) | EARS, трассировка, аттестации, assurance cases, хранилища GitHub |
-| [agent-products-human-artifacts](2026-09-27-agent-products-human-artifacts.md) | Как Antigravity, Codex, Devin, Cursor, Copilot показывают работу человеку |
-| [reviewing-agent-work-practices](2026-09-27-reviewing-agent-work-practices.md) | Практики и исследования приёмки работы агентов |
-| [reporting-tooling-github](2026-09-27-reporting-tooling-github.md) | Отчёты, медиа, превью и сроки хранения на GitHub |
-| [local-session-artifacts](2026-09-27-local-session-artifacts.md) | Хуки Claude Code и Codex, файлы сессий, Entire, git-ai |
-| [artifact-review-surfaces](2026-09-27-artifact-review-surfaces.md) | Где смотреть и размечать артефакты |
-| [command-centers-landscape](2026-09-29-command-centers-landscape.md) | Paperclip, командные центры, плагины Herdr |
-| [command-center-build-options](2026-09-29-command-center-build-options.md) | Источники данных, варианты интерфейса, архитектура |
+| [artifact-pipelines-industry](2026-09-25-artifact-pipelines-industry.md) | Artifacts at Anthropic, OpenAI, spec-kit, Kiro, BMAD, Tessl, Matt Pocock |
+| [artifact-pipelines-academic](2026-09-25-artifact-pipelines-academic.md) | Proof-or-Stop, MetaGPT, HoH and others: what has been measured about artifacts and evidence |
+| [artifact-mechanics-classic](2026-09-25-artifact-mechanics-classic.md) | EARS, traceability, attestations, assurance cases, GitHub storage |
+| [agent-products-human-artifacts](2026-09-27-agent-products-human-artifacts.md) | How Antigravity, Codex, Devin, Cursor, Copilot show work to a human |
+| [reviewing-agent-work-practices](2026-09-27-reviewing-agent-work-practices.md) | Practices and studies on accepting agents' work |
+| [reporting-tooling-github](2026-09-27-reporting-tooling-github.md) | Reports, media, previews and retention periods on GitHub |
+| [local-session-artifacts](2026-09-27-local-session-artifacts.md) | Claude Code and Codex hooks, session files, Entire, git-ai |
+| [artifact-review-surfaces](2026-09-27-artifact-review-surfaces.md) | Where to view and annotate artifacts |
+| [command-centers-landscape](2026-09-29-command-centers-landscape.md) | Paperclip, command centers, Herdr plugins |
+| [command-center-build-options](2026-09-29-command-center-build-options.md) | Data sources, interface options, architecture |
+| [stack-landscape](2026-09-29-stack-landscape.md) | Stack landscape: what comparable developer and agent tools are built with |

@@ -1,54 +1,58 @@
 # Brief
 
-## Зачем
+## Why
 
-Разработчик, который работает AI-first, ведёт несколько агентов (Claude Code, Codex и другие)
-параллельно в разных проектах. Ему нужно контролировать конвейер разработки и быстро видеть
-результат: какие задачи идут, в каких ветках, какие агенты работают и на какой стадии, что
-каждый агент сделал, какие артефакты оставил, что проверено и что ждёт его решения.
-Вендорские приложения показывают только своего агента, большие платформы вроде Paperclip
-приносят собственный трекер и много лишнего, а многие командные центры уже закрылись.
+A developer who works AI-first runs several agents (Claude Code, Codex and others) in parallel across
+different projects. They need to control the development pipeline and see results quickly: which
+tasks are in flight, on which branches, which agents are working and at what stage, what each agent
+did, which artifacts it left, what has been verified and what is waiting for their decision. Vendor
+apps show only their own agent, large platforms such as Paperclip bring their own tracker and a lot
+of extra weight, and many command centers have already shut down.
 
-## Результат
+## Outcome
 
-1. **Харнесс и конвейер.** Этапы с входом, артефактом, проверкой механизмом, проверкой
-   суждением, ролью и условием выхода. Профили для разных видов проектов.
-2. **Контракт артефактов.** Спецификация, план, отчёт о сдаче, доказательства, передача;
-   проверка командой, позже хуками и CI.
-3. **Рабочее место.** Настройка агентов и Herdr: плагины для статуса, ревью diff и документов,
-   клавиши, свой плагин, который их объединяет.
-4. **Командный центр.** Ядро сводки данных (GitHub: задачи, стадии, PR, проверки, сессии трекера;
-   артефакты; Herdr: живые агенты; git: ветки и worktree) и два интерфейса поверх него: TUI в
-   Herdr и веб-дашборд.
-5. **Установка одной командой** на машину разработчика и в проект.
+1. **Harness and pipeline.** Stages with an input, an artifact, a mechanical check, a judgment check,
+   a role and an exit condition. Profiles for different kinds of projects. General and configurable,
+   not tied to any particular project.
+2. **Artifact contract.** Specification, plan, delivery report, evidence, handoff; checked by a
+   command, later by hooks and CI.
+3. **Workspace.** Agent and Herdr setup: plugins for status, diff review and document review, key
+   bindings, and our own plugin that ties them together.
+4. **Command center.** A data aggregation core (GitHub: issues, stages, PRs, checks, tracker sessions;
+   artifacts; Herdr: live agents; git: branches and worktrees) with two interfaces on top: a TUI in
+   Herdr and a web dashboard.
+5. **One-command installation** on the developer machine and into a project.
 
-## Принципы
+## Principles
 
-- Задачи и стадии живут в трекере; командный центр их показывает и не заводит своих статусов.
-- Стадия выводится из фактов: артефакт, PR, проверки, решение владельца.
-- Обязательное проверяется кодом, суждение остаётся инструкции и человеку.
-- Публичные интерфейсы источников, а не внутренние файлы сессий агентов.
-- Готовые небольшие инструменты там, где они хороши; своё — там, где нужно знание конвейера.
+- Tasks and stages live in the tracker; the command center shows them and keeps no statuses of its
+  own.
+- A stage is derived from facts: an artifact, a PR, checks, an owner decision.
+- What is mandatory is checked by code; judgment stays with instructions and the human.
+- Public interfaces of sources, not internal session files of agents.
+- Small existing tools where they are good; our own code where pipeline knowledge is needed.
+- As general and configurable as possible: no project-specific rules in this repository.
 
-## Не входит сейчас
+## Not in scope now
 
-- Продуктовый код проектов, где харнесс применяется.
-- Собственный трекер задач вместо GitHub.
-- Запуск и оркестрация агентов вместо Herdr и самих рантаймов.
+- Product code of the projects where the harness is applied.
+- A task tracker of our own instead of GitHub.
+- Launching and orchestrating agents instead of Herdr and the runtimes themselves.
+- Project-specific profiles (for example Inside); consumers configure the harness in their own
+  repositories.
 
-## Откуда переносим
+## Sources of ideas
 
-| Источник | Что берём |
+Earlier harness lines are references for ideas and lessons, not code to port.
+
+| Source | What to learn from |
 |---|---|
-| `inside-engineering` (Workspace Inside, `harness/`) | WORKFLOW конвейера, CLI и lifecycle пакета, трекер и сессии агентов, адаптации skills |
-| `agent-harness` | Переносимая установка для нескольких рантаймов, `start-project`, чистый набор skills Matt Pocock |
-| Личная настройка Herdr | Плагин связи сессии с worktree, клавиши и действия |
-| Исследования | `docs/research/` здесь и заметки курса AI Engineering о харнессе |
+| `inside-engineering` (Inside harness) | Pipeline WORKFLOW, CLI and package lifecycle, tracker and agent sessions, skill adaptations |
+| `agent-harness` | Portable installation for several runtimes, `start-project`, the clean Matt Pocock skill set |
+| Personal Herdr setup | Plugin that binds a session to a worktree, key bindings and actions |
+| Research | `docs/research/` here and the AI Engineering course notes on harnesses |
 
-## Открытые решения
+## Resolved decisions
 
-1. Лицензия.
-2. Язык документации и интерфейсов (русский, английский или оба).
-3. Порядок переноса: сначала конвейер и артефакты или сначала рабочее место и Herdr.
-4. Стек ядра, TUI и веба.
-5. Судьба Inside-специфичных частей: профиль внутри этого проекта или конфигурация в Workspace Inside.
+License, language, order, stack and project-specific parts were decided on 2026-09-29; see
+`docs/decisions.md`.

@@ -1,149 +1,149 @@
-# Command center для агентной работы: источники данных, UI-варианты, архитектура
+# Command center for agent work: data sources, UI options, architecture
 
-Дата: 2026-09-29. Машина владельца: herdr 0.9.1, Claude Code 2.1.284, codex-cli 0.158.0.
-Метод: живые read-only команды на машине + официальная документация. Всё, что не проверено
-командой или первичным источником, помечено «не подтверждено».
+Date: 2026-09-29. Owner's machine: herdr 0.9.1, Claude Code 2.1.284, codex-cli 0.158.0.
+Method: live read-only commands on the machine + official documentation. Anything not verified
+by a command or a primary source is marked "unconfirmed".
 
-## 1. Источники данных
+## 1. Data sources
 
-### 1.1 Herdr (самый богатый источник live-состояния)
+### 1.1 Herdr (the richest source of live state)
 
-Проверено: `herdr api --help` → подкоманды `snapshot`, `schema`; `herdr api schema --json`
-(protocol 22, schema_version 1; схемы `request`, `success_response`, `error_response`, `event`,
-`subscription_event`). Из схемы извлечено 129 методов/событий, ключевые:
+Verified: `herdr api --help` → subcommands `snapshot`, `schema`; `herdr api schema --json`
+(protocol 22, schema_version 1; schemas `request`, `success_response`, `error_response`, `event`,
+`subscription_event`). 129 methods/events were extracted from the schema, the key ones:
 
-- Чтение: `session.snapshot`, `workspace.list|get`, `tab.list|get`, `pane.list|get|read|process_info`,
+- Read: `session.snapshot`, `workspace.list|get`, `tab.list|get`, `pane.list|get|read|process_info`,
   `agent.list|get|read|explain|wait`, `worktree.list`, `plugin.list|action.list|log.list`,
   `integration.list`, `server.agent_manifests`.
-- Действия: `agent.focus|prompt|send_keys|start|rename`, `pane.split|focus|send_text`,
+- Actions: `agent.focus|prompt|send_keys|start|rename`, `pane.split|focus|send_text`,
   `workspace.create|focus`, `worktree.create|open|remove`, `notification.show`,
   `plugin.action.invoke`, `plugin.pane.open|focus|close`, `command.invoke`.
-- Метаданные от внешних источников: `pane.report_metadata` (title, display_agent, state_labels,
-  до 16 `tokens`, `ttl_ms`), `workspace.report_metadata`, `pane.report_agent_session`
-  (agent_session_id / path), `agent.view.set` (фильтр/сортировка в сайдбаре агентов).
-- События: `events.subscribe` (persistent stream), `events.wait`; типы `workspace.*`, `tab.*`,
+- Metadata from external sources: `pane.report_metadata` (title, display_agent, state_labels,
+  up to 16 `tokens`, `ttl_ms`), `workspace.report_metadata`, `pane.report_agent_session`
+  (agent_session_id / path), `agent.view.set` (filter/sort in the agents sidebar).
+- Events: `events.subscribe` (persistent stream), `events.wait`; types `workspace.*`, `tab.*`,
   `pane.created|closed|exited|updated|agent_detected|agent_status_changed|output_matched`,
   `worktree.created|opened|removed`, `layout.updated`.
 
-`herdr agent list` на машине вернул 7 агентов с полями: `agent` (claude/codex),
-`agent_session.value` (ID сессии рантайма), `agent_status` (`idle|working|blocked|done|unknown`),
+`herdr agent list` on the machine returned 7 agents with the fields: `agent` (claude/codex),
+`agent_session.value` (runtime session ID), `agent_status` (`idle|working|blocked|done|unknown`),
 `cwd`, `foreground_cwd`, `pane_id`, `tab_id`, `workspace_id`, `terminal_title`, `revision`,
-`state_change_seq`, и `tokens` {repo, branch, worktree, base}. Токены пишет существующий
-плагин `sachkov.agent-context` (`<личный плагин agent-context>`),
-который хранит binding «agent_session → точный git worktree» и уже умеет `review` (Hunk на
-merge-base) и `files`. Это готовое ядро связки «агент ↔ ветка ↔ worktree».
+`state_change_seq`, and `tokens` {repo, branch, worktree, base}. The tokens are written by the existing
+plugin `sachkov.agent-context` (`<personal agent-context plugin>`),
+which stores the binding "agent_session → exact git worktree" and already supports `review` (Hunk on
+merge-base) and `files`. This is a ready-made core for the "agent ↔ branch ↔ worktree" link.
 
-Документация (https://raw.githubusercontent.com/herdrdev/herdr/v0.9.1/docs/next/website/src/content/docs/socket-api.mdx):
-NDJSON по unix socket `~/.config/herdr/herdr.sock`; `session.snapshot` — «one-time bootstrap snapshot
-for clients that keep their own local runtime cache»; подписки «do not replay events retained
-before that point» → паттерн: открыть подписку, затем взять snapshot, затем применять события.
-Совместимость: «Client and server builds do not need to match», методы объявляются сервером,
-неподдерживаемые дают обычную ошибку. Это публичный, версионированный контракт (schema + protocol).
-`done` = «idle and not yet seen».
+Documentation (https://raw.githubusercontent.com/herdrdev/herdr/v0.9.1/docs/next/website/src/content/docs/socket-api.mdx):
+NDJSON over the unix socket `~/.config/herdr/herdr.sock`; `session.snapshot` — "one-time bootstrap snapshot
+for clients that keep their own local runtime cache"; subscriptions "do not replay events retained
+before that point" → pattern: open a subscription, then take a snapshot, then apply events.
+Compatibility: "Client and server builds do not need to match", methods are declared by the server,
+unsupported ones return an ordinary error. This is a public, versioned contract (schema + protocol).
+`done` = "idle and not yet seen".
 
-Статус агентов надёжен, потому что установлены официальные интеграции (`herdr integration status`:
-claude v10, codex v8, copilot, kimi, opencode — через hooks рантаймов).
+Agent status is reliable because the official integrations are installed (`herdr integration status`:
+claude v10, codex v8, copilot, kimi, opencode — via runtime hooks).
 
-Плагины (https://raw.githubusercontent.com/herdrdev/herdr/v0.9.1/docs/next/website/src/content/docs/plugins.mdx):
-директория с `herdr-plugin.toml`: `actions`, `panes` (любой argv-TUI; placement overlay/popup/split/
+Plugins (https://raw.githubusercontent.com/herdrdev/herdr/v0.9.1/docs/next/website/src/content/docs/plugins.mdx):
+a directory with `herdr-plugin.toml`: `actions`, `panes` (any argv-TUI; placement overlay/popup/split/
 tab/zoomed), event hooks, link handlers; env `HERDR_SOCKET_PATH`, `HERDR_PLUGIN_STATE_DIR`,
-`HERDR_PANE_ID` и др.; `plugin install` (GitHub) / `plugin link` (локально). «Native non-terminal
-plugin UI are not part of plugin v1» — то есть UI плагина только терминальный.
+`HERDR_PANE_ID` and others; `plugin install` (GitHub) / `plugin link` (local). "Native non-terminal
+plugin UI are not part of plugin v1" — that is, plugin UI is terminal-only.
 
 ### 1.2 Claude Code
 
-- `claude agents --json` (проверено): массив активных сессий, interactive и background:
-  `sessionId`, `pid`, `cwd`, `kind`, `name`, `status` (`busy|idle`) или `state` (`blocked` для bg),
-  `startedAt`; `--all` добавляет завершённые bg. Документированный скриптовый интерфейс
-  (https://code.claude.com/docs/en/sessions — «identifies the session in listings of running sessions,
-  such as agent view and `claude agents --json`»).
+- `claude agents --json` (verified): an array of active sessions, interactive and background:
+  `sessionId`, `pid`, `cwd`, `kind`, `name`, `status` (`busy|idle`) or `state` (`blocked` for bg),
+  `startedAt`; `--all` adds finished bg sessions. A documented scripting interface
+  (https://code.claude.com/docs/en/sessions — "identifies the session in listings of running sessions,
+  such as agent view and `claude agents --json`").
 - Hooks (https://code.claude.com/docs/en/hooks): SessionStart/End, UserPromptSubmit, Stop,
   StopFailure, Notification (matcher `permission_prompt`, `idle_prompt`, `agent_needs_input`,
   `agent_completed`…), PermissionRequest, Subagent*, TaskCreated/Completed, CwdChanged,
-  WorktreeCreate/Remove и др. Общие поля: `session_id`, `transcript_path`, `cwd`. Тип `http` —
-  POST JSON на локальный endpoint: чистый способ стримить события в собственный индекс без файлов.
-- Транскрипты `~/.claude/projects/<project>/<session-id>.jsonl` — **внутренний формат**:
-  «The entry format is internal to Claude Code and changes between versions» (там же). Не парсить.
-- `claude --from-pr <n>` — picker сессий, связанных с PR (сессия, создавшая PR, находится по URL).
-  Годится как действие «открыть сессию по PR», но не как источник данных.
-- Headless: `claude -p --output-format json|stream-json` (`system/init`, `assistant`, `result` с
-  `session_id`, cost) (https://code.claude.com/docs/en/headless) — для запуска review/summary из UI,
-  например `claude -p --resume <id> --output-format json "summarize"`.
+  WorktreeCreate/Remove and others. Common fields: `session_id`, `transcript_path`, `cwd`. The `http` type —
+  POSTs JSON to a local endpoint: a clean way to stream events into your own index without files.
+- Transcripts `~/.claude/projects/<project>/<session-id>.jsonl` — **internal format**:
+  "The entry format is internal to Claude Code and changes between versions" (same page). Do not parse.
+- `claude --from-pr <n>` — a picker of sessions linked to a PR (the session that created the PR is found by URL).
+  Suitable as an "open session by PR" action, but not as a data source.
+- Headless: `claude -p --output-format json|stream-json` (`system/init`, `assistant`, `result` with
+  `session_id`, cost) (https://code.claude.com/docs/en/headless) — for launching review/summary from the UI,
+  e.g. `claude -p --resume <id> --output-format json "summarize"`.
 - OpenTelemetry (https://code.claude.com/docs/en/monitoring-usage): `CLAUDE_CODE_ENABLE_TELEMETRY=1`,
-  OTLP/Prometheus; метрики `session.count`, `cost.usage`, `token.usage`, `pull_request.count`,
-  `commit.count`; события `user_prompt`, `tool_result`… с `session.id`. Полезно для стоимости и
-  активности, избыточно для статуса (статус уже есть в Herdr).
+  OTLP/Prometheus; metrics `session.count`, `cost.usage`, `token.usage`, `pull_request.count`,
+  `commit.count`; events `user_prompt`, `tool_result`… with `session.id`. Useful for cost and
+  activity, excessive for status (status is already available in Herdr).
 
 ### 1.3 Codex
 
-- `codex exec --json`: JSONL `thread.started{thread_id}` … `turn.completed{usage}` (вторичный
-  источник https://takopi.dev/reference/runners/codex/exec-json-cheatsheet/; официальный — не подтверждено).
-- App-server (https://learn.chatgpt.com/docs/app-server): JSON-RPC 2.0 по stdio / unix socket
-  (stable) / WebSocket (experimental); методы `thread/list|read|resume|start`, `turn/start|interrupt`,
-  `review/start`; уведомления `turn/started|completed`, `item/*`. Схема генерируется
-  `codex app-server generate-json-schema|generate-ts` под конкретную версию. На машине уже есть
-  общий daemon (`~/.codex/app-server-daemon`, `codex agents` «Browse all agent sessions on the shared
-  local app-server daemon»). Команда `codex app-server` помечена `[experimental]` в CLI — считать
-  контракт стабильным только для thread/turn-ядра.
+- `codex exec --json`: JSONL `thread.started{thread_id}` … `turn.completed{usage}` (secondary
+  source https://takopi.dev/reference/runners/codex/exec-json-cheatsheet/; official — unconfirmed).
+- App-server (https://learn.chatgpt.com/docs/app-server): JSON-RPC 2.0 over stdio / unix socket
+  (stable) / WebSocket (experimental); methods `thread/list|read|resume|start`, `turn/start|interrupt`,
+  `review/start`; notifications `turn/started|completed`, `item/*`. The schema is generated by
+  `codex app-server generate-json-schema|generate-ts` for a specific version. The machine already has a
+  shared daemon (`~/.codex/app-server-daemon`, `codex agents` "Browse all agent sessions on the shared
+  local app-server daemon"). The `codex app-server` command is marked `[experimental]` in the CLI — treat
+  the contract as stable only for the thread/turn core.
 - Hooks (https://developers.openai.com/codex/hooks): SessionStart, PreToolUse, PermissionRequest,
-  PostToolUse, UserPromptSubmit, Subagent*, Stop (полный список версии 0.150+ — по вторичному источнику,
-  не подтверждено).
-- Локальные sqlite (`~/.codex/state_5.sqlite`, `thread_history_1.sqlite`, rollouts в
-  `~/.codex/sessions/`) — **внутренние**, не использовать.
+  PostToolUse, UserPromptSubmit, Subagent*, Stop (the full list for version 0.150+ is from a secondary source,
+  unconfirmed).
+- Local sqlite files (`~/.codex/state_5.sqlite`, `thread_history_1.sqlite`, rollouts in
+  `~/.codex/sessions/`) are **internal**, do not use.
 
 ### 1.4 GitHub
 
-- Projects v2 (проверено `gh project field-list`): Developer Pipeline — Status {Inbox, Blocked, Ready,
+- Projects v2 (verified with `gh project field-list`): Developer Pipeline — Status {Inbox, Blocked, Ready,
   In progress, Review, Acceptance, Done}, Area, Priority, Linked pull requests, Parent issue,
   Sub-issues progress, Repository, Reviewers. Human Backlog — Status {Todo, In Progress, Done}, Priority.
-  Статусы уже проецирует `inside_tracker.py` (см. `docs/agents/tracker-automation.md`), а
-  владение сессией — trusted issue comment от `tracker_sessions.py start` (receipt с session id и
-  веткой). Это готовый канонический join «issue ↔ session ↔ branch».
-- Чтение: GraphQL `organization.projectV2(number).items(first:100){fieldValues, content{Issue|PullRequest}}`;
-  PR: `statusCheckRollup`, `reviewDecision`, `isDraft`; поиск `gh search prs --owner sachkov-inside`.
-- Лимиты (проверено `gh api rate_limit`): core 5000/ч, graphql 5000 пунктов/ч. Опрос Projects раз в
-  60–120 с на несколько сотен items укладывается с большим запасом. Условные REST-запросы с ETag
-  (304) не расходуют primary limit (https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api).
-- Webhooks: `projects_v2_item` — **только org webhooks, public preview, «subject to change»**
-  (https://docs.github.com/en/webhooks/webhook-events-and-payloads#projects_v2_item). Для локального
-  приложения нужен публичный endpoint или relay (`gh webhook forward` — dev-инструмент). Для
-  соло-машины polling проще и честнее; webhooks — только если появится серверная часть.
+  Statuses are already projected by `inside_tracker.py` (see `docs/agents/tracker-automation.md`), and
+  session ownership is a trusted issue comment from `tracker_sessions.py start` (a receipt with the session id and
+  branch). This is a ready-made canonical join "issue ↔ session ↔ branch".
+- Read: GraphQL `organization.projectV2(number).items(first:100){fieldValues, content{Issue|PullRequest}}`;
+  PR: `statusCheckRollup`, `reviewDecision`, `isDraft`; search `gh search prs --owner sachkov-inside`.
+- Limits (verified with `gh api rate_limit`): core 5000/h, graphql 5000 points/h. Polling Projects every
+  60–120 s for a few hundred items fits with a large margin. Conditional REST requests with ETag
+  (304) do not consume the primary limit (https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api).
+- Webhooks: `projects_v2_item` — **org webhooks only, public preview, "subject to change"**
+  (https://docs.github.com/en/webhooks/webhook-events-and-payloads#projects_v2_item). A local
+  app needs a public endpoint or relay (`gh webhook forward` is a dev tool). For a solo machine
+  polling is simpler and more honest; webhooks only if a server component appears.
 
-### 1.5 Git и harness
+### 1.5 Git and harness
 
-- `git worktree list --porcelain` — стабильный машинный формат (проверено на platform: worktrees
-  в `inside/worktrees/*` и чужие, например `<каталог другого инструмента>`).
-  `herdr worktree list` даёт то же + `open_workspace_id`.
-- `~/Work/projects.json` — реестр 18 проектов (`id`, `path`, `remote`, `stacks`, `status`).
-- `harness/bin/inside-harness` — install/update/diff/health/rollback; своего JSON-вывода статуса
-  нет (не подтверждено, что есть `--json`). Артефакты pipeline-стадий (spec/tickets) живут в issues.
+- `git worktree list --porcelain` — a stable machine-readable format (verified on platform: worktrees
+  in `inside/worktrees/*` and foreign ones, e.g. `<another tool's directory>`).
+  `herdr worktree list` gives the same plus `open_workspace_id`.
+- `~/Work/projects.json` — a registry of 18 projects (`id`, `path`, `remote`, `stacks`, `status`).
+- `harness/bin/inside-harness` — install/update/diff/health/rollback; it has no JSON status output of its own
+  (unconfirmed whether `--json` exists). Pipeline-stage artifacts (spec/tickets) live in issues.
 
-### Итог по стабильности
+### Stability summary
 
-| Источник | Контракт | Использовать для |
+| Source | Contract | Use for |
 |---|---|---|
-| Herdr socket API + events | публичный, versioned schema | live-агенты, статус, фокус, действия |
-| `claude agents --json`, hooks (`http`) | публичный | Claude-сессии вне Herdr, события |
-| Codex app-server thread/turn | stable ядро, остальное experimental | Codex-сессии, запуск review |
-| GitHub GraphQL/REST, `gh` | публичный | задачи, стадия, PR, checks, review |
-| `git worktree --porcelain` | стабильный | ветки/worktrees |
-| Транскрипты `.jsonl`, codex sqlite | **внутренний** | не использовать |
-| Projects webhooks | public preview | не сейчас |
+| Herdr socket API + events | public, versioned schema | live agents, status, focus, actions |
+| `claude agents --json`, hooks (`http`) | public | Claude sessions outside Herdr, events |
+| Codex app-server thread/turn | stable core, the rest experimental | Codex sessions, launching review |
+| GitHub GraphQL/REST, `gh` | public | tasks, stage, PR, checks, review |
+| `git worktree --porcelain` | stable | branches/worktrees |
+| Transcripts `.jsonl`, codex sqlite | **internal** | do not use |
+| Projects webhooks | public preview | not now |
 
-## 2. UI-варианты
+## 2. UI options
 
-**(a) GitHub Projects views + saved searches + gh-dash.** Усилия: часы. Поддержка: почти ноль.
-Презентабельность: высокая (Projects — веб, GitHub Mobile). Действия: gh-dash keybindings c
-шаблонами `{{.RepoName}} {{.PrNumber}} {{.HeadRefName}} {{.RepoPath}}`, `repoPaths` мапит репо
-в локальный путь (https://gh-dash.dev/configuration/keybindings/). Минус: не видит агентов, worktrees и
-Herdr; Projects-поля в gh-dash не поддерживаются (не подтверждено). Пример:
+**(a) GitHub Projects views + saved searches + gh-dash.** Effort: hours. Maintenance: almost zero.
+Presentability: high (Projects is web, GitHub Mobile). Actions: gh-dash keybindings with
+templates `{{.RepoName}} {{.PrNumber}} {{.HeadRefName}} {{.RepoPath}}`, `repoPaths` maps a repo
+to a local path (https://gh-dash.dev/configuration/keybindings/). Downside: it does not see agents, worktrees or
+Herdr; Projects fields are not supported in gh-dash (unconfirmed). Example:
 
 ```yaml
 # ~/.config/gh-dash/config.yml
 prSections:
-  - title: Ждут моего review
+  - title: Awaiting my review
     filters: is:open org:sachkov-inside review-requested:@me
-  - title: Мои агенты (draft/open)
+  - title: My agents (draft/open)
     filters: is:open org:sachkov-inside author:@me
 issuesSections:
   - title: Ready for agent
@@ -156,99 +156,99 @@ repoPaths:
 keybindings:
   prs:
     - key: R
-      name: review в Claude
+      name: review in Claude
       command: cd {{.RepoPath}} && claude --from-pr {{.PrNumber}}
     - key: v
       name: approve
       command: gh pr review --repo {{.RepoName}} --approve {{.PrNumber}}
 ```
 
-**(b) TUI как Herdr plugin pane (Textual / Bubble Tea / Ratatui).** Усилия: 2–5 дней для v1.
-Поддержка: средняя, но в одном языке с harness (Python → Textual). Презентабельность: хорошая для
-демо в терминале, не для ссылки коллеге. Действия нативные: `agent.focus`, `plugin.action.invoke`
-(agent-context review), `pane.split` + `claude --resume`, `gh pr view --web`. Живёт там же, где
-агенты; подписка на события Herdr даёт мгновенный статус.
+**(b) TUI as a Herdr plugin pane (Textual / Bubble Tea / Ratatui).** Effort: 2–5 days for v1.
+Maintenance: medium, but in the same language as the harness (Python → Textual). Presentability: good for
+a demo in the terminal, not for a link to a colleague. Native actions: `agent.focus`, `plugin.action.invoke`
+(agent-context review), `pane.split` + `claude --resume`, `gh pr view --web`. It lives where the
+agents live; subscribing to Herdr events gives instant status.
 
-**(c) Локальный web (FastAPI + HTMX/SSE или SvelteKit).** Усилия: 1–2 недели. Поддержка: выше
-(фронтенд, сборка). Презентабельность: лучшая, можно показать экран/скриншот, при желании
-опубликовать read-only снимок. Действия: через backend вызывает те же CLI/socket; фокус терминала —
-`agent.focus` через Herdr, открытие PR — ссылка. Риск: localhost-сервер с правом слать ввод агентам
-нужно защищать (bind 127.0.0.1, токен).
+**(c) Local web (FastAPI + HTMX/SSE or SvelteKit).** Effort: 1–2 weeks. Maintenance: higher
+(frontend, build). Presentability: the best, you can show the screen/a screenshot, and optionally
+publish a read-only snapshot. Actions: the backend calls the same CLI/socket; terminal focus is
+`agent.focus` via Herdr, opening a PR is a link. Risk: a localhost server with the ability to send input to agents
+must be protected (bind 127.0.0.1, token).
 
-**(d) Desktop Tauri.** Усилия: (c) + упаковка/подпись. Выгода над (c) — menubar, нативные уведомления.
-Для соло-разработчика не окупается сейчас.
+**(d) Desktop Tauri.** Effort: (c) + packaging/signing. Benefit over (c) — menubar, native notifications.
+Does not pay off for a solo developer right now.
 
-**(e) Backstage / Port.** Backstage — тяжёлый Node-монорепо для org-каталогов; Port — SaaS
-(данные уходят наружу). Оба не знают про локальные агенты; избыточно для одного человека.
+**(e) Backstage / Port.** Backstage is a heavy Node monorepo for org catalogs; Port is SaaS
+(data leaves the machine). Neither knows about local agents; overkill for one person.
 
-**(f) Raycast extension.** Усилия: 1–2 дня (TypeScript). Хорош как launcher поверх готового индекса:
-«найти задачу/агента → фокус/открыть PR». Не заменяет обзорный экран. Имеет смысл как второй клиент
-одного read-model.
+**(f) Raycast extension.** Effort: 1–2 days (TypeScript). Good as a launcher on top of a ready index:
+"find a task/agent → focus/open PR". Does not replace an overview screen. Makes sense as a second client
+of the same read-model.
 
-## 3. Архитектура без хаков
+## 3. Architecture without hacks
 
-1. **Один read-model**, построенный адаптерами, каждый читает только публичный контракт:
-   `herdr` (snapshot + events.subscribe), `claude` (`agents --json`, опционально http-hook),
-   `codex` (app-server `thread/list` или только статус из Herdr), `github` (GraphQL Projects + PR
-   rollup, polling с курсором `updatedAt`), `git` (`worktree list --porcelain` по `projects.json`),
-   `tracker` (session receipts из issue comments, уже в формате harness).
-2. **Ключи join'а**: `session_id` (Herdr `agent_session.value` = Claude/Codex id), `worktree path`
-   (agent-context binding), `branch` → `issue #` (конвенция `feat/<n>-slug`), issue → Project item →
-   Status (= pipeline stage), PR `Closes #n`. Нечёткие связи помечать как «выведено», не как факт.
-3. **Событие + опрос**: Herdr — события (локально, дёшево); GitHub — polling 60–120 с + ETag;
-   git — по событиям `worktree.*` Herdr и раз в N минут. Webhooks откладываются.
-4. **Где состояние**: истина остаётся в источниках (GitHub — задачи и стадии; Herdr — live;
-   git — ветки). Индекс — выбрасываемый кэш (SQLite в `~/.local/state/<tool>/`), пересобирается
-   с нуля. Своих статусов задач не заводить — иначе второй tracker (запрещено `AGENTS.md` Work).
-5. **Runtime-agnostic**: ядро оперирует понятием `AgentSession{runtime, id, status, cwd, worktree}`;
-   Herdr уже нормализует статусы для 5+ рантаймов, поэтому основной адаптер статуса — Herdr, а
-   runtime-адаптеры только добавляют то, чего нет в Herdr (имя сессии, bg-сессии Claude).
-6. **Действия = вызовы существующих CLI**, не имитация ввода: `herdr agent focus`,
+1. **One read-model**, built by adapters, each reading only a public contract:
+   `herdr` (snapshot + events.subscribe), `claude` (`agents --json`, optionally an http-hook),
+   `codex` (app-server `thread/list` or only status from Herdr), `github` (GraphQL Projects + PR
+   rollup, polling with an `updatedAt` cursor), `git` (`worktree list --porcelain` over `projects.json`),
+   `tracker` (session receipts from issue comments, already in the harness format).
+2. **Join keys**: `session_id` (Herdr `agent_session.value` = Claude/Codex id), `worktree path`
+   (agent-context binding), `branch` → `issue #` (convention `feat/<n>-slug`), issue → Project item →
+   Status (= pipeline stage), PR `Closes #n`. Mark fuzzy links as "inferred", not as fact.
+3. **Events + polling**: Herdr — events (local, cheap); GitHub — polling 60–120 s + ETag;
+   git — on Herdr `worktree.*` events and every N minutes. Webhooks are deferred.
+4. **Where state lives**: the truth stays in the sources (GitHub — tasks and stages; Herdr — live;
+   git — branches). The index is a disposable cache (SQLite in `~/.local/state/<tool>/`), rebuilt
+   from scratch. Do not introduce your own task statuses — that would be a second tracker (forbidden by Work's `AGENTS.md`).
+5. **Runtime-agnostic**: the core operates on the concept `AgentSession{runtime, id, status, cwd, worktree}`;
+   Herdr already normalizes statuses for 5+ runtimes, so the main status adapter is Herdr, and
+   the runtime adapters only add what Herdr lacks (session name, Claude bg sessions).
+6. **Actions = calls to existing CLIs**, not input simulation: `herdr agent focus`,
    `herdr plugin action invoke sachkov.agent-context review`, `gh pr view --web`,
-   `claude --resume <id>` / `codex resume <id>` в новом pane, `gh pr review --approve` (owner gate —
-   только явным действием владельца).
-7. **Устанавливаемость**: ядро — Python-пакет с CLI `… snapshot --json`; UI-слой — Herdr plugin
-   (`herdr-plugin.toml` с pane и actions). Конфиг проектов — из `projects.json`, орг/Projects — из
-   harness (`docs/agents/issue-tracker.md` уже задаёт номера Projects). Решение для владельца: где
-   живёт код. Инструмент личный и межпроектный → естественно рядом с `sachkov-agent-context` в
-   каталог личных плагинов или отдельный repo; в `inside-engineering` package — только
-   если он должен ставиться в каждый Inside-repo (скорее нет).
+   `claude --resume <id>` / `codex resume <id>` in a new pane, `gh pr review --approve` (owner gate —
+   only by an explicit owner action).
+7. **Installability**: the core is a Python package with a CLI `… snapshot --json`; the UI layer is a Herdr plugin
+   (`herdr-plugin.toml` with a pane and actions). Project config comes from `projects.json`, org/Projects from the
+   harness (`docs/agents/issue-tracker.md` already defines the Projects numbers). Decision for the owner: where
+   the code lives. The tool is personal and cross-project → naturally next to `sachkov-agent-context` in
+   the personal plugins directory or a separate repo; in the `inside-engineering` package — only
+   if it must be installed in every Inside repo (probably not).
 
-## 4. Что переиспользовать
+## 4. What to reuse
 
-- **sachkov-agent-context** (уже есть): binding session→worktree, токены repo/branch/base, action review.
-- **gh-dash** (https://github.com/dlvhdr/gh-dash): GitHub-часть уже сегодня, custom keybindings.
-- **lazygit**, **Hunk**, **octo.nvim** (https://github.com/pwntester/octo.nvim) — review внутри
-  терминала/Neovim; запускать как действие, не встраивать.
-- **GitHub Mobile / Projects web** — презентабельный read-only вид для других людей.
-- `gh` extensions: `gh-dash`, `gh webhook forward` (dev-relay), `gh project` (встроено).
-- Open-source dashboards для заимствования идей/кода (не проверялись детально): agent-deck
+- **sachkov-agent-context** (already exists): session→worktree binding, repo/branch/base tokens, the review action.
+- **gh-dash** (https://github.com/dlvhdr/gh-dash): the GitHub part today, custom keybindings.
+- **lazygit**, **Hunk**, **octo.nvim** (https://github.com/pwntester/octo.nvim) — review inside
+  the terminal/Neovim; launch as an action, do not embed.
+- **GitHub Mobile / Projects web** — a presentable read-only view for other people.
+- `gh` extensions: `gh-dash`, `gh webhook forward` (dev relay), `gh project` (built in).
+- Open-source dashboards for borrowing ideas/code (not examined in detail): agent-deck
   (https://github.com/asheshgoplani/agent-deck), claudecodeui (https://github.com/siteboon/claudecodeui),
-  списки https://github.com/andyrewlee/awesome-agent-orchestrators и
-  https://www.augmentcode.com/tools/open-source-agent-orchestrators. Большинство сами владеют
-  запуском агентов (tmux) — конфликтует с Herdr; брать UI-идеи, не рантайм.
-- Linear: даёт красивый UI и GitHub-sync, но это второй tracker → противоречит правилу «tracker
-  проекта единственный источник статуса». Не рекомендую.
+  lists https://github.com/andyrewlee/awesome-agent-orchestrators and
+  https://www.augmentcode.com/tools/open-source-agent-orchestrators. Most own agent launching
+  (tmux) themselves — this conflicts with Herdr; take UI ideas, not the runtime.
+- Linear: gives a nice UI and GitHub sync, but it is a second tracker → contradicts the rule "the project
+  tracker is the single source of status". Not recommended.
 
-## 5. Рекомендация
+## 5. Recommendation
 
-**Архитектура:** Python-ядро «read-model + адаптеры» (Herdr socket/events, `claude agents --json`,
-GitHub GraphQL polling, `git worktree --porcelain`, tracker receipts) → SQLite-кэш → два клиента:
-(1) Textual TUI как Herdr plugin pane (основной, с действиями), (2) позже — FastAPI+HTMX read-only
-страница для показа другим. GitHub Projects остаются источником истины о задачах и стадиях;
-gh-dash закрывает GitHub-срез без кода.
+**Architecture:** a Python core "read-model + adapters" (Herdr socket/events, `claude agents --json`,
+GitHub GraphQL polling, `git worktree --porcelain`, tracker receipts) → SQLite cache → two clients:
+(1) a Textual TUI as a Herdr plugin pane (primary, with actions), (2) later — a FastAPI+HTMX read-only
+page for showing to others. GitHub Projects stay the source of truth for tasks and stages;
+gh-dash covers the GitHub slice without code.
 
-**Минимальная первая версия (≈2–3 дня):**
-1. День 0: конфиг gh-dash выше (review-queue, ready-for-agent, owner gate) — ноль кода.
-2. CLI `cc snapshot --json`: join `herdr agent list` + `claude agents --json` + `git worktree list`
-   по `projects.json` + Developer Pipeline items (Status, Linked PR, checks rollup). Ключ: worktree/branch
-   → issue #. Без демона, polling по запуску.
-3. Textual pane в Herdr-плагине: три таблицы — «Агенты» (runtime, статус, repo/branch, issue, stage),
-   «Задачи по проектам» (Ready/In progress/Review/Acceptance), «Worktrees без агента/без PR».
-   Действия: Enter → `herdr agent focus`; `r` → agent-context review; `o` → `gh pr view --web`;
-   `s` → новый pane с `claude --resume`.
-4. Критерий готовности: для каждого живого агента видны задача, стадия и PR без ручного поиска;
-   каждое действие — вызов публичного CLI/API; удаление кэша ничего не теряет.
+**Minimal first version (≈2–3 days):**
+1. Day 0: the gh-dash config above (review-queue, ready-for-agent, owner gate) — zero code.
+2. CLI `cc snapshot --json`: a join of `herdr agent list` + `claude agents --json` + `git worktree list`
+   over `projects.json` + Developer Pipeline items (Status, Linked PR, checks rollup). Key: worktree/branch
+   → issue #. No daemon, polling at launch.
+3. A Textual pane in a Herdr plugin: three tables — "Agents" (runtime, status, repo/branch, issue, stage),
+   "Tasks by project" (Ready/In progress/Review/Acceptance), "Worktrees without agent/without PR".
+   Actions: Enter → `herdr agent focus`; `r` → agent-context review; `o` → `gh pr view --web`;
+   `s` → a new pane with `claude --resume`.
+4. Done criterion: for every live agent the task, stage and PR are visible without manual lookup;
+   every action is a call to a public CLI/API; deleting the cache loses nothing.
 
-Следующие шаги после v1: подписка `events.subscribe` вместо опроса Herdr; Claude `http`-hook для
-Notification/Stop; web read-only вид; Raycast-launcher поверх `cc snapshot --json`.
+Next steps after v1: `events.subscribe` subscription instead of polling Herdr; a Claude `http`-hook for
+Notification/Stop; a web read-only view; a Raycast launcher on top of `cc snapshot --json`.

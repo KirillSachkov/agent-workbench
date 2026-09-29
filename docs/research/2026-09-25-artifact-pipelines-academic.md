@@ -1,573 +1,573 @@
-# Структурированные артефакты и доказательства в LLM multi-agent разработке: обзор литературы 2023–2026
+# Structured artifacts and evidence in LLM multi-agent development: a 2023–2026 literature review
 
-Дата сбора: 2026-09-25. Метаданные всех arXiv-работ проверены через arXiv API (`export.arxiv.org/api/query`),
-тексты прочитаны из PDF (arXiv) через `pdftotext`. «Рецензирование» указано по полю comment/journal_ref arXiv
-или по странице конференции; где его нет — «препринт, без рецензирования». Всё, что не удалось прочитать в
-первоисточнике, помечено «не подтверждено».
+Collection date: 2026-09-25. Metadata of all arXiv papers was verified via the arXiv API (`export.arxiv.org/api/query`),
+texts were read from the PDFs (arXiv) with `pdftotext`. "Peer review" is stated from the arXiv comment/journal_ref field
+or from the conference page; where there is none — "preprint, not peer-reviewed". Everything that could not be read in
+the primary source is marked "unconfirmed".
 
-Условные обозначения: **[R]** — рецензируемая публикация; **[P]** — препринт/техотчёт.
+Legend: **[R]** — peer-reviewed publication; **[P]** — preprint/technical report.
 
 ---
 
-## 1. MetaGPT — SOP и структурированные выходы ролей
+## 1. MetaGPT — SOPs and structured role outputs
 
-- Hong et al., «MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework», arXiv 2308.00352
-  (v1 2023-08-01, v7 2024-11-01). **[R]** ICLR 2024 (в PDF: «Published as a conference paper at ICLR 2024»).
+- Hong et al., "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework", arXiv 2308.00352
+  (v1 2023-08-01, v7 2024-11-01). **[R]** ICLR 2024 (in the PDF: "Published as a conference paper at ICLR 2024").
   https://arxiv.org/abs/2308.00352 · https://github.com/geekan/MetaGPT
 
-**Механика.**
-- SOP закодированы в последовательности промптов. Работа идёт как на сборочной линии: Product Manager → Architect →
+**Mechanics.**
+- SOPs are encoded in sequences of prompts. Work proceeds like an assembly line: Product Manager → Architect →
   Project Manager → Engineer → QA Engineer.
-- *Structured Communication Interfaces*: «We establish a schema and format for each role and request that
-  individuals provide the necessary outputs based on their specific role and context». Роли обмениваются
-  документами и диаграммами, а не диалогом. Артефакты: PRD, system interface design, sequence flow diagram,
-  API spec, task list (§3.2, рис. 3, приложение B).
-- *Shared message pool + publish-subscribe*: все роли публикуют структурированные сообщения в общий пул и
-  подписываются на нужные по профилю роли. Правило активации: «an agent activates its action only after
-  receiving all its prerequisite dependencies». Это условие готовности на уровне зависимостей артефактов, а не
-  на уровне доказательств (§3.2).
-- *Executable feedback*: Engineer запускает код и тесты и итеративно чинит по результатам (§3.3).
+- *Structured Communication Interfaces*: "We establish a schema and format for each role and request that
+  individuals provide the necessary outputs based on their specific role and context". Roles exchange
+  documents and diagrams rather than dialogue. Artifacts: PRD, system interface design, sequence flow diagram,
+  API spec, task list (§3.2, fig. 3, appendix B).
+- *Shared message pool + publish-subscribe*: all roles publish structured messages to a shared pool and
+  subscribe to the ones relevant to their role profile. Activation rule: "an agent activates its action only after
+  receiving all its prerequisite dependencies". This is a readiness condition at the level of artifact dependencies, not
+  at the level of evidence (§3.2).
+- *Executable feedback*: the Engineer runs the code and tests and iteratively fixes based on the results (§3.3).
 
-**Измеренный эффект.**
-- SoftwareDev (70 задач, но в сравнении только **7** случайно выбранных задач; метрики по людям и статистике),
-  табл. 1: Executability (1–4) — ChatDev 2.25, MetaGPT без feedback 3.67, MetaGPT 3.75. Human Revision Cost:
-  2.5 / 2.25 / 0.83. Токенов: 19 292 / 24 613 / 31 255.
-- Executable feedback: +4.2 п.п. (HumanEval) и +5.4 п.п. (MBPP) Pass@1. Итог 85.9% и 87.7%.
-- Абляция ролей (табл. 3). Каждая роль добавляет свой артефакт. Только Engineer: executability 1.0, revisions 10.
-  + Product (PRD): 2.0 / 6.5. + Product + Architect: 2.5 / 4.0. Все четыре роли: 4.0 / 2.5. Стоимость $0.915 → $1.385.
+**Measured effect.**
+- SoftwareDev (70 tasks, but only **7** randomly chosen tasks are used in the comparison; metrics from humans and statistics),
+  table 1: Executability (1–4) — ChatDev 2.25, MetaGPT without feedback 3.67, MetaGPT 3.75. Human Revision Cost:
+  2.5 / 2.25 / 0.83. Tokens: 19,292 / 24,613 / 31,255.
+- Executable feedback: +4.2 pp (HumanEval) and +5.4 pp (MBPP) Pass@1. Final 85.9% and 87.7%.
+- Role ablation (table 3). Each role adds its own artifact. Engineer only: executability 1.0, revisions 10.
+  + Product (PRD): 2.0 / 6.5. + Product + Architect: 2.5 / 4.0. All four roles: 4.0 / 2.5. Cost $0.915 → $1.385.
 
-**Чего нет.** Прямой абляции «структурированные документы против свободного диалога» при тех же ролях нет.
-Эффект схем смешан с эффектом ролей и SOP. Отдельно проверено только executable feedback.
+**What is missing.** There is no direct ablation of "structured documents versus free dialogue" with the same roles.
+The effect of schemas is confounded with the effect of roles and SOPs. Only executable feedback was tested separately.
 
-**Угрозы валидности.** 7 задач в SoftwareDev. Executability выставляют люди. HumanEval/MBPP — функции, а не
-проекты. В независимой оценке ChatDev (ниже) MetaGPT проигрывает по «Quality» (0.1523 против 0.3953), то есть
-результаты зависят от протокола оценки. В MAST (ниже) у MetaGPT в 1.56 раза больше отказов категории FC3
-(верификация), чем у ChatDev, хотя в FC1/FC2 отказов на 60–68% меньше.
+**Threats to validity.** 7 tasks in SoftwareDev. Executability is scored by humans. HumanEval/MBPP are functions, not
+projects. In the independent ChatDev evaluation (below) MetaGPT loses on "Quality" (0.1523 versus 0.3953), i.e. the
+results depend on the evaluation protocol. In MAST (below) MetaGPT has 1.56 times more failures of category FC3
+(verification) than ChatDev, although it has 60–68% fewer failures in FC1/FC2.
 
 ---
 
 ## 2. ChatDev, AgileCoder, EvoDev, EvoMAC
 
 ### 2.1 ChatDev
-- Qian et al., «ChatDev: Communicative Agents for Software Development», arXiv 2307.07924 (v1 2023-07-16,
+- Qian et al., "ChatDev: Communicative Agents for Software Development", arXiv 2307.07924 (v1 2023-07-16,
   v5 2024-06-05). **[R]** ACL 2024. https://arxiv.org/abs/2307.07924 · https://github.com/OpenBMB/ChatDev
 
-**Механика.** Chat chain: 3 фазы (design, coding, testing) и 5 подзадач. Роли: CEO, CTO, programmer, reviewer,
-tester. Подзадача завершается после «two unchanged code modifications or after 10 rounds». *Communicative
-dehallucination* (CDH): перед ответом агент запрашивает уточнение. Артефакты — код и документы, но передача идёт
-через диалог в естественном языке и в коде, без схем.
+**Mechanics.** Chat chain: 3 phases (design, coding, testing) and 5 subtasks. Roles: CEO, CTO, programmer, reviewer,
+tester. A subtask finishes after "two unchanged code modifications or after 10 rounds". *Communicative
+dehallucination* (CDH): before answering, an agent requests clarification. The artifacts are code and documents, but handoff goes
+through dialogue in natural language and in code, without schemas.
 
-**Измеренный эффект** (SRDD, 1 200 описаний задач; ChatGPT-3.5, T=0.2). Табл. 1: Quality (= Completeness ×
+**Measured effect** (SRDD, 1,200 task descriptions; ChatGPT-3.5, T=0.2). Table 1: Quality (= Completeness ×
 Executability × Consistency) — GPT-Engineer 0.1419, MetaGPT 0.1523, ChatDev 0.3953.
-Абляция (табл. 4), Quality:
-- остановка после Coding 0.2512; после Complete 0.3690; после Review 0.3717; полная цепочка (с Testing) 0.3953;
-- без CDH 0.3094; без ролей 0.2212.
-- Executability: после Coding 0.77, с Testing 0.88. Без ролей 0.58.
+Ablation (table 4), Quality:
+- stopping after Coding 0.2512; after Complete 0.3690; after Review 0.3717; full chain (with Testing) 0.3953;
+- without CDH 0.3094; without roles 0.2212.
+- Executability: after Coding 0.77, with Testing 0.88. Without roles 0.58.
 
-**Угрозы.** Consistency — это косинусная близость эмбеддингов требований и кода, а не проверка выполнения
-требований. Completeness — это отсутствие плейсхолдеров. Метрики слабо связаны с корректностью. Pairwise-оценка
-сделана GPT-4 и людьми.
+**Threats.** Consistency is the cosine similarity of embeddings of the requirements and the code, not a check that
+requirements are fulfilled. Completeness is the absence of placeholders. The metrics are weakly related to correctness. The pairwise
+evaluation was done by GPT-4 and humans.
 
 ### 2.2 AgileCoder
-- Nguyen et al., arXiv 2406.11912 (v2 2024-07-14, «Work in progress» на arXiv). **[R]** FORGE 2025 (IEEE/ACM,
+- Nguyen et al., arXiv 2406.11912 (v2 2024-07-14, "Work in progress" on arXiv). **[R]** FORGE 2025 (IEEE/ACM,
   pp. 156–167): https://conf.researchr.org/details/forge-2025/forge-2025-papers/1/AgileCoder-Dynamic-Collaborative-Agents-for-Software-Development-based-on-Agile-Meth ·
   https://arxiv.org/abs/2406.11912 · https://github.com/FSoft-AI4Code/AgileCoder
 
-**Механика.** Роли: PM, Scrum Master, Developer, Senior Developer, Tester. PM пишет *product backlog* с задачами и
-**acceptance criteria**. SM проверяет выполнимость и может вернуть бэклог. Спринты: Planning → Development →
-Testing → Review. Спринт наследует результат предыдущего. *Dynamic Code Graph Generator* строит граф
-зависимостей G. Tester тестирует изменённые файлы и их предков в G.
+**Mechanics.** Roles: PM, Scrum Master, Developer, Senior Developer, Tester. The PM writes a *product backlog* with tasks and
+**acceptance criteria**. The SM checks feasibility and can send the backlog back. Sprints: Planning → Development →
+Testing → Review. A sprint inherits the result of the previous one. The *Dynamic Code Graph Generator* builds a dependency
+graph G. The Tester tests the changed files and their ancestors in G.
 
-**Измеренный эффект** (абляция, табл. 3, GPT-3.5 Turbo, HumanEval/MBPP pass@1):
-- полная система 70.53 / 80.92;
-- без incremental dev −1.02 / −2.47;
-- без генерации тестов −8.33 / −5.28;
-- без code review −1.63 / −5.51.
-- Claude 3 Haiku: без тестов −6.10 / −4.45.
-- ProjectDev (14 задач): executability 57.79 против ChatDev 32.79 и MetaGPT 7.73. Без графа G executability
-  23.38 против 57.50, и 11 случаев переполнения контекста.
+**Measured effect** (ablation, table 3, GPT-3.5 Turbo, HumanEval/MBPP pass@1):
+- full system 70.53 / 80.92;
+- without incremental dev −1.02 / −2.47;
+- without test generation −8.33 / −5.28;
+- without code review −1.63 / −5.51.
+- Claude 3 Haiku: without tests −6.10 / −4.45.
+- ProjectDev (14 tasks): executability 57.79 versus ChatDev 32.79 and MetaGPT 7.73. Without graph G executability
+  23.38 versus 57.50, and 11 cases of context overflow.
 
-**Угрозы.** HumanEval/MBPP — функциональные задачи. ProjectDev мал. Acceptance criteria формально не
-проверяются как gate. Бэклог — это текст, без схемы.
+**Threats.** HumanEval/MBPP are functional tasks. ProjectDev is small. Acceptance criteria are not formally
+checked as a gate. The backlog is text, without a schema.
 
 ### 2.3 EvoDev (arXiv 2511.02399)
-- Liu et al., «Towards Iterative End-to-End Software Development: A Feature-Driven Multi-Agent Framework»
-  (v1 2025-11-04, v3 2026-06-05). **[R]** ISSTA 2026 (comment на arXiv). https://arxiv.org/abs/2511.02399
+- Liu et al., "Towards Iterative End-to-End Software Development: A Feature-Driven Multi-Agent Framework"
+  (v1 2025-11-04, v3 2026-06-05). **[R]** ISSTA 2026 (comment on arXiv). https://arxiv.org/abs/2511.02399
 
-**Механика.** Требования раскладываются на пользовательские features. Строится *Feature Map* — DAG зависимостей.
-Каждый узел хранит многослойный контекст: **business logic, software design, code implementation**. Этот контекст
-передаётся потомкам по рёбрам. Есть этап overall design и отдельный Business Analyst agent.
+**Mechanics.** Requirements are decomposed into user features. A *Feature Map* is built — a dependency DAG.
+Each node holds a multi-layer context: **business logic, software design, code implementation**. This context
+is passed to descendants along the edges. There is an overall design stage and a separate Business Analyst agent.
 
-**Измеренный эффект** (APPDev: 15 Android-приложений, в среднем 13.5 функциональных требований; оценка по
-acceptance checklist и Likert-анкете четырёх участников):
-- против Claude Code +57.3% по Function Completeness (FC). С Claude-4-Sonnet: build 100% против 73.3%; FC 3.57
-  против 2.27.
-- Против одиночного агента +16.0…58.5% в зависимости от LLM.
-- Абляция RQ3: overall design даёт FC +0.22 (+7.2%).
-- **Итерации без передачи контекста предшественников ухудшают результат**: build 100% → 86.7%, FC 3.29 → 2.80.
-  С передачей контекста FC +0.50 (+16.3%).
+**Measured effect** (APPDev: 15 Android apps, 13.5 functional requirements on average; evaluated by an
+acceptance checklist and a Likert questionnaire from four participants):
+- versus Claude Code +57.3% on Function Completeness (FC). With Claude-4-Sonnet: build 100% versus 73.3%; FC 3.57
+  versus 2.27.
+- Versus a single agent +16.0…58.5% depending on the LLM.
+- RQ3 ablation: overall design gives FC +0.22 (+7.2%).
+- **Iterations without passing the predecessors' context worsen the result**: build 100% → 86.7%, FC 3.29 → 2.80.
+  With context passing FC +0.50 (+16.3%).
 
-**Ограничения (заявлены авторами).** Тестирования в методе нет: агенты путают, где ошибка — в тесте или в коде.
-Оценка ручная, на 15 приложениях, только Android/Kotlin.
+**Limitations (stated by the authors).** The method has no testing: agents confuse whether the error is in the test or in the code.
+Evaluation is manual, on 15 apps, Android/Kotlin only.
 
 ### 2.4 EvoMAC
-- Hu et al., «Self-Evolving Multi-Agent Collaboration Networks for Software Development», arXiv 2410.16946
+- Hu et al., "Self-Evolving Multi-Agent Collaboration Networks for Software Development", arXiv 2410.16946
   (2024-10-22). **[R]** ICLR 2025: https://iclr.cc/virtual/2025/poster/31011 · https://arxiv.org/abs/2410.16946
 
-**Механика.** Coding team (сеть MAC) → Testing team пишет unit-тесты по требованиям. Эти тесты служат *target
-proxy*, а результаты компиляции и запуска дают объективную обратную связь. Updating team выполняет «textual
-backpropagation» и перестраивает coding team. rSDE-Bench — бенчмарк, ориентированный на требования, с
-автоматической проверкой каждого требования.
+**Mechanics.** Coding team (a MAC network) → the Testing team writes unit tests from the requirements. These tests serve as a *target
+proxy*, and the compilation and run results provide objective feedback. The Updating team performs "textual
+backpropagation" and restructures the coding team. rSDE-Bench is a requirement-oriented benchmark with
+automatic checking of each requirement.
 
-**Измеренный эффект** (GPT-4o-Mini, табл. 1): Website Basic/Advanced 89.38 / 65.05; Game 77.54 / 51.60. Лучший
+**Measured effect** (GPT-4o-Mini, table 1): Website Basic/Advanced 89.38 / 65.05; Game 77.54 / 51.60. The best
 multi-agent baseline (ChatDev) 62.67 / 43.45 / 53.63 / 32.26. HumanEval 94.51.
-Ключевая абляция (вариант f против g): **если заменить выполнение тестов в среде на LLM-критику кода**, результат
-падает. Website −12.67 / −14.97 п.п., Game −21.74 / −18.28 п.п. Это прямое измерение: исполняемые доказательства
-лучше мнения LLM.
+Key ablation (variant f versus g): **if test execution in the environment is replaced by an LLM critique of the code**, the result
+drops. Website −12.67 / −14.97 pp, Game −21.74 / −18.28 pp. This is a direct measurement: executable evidence
+beats an LLM's opinion.
 
-**Угрозы.** Тесты генерирует та же система, то есть прокси может быть неверным. Web/game-задачи узкие.
+**Threats.** The tests are generated by the same system, i.e. the proxy may be wrong. The web/game tasks are narrow.
 
 ---
 
-## 3. Proof-or-Stop (arXiv 2607.14890) — ключевая работа
+## 3. Proof-or-Stop (arXiv 2607.14890) — the key paper
 
-- Huang, Hsia, Sun, Shi, Huang, White, «Proof-or-Stop: Don't Trust the Agent, Trust the Evidence — Loop
-  Engineering for Verifiable Evidence-Gated Lifecycle Control», arXiv 2607.14890v1, 2026-07-16. 48 страниц.
-  **[P]** «Preprint v1», без рецензирования. https://arxiv.org/abs/2607.14890 · код: https://github.com/Proof-or-Stop
-  (в статье указан только организационный URL; точный репозиторий не подтверждён).
+- Huang, Hsia, Sun, Shi, Huang, White, "Proof-or-Stop: Don't Trust the Agent, Trust the Evidence — Loop
+  Engineering for Verifiable Evidence-Gated Lifecycle Control", arXiv 2607.14890v1, 2026-07-16. 48 pages.
+  **[P]** "Preprint v1", not peer-reviewed. https://arxiv.org/abs/2607.14890 · code: https://github.com/Proof-or-Stop
+  (the paper gives only the organization URL; the exact repository is unconfirmed).
 
-### 3.1 Семантика и формальный каркас
-- **Agent-as-claim**. Вывод агента — это *claim* (reviewed, tested, DONE, ready-to-merge), а не состояние
-  lifecycle. Слово «proof» используется операционно: доказательство, допустимое для gate при заявленной модели
-  доверия. Семантическая корректность программы не утверждается.
-- Идентичности состояния (ур. 1), считаются по `git ls-tree` без метаданных lifecycle:
-  `materialHash(H)` = SHA256 канонического tracked-дерева; `headHash` = commit; `storyFilesHash` = SHA256 файлов,
-  принадлежащих story.
-- **Evidence** — структурированная запись, не проза. Binding
-  `β(E) = ⟨materialHash, headHash, storyFilesHash, policyHash, commandSetHash⟩`. Для исполненных действий есть
-  receipt `ρ(E) = ⟨cmd, args, cwd, exit, outputDigest⟩`. Подписанные записи дополнительно несут
+### 3.1 Semantics and formal framework
+- **Agent-as-claim**. An agent's output is a *claim* (reviewed, tested, DONE, ready-to-merge), not a lifecycle
+  state. The word "proof" is used operationally: evidence admissible to a gate under the stated trust model.
+  Semantic correctness of the program is not asserted.
+- State identities (eq. 1), computed from `git ls-tree` without lifecycle metadata:
+  `materialHash(H)` = SHA256 of the canonical tracked tree; `headHash` = commit; `storyFilesHash` = SHA256 of the files
+  belonging to the story.
+- **Evidence** is a structured record, not prose. Binding
+  `β(E) = ⟨materialHash, headHash, storyFilesHash, policyHash, commandSetHash⟩`. For executed actions there is a
+  receipt `ρ(E) = ⟨cmd, args, cwd, exit, outputDigest⟩`. Signed records additionally carry
   actor/lane/host/session/signing-key.
-- **Admissibility** (ур. 2): `Fresh ∧ Complete ∧ IntegrityVerified ∧ ProducerAuthorized ∧ ExecutionAttested ∧
-  Supports(E,c) ∧ OutcomeAccepted`. Любое изменение дерева делает старые доказательства устаревшими.
-- **Gated advancement** (ур. 3): переход φi→φi+1 разрешён, только если каждый required claim из Ci подкреплён
-  допустимым E. «a natural-language report from an agent is not an Ec … Eq. (3) therefore has no term for
-  self-report».
-- Ограничение области: тяжёлый механизм применяется только к claims, которые двигают lifecycle. Заметки,
-  rationale и docs остаются advisory и не входят в bindings. Runtime-память помечена `gateEvidence:false`.
+- **Admissibility** (eq. 2): `Fresh ∧ Complete ∧ IntegrityVerified ∧ ProducerAuthorized ∧ ExecutionAttested ∧
+  Supports(E,c) ∧ OutcomeAccepted`. Any change to the tree makes old evidence stale.
+- **Gated advancement** (eq. 3): the transition φi→φi+1 is allowed only if every required claim from Ci is backed by
+  admissible E. "a natural-language report from an agent is not an Ec … Eq. (3) therefore has no term for
+  self-report".
+- Scope restriction: the heavy mechanism applies only to claims that move the lifecycle. Notes,
+  rationale and docs remain advisory and are not part of bindings. Runtime memory is marked `gateEvidence:false`.
 
-### 3.2 Lifecycle и gates (табл. 8)
+### 3.2 Lifecycle and gates (table 8)
 Story: `init → init-check → plan → dev → review → test → done`.
-| Переход | Артефакт | Проверка | Fail-closed |
+| Transition | Artifact | Check | Fail-closed |
 |---|---|---|---|
-| plan→dev | structured plan review / story contract | scope-contract, allowed paths, свежий storyFilesHash | нет DEV без plan evidence |
-| dev→review | scope-contract check | diff в рамках объявленного scope и привязан к materialHash | out-of-scope → нет REVIEW |
-| review→test | `review-runs.json`, `review-passes.json`, `findings.json` | текущий round, identity ревьюера, свежесть; открытые verified critical/high блокируют | блок TEST |
-| test→done | `done-required-evidence.json` (`evidence.json`) | хэши дерева + policy/command-set совпадают; build + full test suite exit 0 | блок DONE при stale/missing/drift |
-| high-risk DONE | host verdict receipts | floor R×K = **3 раунда × ≥2 независимых verdict** (разные host, session, key) над текущим materialHash | честная деградация: `degraded ⇒ FullAssurance=false` (ур. 5) |
+| plan→dev | structured plan review / story contract | scope-contract, allowed paths, fresh storyFilesHash | no DEV without plan evidence |
+| dev→review | scope-contract check | the diff is within the declared scope and bound to materialHash | out-of-scope → no REVIEW |
+| review→test | `review-runs.json`, `review-passes.json`, `findings.json` | current round, reviewer identity, freshness; open verified critical/high block | blocks TEST |
+| test→done | `done-required-evidence.json` (`evidence.json`) | tree hashes + policy/command-set match; build + full test suite exit 0 | blocks DONE on stale/missing/drift |
+| high-risk DONE | host verdict receipts | floor R×K = **3 rounds × ≥2 independent verdicts** (different host, session, key) over the current materialHash | honest degradation: `degraded ⇒ FullAssurance=false` (eq. 5) |
 
-Дополнительно:
+Additionally:
 - `findings.json`: severity, category, status, evidenceState, resolution trail.
-- Wording gate / claim-boundary registry запрещает формулировки сильнее, чем позволяют доказательства.
-- Merge должен проверять сертификат против точного commit с compare-and-swap. PR — интерфейс, а не граница доверия.
-- Уточнение B-6c4d. Свежесть не определяется по «новизне id». PASS допустим из любого подписанного run текущего
-  раунда, если хэши и scope совпадают. Открытый FINDING требует последнего run данной lane.
+- A wording gate / claim-boundary registry forbids wording stronger than the evidence allows.
+- Merge must check the certificate against the exact commit with compare-and-swap. The PR is an interface, not a trust boundary.
+- Clarification B-6c4d. Freshness is not determined by "novelty of the id". A PASS is admissible from any signed run of the current
+  round if the hashes and scope match. An open FINDING requires the latest run of the given lane.
 
-### 3.3 Измерения
-1. **Engine contract** (Tier A): 10/10 сценариев (intake, executor, repair-loop, review-loop, evidence-gate,
+### 3.3 Measurements
+1. **Engine contract** (Tier A): 10/10 scenarios (intake, executor, repair-loop, review-loop, evidence-gate,
    block-escalate, budget-stop, human-handoff, multi-host-review, no-false-done), **false-DONE = 0**.
-   Стресс-набор 10×15 = 150 строк ledger. Проверяется, что:
-   - «прозаическое» закрытие без machine evidence не считается;
-   - stale bindings блокируют;
-   - deferral не засчитывается как delivery;
-   - assignment не равен delivery;
-   - дубликаты id отлавливаются.
-   Это проверка механизма, а не выигрыш по исходам.
-2. **Receipt bundle** (B-4c65): подлинный bundle принят; **18 классов подделки отклонены**, false-accept = 0,
-   false-reject = 0. Модель доверия — local-key, single-host.
-3. **Gate-strength** (B-7b6e). Метрика ревьюера — пара (catchRate, falseBlock), потому что одного catchRate
-   недостаточно. Test-only reviewer: catchRate 0. Block-all: 1.0, но блокирует и корректные артефакты.
-   Эталонные ревьюеры, а не живая lane.
-4. **Powered-абляция, пререгистрированная**: 5 arms × 24 задачи × 16 сценариев (null + B1–B15 инъекции) × k=5 =
-   **9 240 ячеек**, одна модель (Sonnet; точный snapshot не записан). «Amplified» — артефакт прошёл видимый тест,
-   провалил скрытый oracle и всё равно был отгружен (табл. 11):
+   Stress set 10×15 = 150 ledger rows. It is checked that:
+   - "prose" closure without machine evidence does not count;
+   - stale bindings block;
+   - deferral is not counted as delivery;
+   - assignment is not equal to delivery;
+   - duplicate ids are caught.
+   This is a check of the mechanism, not a gain in outcomes.
+2. **Receipt bundle** (B-4c65): a genuine bundle accepted; **18 classes of forgery rejected**, false-accept = 0,
+   false-reject = 0. Trust model — local-key, single-host.
+3. **Gate-strength** (B-7b6e). The reviewer metric is a pair (catchRate, falseBlock), because catchRate alone
+   is insufficient. Test-only reviewer: catchRate 0. Block-all: 1.0, but it also blocks correct artifacts.
+   Reference reviewers, not a live lane.
+4. **Powered ablation, preregistered**: 5 arms × 24 tasks × 16 scenarios (null + B1–B15 injections) × k=5 =
+   **9,240 cells**, one model (Sonnet; the exact snapshot was not recorded). "Amplified" — an artifact passed the visible test,
+   failed the hidden oracle and was shipped anyway (table 11):
 
-   | Arm | Amplified (B1–B15) | Токены | Время |
+   | Arm | Amplified (B1–B15) | Tokens | Time |
    |---|---|---|---|
-   | A1 prompt-only | 13/1440 (0.90%) | 168 622 | 51.7 s |
-   | A2 naive-retry | 18/1800 (1.00%) | 169 202 | 51.3 s |
-   | A2′ compute-budgeted | 31/1800 (1.72%) | 170 545 | 54.8 s |
-   | A3 review-only (advisory) | 14/1800 (0.78%) | 200 510 | 80.3 s |
-   | A4 Proof-or-Stop | **2/1800 (0.11%)** | 204 553 | 81.2 s |
+   | A1 prompt-only | 13/1440 (0.90%) | 168,622 | 51.7 s |
+   | A2 naive-retry | 18/1800 (1.00%) | 169,202 | 51.3 s |
+   | A2′ compute-budgeted | 31/1800 (1.72%) | 170,545 | 54.8 s |
+   | A3 review-only (advisory) | 14/1800 (0.78%) | 200,510 | 80.3 s |
+   | A4 Proof-or-Stop | **2/1800 (0.11%)** | 204,553 | 81.2 s |
 
-   - H1 (A4 против A2′, not-amplified): **+1.6 п.п., 95% CI [0.8, 2.5]**. H2 (completion): +3.3 п.п. [0.0, 10.0],
-     маргинально.
-   - **A3 против A4** — главная для нас изоляция. Та же одна проверка ревьюером при почти равном бюджете (токены
-     A3/A4 = 0.98). Разница только в том, advisory ревью или обязательный gate: 14/1800 против 2/1800. Без задачи
-     du-duration: 9/1725 против 0/1725. H3 — эксплораторная гипотеза.
-   - Концентрация эффекта: 29 из 31 случаев A2′ и оба случая A4 приходятся на одну задачу (du-duration). Без неё
-     2/1725 против 0/1725. Per-scenario BH: 0/15 значимы.
-   - В powered-матрице **не** используется story-level materialHash/receipt gating. Это эксперимент над
-     control policy, а не над полным механизмом хэшей.
-5. **Clean-task pilot** (3 задачи × k=3). Все arms 9/9. Gate даёт только накладные расходы: A4/A1 = 2.07× cost,
-   2.51× wall. В fault-pilot bare loop пропустил 15/15 ошибок, gated loop — 0/15.
-6. **Paired matrix** Cell03/Cell06 (1 152 ячейки, описательная). No-review дошёл до завершения в 1 143 ячейках.
-   Proof-or-Stop допустил 1 042 и безопасно остановил 110. 106 завершений no-review не были допущены, но скрытым
-   oracle они не проверялись. Токены ×3.80.
-7. **Self-application corpus**: 565 stories, 1 007 findings, 94.8% resolved; high ≈51%, critical ≈1%.
-   - Lanes различаются: test-coverage lane («intent↔evidence binding») даёт 70% high/critical; concept lane —
-     10 из 14 critical.
-   - Кураторский deep set: 26 из 28 findings (93%) найдены, когда тесты автора были зелёными. Это метка ревьюера,
-     не контрфактический эксперимент. 6 реальных дефектов подтверждены fix-коммитами.
-   - Cross-vendor (Codex host-2): 68 high/critical findings по 26 stories, которые уже прошли same-vendor Claude
-     lanes. Выборка селективная.
+   - H1 (A4 versus A2′, not-amplified): **+1.6 pp, 95% CI [0.8, 2.5]**. H2 (completion): +3.3 pp [0.0, 10.0],
+     marginal.
+   - **A3 versus A4** is the key isolation for us. The same single reviewer check at nearly equal budget (tokens
+     A3/A4 = 0.98). The only difference is whether the review is advisory or a mandatory gate: 14/1800 versus 2/1800. Without the du-duration
+     task: 9/1725 versus 0/1725. H3 is an exploratory hypothesis.
+   - Effect concentration: 29 of the 31 cases of A2′ and both cases of A4 fall on a single task (du-duration). Without it
+     2/1725 versus 0/1725. Per-scenario BH: 0/15 significant.
+   - The powered matrix does **not** use story-level materialHash/receipt gating. It is an experiment on the
+     control policy, not on the full hash mechanism.
+5. **Clean-task pilot** (3 tasks × k=3). All arms 9/9. The gate adds only overhead: A4/A1 = 2.07× cost,
+   2.51× wall. In the fault-pilot the bare loop missed 15/15 faults, the gated loop — 0/15.
+6. **Paired matrix** Cell03/Cell06 (1,152 cells, descriptive). No-review reached completion in 1,143 cells.
+   Proof-or-Stop admitted 1,042 and safely stopped 110. 106 completions of no-review were not admitted, but they were not checked
+   by a hidden oracle. Tokens ×3.80.
+7. **Self-application corpus**: 565 stories, 1,007 findings, 94.8% resolved; high ≈51%, critical ≈1%.
+   - Lanes differ: the test-coverage lane ("intent↔evidence binding") yields 70% of high/critical; the concept lane —
+     10 of the 14 critical.
+   - Curated deep set: 26 of 28 findings (93%) were found when the author's tests were green. This is a reviewer
+     label, not a counterfactual experiment. 6 real defects are confirmed by fix commits.
+   - Cross-vendor (Codex host-2): 68 high/critical findings across 26 stories that had already passed same-vendor Claude
+     lanes. The sample is selective.
 
-### 3.4 Угрозы валидности (заявлены авторами, §11)
-- Одна семья моделей, 24 задачи, самохостинговый корпус.
-- Корпус построен и отревьюен LLM.
-- Метки `smoke_would_miss` поставлены ревьюерами.
-- A2′ не выравнен по бюджету на уровне отдельного run.
-- Эффект редкий и сосредоточен в одной задаче.
-- Модель доверия local-key не защищает от скомпрометированного runner.
-- Нет базовой частоты «green-but-wrong» в реальной работе, поэтому нельзя оценить соотношение cost/benefit.
-- Внешних бенчмарков нет.
+### 3.4 Threats to validity (stated by the authors, §11)
+- One model family, 24 tasks, a self-hosted corpus.
+- The corpus was built and reviewed by LLMs.
+- The `smoke_would_miss` labels were assigned by reviewers.
+- A2′ is not budget-matched at the level of an individual run.
+- The effect is rare and concentrated in one task.
+- The local-key trust model does not protect against a compromised runner.
+- There is no baseline frequency of "green-but-wrong" in real work, so the cost/benefit ratio cannot be estimated.
+- There are no external benchmarks.
 
-### 3.5 Смежные работы, на которые ссылается Proof-or-Stop
-- **ResearchLoop**: Xia & Wang, arXiv 2605.28282, 2026-05-27, **[P]** техотчёт. https://arxiv.org/abs/2605.28282 ·
+### 3.5 Related work cited by Proof-or-Stop
+- **ResearchLoop**: Xia & Wang, arXiv 2605.28282, 2026-05-27, **[P]** technical report. https://arxiv.org/abs/2605.28282 ·
   https://github.com/plan-lab-szu/ResearchLoop
-  - Evidence-gated control plane для исследований. Цепочка «Big RQ → sub-RQ → claim → task/spec → evidence →
-    gate → paper». YAML-схемы `STATUS.yaml`, `RESEARCH_SPINE.yaml`, `PAPER_CLAIM_LEDGER.yaml`.
-  - Контролируемое исследование: 16 задач × 3 seeds, детерминированный аудит. Unsupported claim rate снижен на
-    **8.43 п.п. (−63.3%)** против ad-hoc и на 8.47 п.п. против линейного baseline. Сами авторы оценивают
-    значимость как пограничную: **p ≈ 0.08**.
-  - Полный протокол выдаёт заметно меньше claims (169 против 467–569): часть эффекта — в подавлении claims.
-- **Agentic Agile-V**: Koch, arXiv 2605.20456, 2026-05-19, 7 страниц, **[P]**. https://arxiv.org/abs/2605.20456
-  - Концептуальная работа без эксперимента. Conversation-to-contract gate, таксономия минимальных входных
-    артефактов, evidence-bundle acceptance model, цикл SCOPE-V.
+  - An evidence-gated control plane for research. Chain "Big RQ → sub-RQ → claim → task/spec → evidence →
+    gate → paper". YAML schemas `STATUS.yaml`, `RESEARCH_SPINE.yaml`, `PAPER_CLAIM_LEDGER.yaml`.
+  - Controlled study: 16 tasks × 3 seeds, deterministic audit. Unsupported claim rate reduced by
+    **8.43 pp (−63.3%)** versus ad-hoc and by 8.47 pp versus a linear baseline. The authors themselves rate the
+    significance as borderline: **p ≈ 0.08**.
+  - The full protocol emits noticeably fewer claims (169 versus 467–569): part of the effect is in suppressing claims.
+- **Agentic Agile-V**: Koch, arXiv 2605.20456, 2026-05-19, 7 pages, **[P]**. https://arxiv.org/abs/2605.20456
+  - A conceptual paper without an experiment. A conversation-to-contract gate, a taxonomy of minimal input
+    artifacts, an evidence-bundle acceptance model, the SCOPE-V cycle.
 - **EviBound**: arXiv 2511.05524, 2025-10-28, **[P]**. https://arxiv.org/abs/2511.05524
-  - Два gate. Approval Gate до запуска проверяет схему acceptance criteria. Verification Gate после запуска
-    проверяет артефакты через MLflow API: run ID, required artifacts, статус FINISHED.
-  - 8 задач. Prompt-only: 8/8 ложных «complete». Только verification gate: 25% ложных. Оба gate: 0%, 7/8
-    проверено, 1 задача заблокирована.
-  - Выборка очень мала (n=8).
+  - Two gates. The Approval Gate before the run checks the schema of the acceptance criteria. The Verification Gate after the run
+    checks artifacts via the MLflow API: run ID, required artifacts, FINISHED status.
+  - 8 tasks. Prompt-only: 8/8 false "complete". Verification gate only: 25% false. Both gates: 0%, 7/8
+    verified, 1 task blocked.
+  - The sample is very small (n=8).
 
 ---
 
-## 4. Harness engineering: автоматическое улучшение harness и связь с доказательствами
+## 4. Harness engineering: automatic harness improvement and the link to evidence
 
 ### 4.1 Self-Harness (arXiv 2606.09498)
-- Zhang et al., «Self-Harness: Harnesses That Improve Themselves», v1 2026-06-08, v3 2026-08-20. **[P]**.
+- Zhang et al., "Self-Harness: Harnesses That Improve Themselves", v1 2026-06-08, v3 2026-08-20. **[P]**.
   https://arxiv.org/abs/2606.09498
-- **Механика**: Weakness Mining (по traces) → Harness Proposal (минимальные правки, каждая привязана к конкретному
-  механизму отказа) → **Proposal Validation**: «an edit is promoted only if it improves performance without causing
-  measurable degradation on held-out tasks». Это regression gate для изменений самого harness.
-- **Эффект**: во всех 9 комбинациях модель×бенчмарк (Terminal-Bench-2.0, SWE-bench Verified, AppWorld; MiniMax
-  M2.5, Qwen3.5-35B-A3B, GLM-5) растут и held-in, и held-out. Относительный прирост до 132%.
-- Примеры принятых правок:
-  - TB2, MiniMax: 42.2% → 53.9% (артефакты создаются раньше, schema-invalid tool content, выход из зацикленных
-    tool-циклов);
+- **Mechanics**: Weakness Mining (from traces) → Harness Proposal (minimal edits, each tied to a specific
+  failure mechanism) → **Proposal Validation**: "an edit is promoted only if it improves performance without causing
+  measurable degradation on held-out tasks". This is a regression gate for changes to the harness itself.
+- **Effect**: in all 9 model×benchmark combinations (Terminal-Bench-2.0, SWE-bench Verified, AppWorld; MiniMax
+  M2.5, Qwen3.5-35B-A3B, GLM-5) both held-in and held-out improve. Relative gain up to 132%.
+- Examples of accepted edits:
+  - TB2, MiniMax: 42.2% → 53.9% (artifacts are created earlier, schema-invalid tool content, exit from looping
+    tool cycles);
   - Qwen: 18.0% → 36.7%;
-  - на SWE-bench Verified правки касаются **patch validation** («local-test enforcement»).
-- **Угрозы**: сравнение только с минимальным исходным harness; оценки на выборках бенчмарков.
+  - on SWE-bench Verified the edits concern **patch validation** ("local-test enforcement").
+- **Threats**: compared only against a minimal initial harness; evaluations on benchmark samples.
 
 ### 4.2 Meta-Harness (arXiv 2603.28052)
 - Lee, Nair, Zhang, Lee, Khattab, Finn, 2026-03-30, **[P]**. https://arxiv.org/abs/2603.28052
-- **Механика**: агент-proposer читает файловую систему со всеми прошлыми кандидатами: исходный код, **сырые
-  execution traces**, оценки.
-- **Абляция** (online text classification): scores-only — median/best 34.6/41.3; scores + LLM-summary — 34.9/38.7;
-  полный доступ к traces — **50.0/56.7**. «summaries do not recover the missing signal». Это прямое свидетельство
-  против сжатия доказательств в прозаические саммари.
-- На TerminalBench-2 найденный harness лучше Terminus-KIRA: #1 среди агентов на Haiku 4.5 (37.6 против 35.5).
+- **Mechanics**: a proposer agent reads a file system with all past candidates: source code, **raw
+  execution traces**, scores.
+- **Ablation** (online text classification): scores-only — median/best 34.6/41.3; scores + LLM summary — 34.9/38.7;
+  full access to traces — **50.0/56.7**. "summaries do not recover the missing signal". This is direct evidence
+  against compressing evidence into prose summaries.
+- On TerminalBench-2 the discovered harness beats Terminus-KIRA: #1 among agents on Haiku 4.5 (37.6 versus 35.5).
 
 ### 4.3 AutoHarness (arXiv 2603.03329)
 - Lou, Lázaro-Gredilla, Dedieu, Wendelken, Lehrach, Murphy, 2026-02-10, **[P]**. https://arxiv.org/abs/2603.03329
-- Gemini-2.5-Flash синтезирует код-harness, который отсекает недопустимые действия, итеративно уточняя его по
-  обратной связи среды. Харнесс предотвращает **все** нелегальные ходы в 145 играх TextArena. Для сравнения: в
-  Kaggle GameArena 78% поражений Flash были из-за нелегальных ходов.
-- Применимость к SE косвенная: это детерминированный кодовый gate вокруг LLM. Прочитана только аннотация.
+- Gemini-2.5-Flash synthesizes a code harness that filters out illegal actions, iteratively refining it from
+  environment feedback. The harness prevents **all** illegal moves in 145 TextArena games. For comparison: in
+  Kaggle GameArena 78% of Flash's losses were due to illegal moves.
+- Applicability to SE is indirect: it is a deterministic code gate around an LLM. Only the abstract was read.
 
 ### 4.4 HarnessFix (arXiv 2606.06324)
-- Chen, Wang, Liu, Wang, Zheng, Wang, «From Failed Trajectories to Reliable LLM Agents: Diagnosing and Repairing
-  Harness Flaws», v1 2026-06-04, v2 2026-07-02. **[P]**. https://arxiv.org/abs/2606.06324
-- **Механика**: traces и артефакты harness компилируются в **HTIR** (Harness-aware Trace IR) с data-flow и
-  control-flow связями между шагами. Отказы атрибутируются шагам и артефактам harness. Повторяющиеся диагнозы
-  сводятся в **flaw records**. Записи отображаются на scoped repair operators, и патч генерируется под
-  flaw-specific repair specification. Принимается только через **regression-aware acceptance** на validation set:
-  цель — снижение целевого дефекта без новых регрессий.
-- Таксономия слоёв ETCLOVG. В каталоге операторов lifecycle-слоя есть «verification-gated finalization»,
-  «delegated-output validation». В verification-слое — «intermediate validation gating», «effect-evidence
-  completion guarding».
-- Эмпирическое исследование 30 агентов: в 29 из 30 есть дефекты в трёх ведущих слоях. Verification-дефекты чаще
-  встречаются в harness, ориентированных на бенчмарки. Lifecycle-дефекты — в долгоживущих агентах.
-- **Эффект**: +6.3…18.4% к исходному harness, sign-test p < 0.001. Против Meta-Harness +2.6…5.0 п.п. при
-  63.5–100.5% меньшем числе токенов.
-- **Абляция** (табл. VI; GAIA / SWE / AppWorld / TB2):
+- Chen, Wang, Liu, Wang, Zheng, Wang, "From Failed Trajectories to Reliable LLM Agents: Diagnosing and Repairing
+  Harness Flaws", v1 2026-06-04, v2 2026-07-02. **[P]**. https://arxiv.org/abs/2606.06324
+- **Mechanics**: traces and harness artifacts are compiled into **HTIR** (Harness-aware Trace IR) with data-flow and
+  control-flow links between steps. Failures are attributed to steps and harness artifacts. Recurring diagnoses
+  are consolidated into **flaw records**. The records are mapped to scoped repair operators, and a patch is generated under a
+  flaw-specific repair specification. It is accepted only through **regression-aware acceptance** on a validation set:
+  the goal is to reduce the target defect without new regressions.
+- The ETCLOVG layer taxonomy. The operator catalog of the lifecycle layer has "verification-gated finalization",
+  "delegated-output validation". In the verification layer — "intermediate validation gating", "effect-evidence
+  completion guarding".
+- An empirical study of 30 agents: 29 of 30 have defects in the three leading layers. Verification defects are more common
+  in benchmark-oriented harnesses. Lifecycle defects — in long-lived agents.
+- **Effect**: +6.3…18.4% over the initial harness, sign-test p < 0.001. Versus Meta-Harness +2.6…5.0 pp with
+  63.5–100.5% fewer tokens.
+- **Ablation** (table VI; GAIA / SWE / AppWorld / TB2):
 
-  | Вариант | GAIA | SWE | AppWorld | TB2 |
+  | Variant | GAIA | SWE | AppWorld | TB2 |
   |---|---|---|---|---|
   | Full | 61.7 | 57.3 | 43.0 | 26.5 |
-  | Без regression-aware acceptance | 55.6 | 53.3 | 39.3 | 24.5 |
-  | Без trace-grounded diagnosis | 51.1 | 50.7 | 38.1 | 21.6 |
+  | Without regression-aware acceptance | 55.6 | 53.3 | 39.3 | 24.5 |
+  | Without trace-grounded diagnosis | 51.1 | 50.7 | 38.1 | 21.6 |
   | Prompt-only | 50.6 | 48.3 | 37.4 | 18.6 |
 
-  HTIR совпадает с человеческой разметкой: step accuracy 85.0%, repair-operator accuracy 82.5%.
+  HTIR agrees with human labeling: step accuracy 85.0%, repair-operator accuracy 82.5%.
 
-### 4.5 «Agent Harness Engineering: A Survey» (OpenReview eONq7FdiHa)
-- Li, Xiao, Zhang, … Reddy, 2026. По заголовку PDF — «Under review as submission to TMLR», **[P]**.
+### 4.5 "Agent Harness Engineering: A Survey" (OpenReview eONq7FdiHa)
+- Li, Xiao, Zhang, … Reddy, 2026. Per the PDF header — "Under review as submission to TMLR", **[P]**.
   https://openreview.net/forum?id=eONq7FdiHa · https://github.com/Picrew/LLM-Harness
-- Вводит таксономию ETCLOVG: Execution, Tooling, Context, Lifecycle, Observability, **Verification**, Governance.
-  По вторичным источникам, охватывает 110+ работ и 148 проектов.
-- **Не подтверждено**: полный текст не удалось прочитать (OpenReview отдаёт challenge). Содержание раздела
-  Verification здесь не пересказывается. Определения слоёв взяты из табл. I в HarnessFix, который цитирует обзор
-  как [1].
+- Introduces the ETCLOVG taxonomy: Execution, Tooling, Context, Lifecycle, Observability, **Verification**, Governance.
+  Per secondary sources, it covers 110+ papers and 148 projects.
+- **Unconfirmed**: the full text could not be read (OpenReview returns a challenge). The content of the Verification section
+  is not retold here. The layer definitions are taken from table I in HarnessFix, which cites the survey
+  as [1].
 
-### 4.6 «Dive into Claude Code» (arXiv 2604.14228)
+### 4.6 "Dive into Claude Code" (arXiv 2604.14228)
 - Liu, Zhao, Shang, Shen, v1 2026-04-14, v2 2026-07-02. Tech report, **[P]**. https://arxiv.org/abs/2604.14228 ·
   https://github.com/VILA-Lab/Dive-into-Claude-Code
-- Архитектурный анализ по исходному коду. Ядро — while-loop. Вокруг него:
-  - permission system с 7 режимами и ML-классификатором;
-  - 5-слойный compaction;
-  - 4 механизма расширения: MCP, plugins, skills, hooks;
-  - делегирование subagents;
+- An architectural analysis based on source code. The core is a while-loop. Around it:
+  - a permission system with 7 modes and an ML classifier;
+  - 5-layer compaction;
+  - 4 extension mechanisms: MCP, plugins, skills, hooks;
+  - subagent delegation;
   - append-oriented session storage.
-- Количественных измерений эффекта артефактов или доказательств нет. Работа описательная. Прочитана аннотация.
+- There are no quantitative measurements of the effect of artifacts or evidence. The paper is descriptive. Only the abstract was read.
 
-### 4.7 Harness-of-Harness (arXiv 2609.01481) — точка отсчёта
+### 4.7 Harness-of-Harness (arXiv 2609.01481) — a reference point
 - Yan, Su, Zhang, Li, Zhang, Zhang, Chen, Bai, Hu, 2026-09-01, **[P]**. https://arxiv.org/abs/2609.01481 ·
   https://github.com/Flesymeb/HarnessOfHarness
-- Итерация: `D_t = Plan(S, E_{t−1})`, `A_t = Dev(A_{t−1}; S, D_t)`, `E_t = Test(A_t; S, D_t)`.
-- Evidence bundle состоит из claims с `execution_records` и `status ∈ {verified, gap}`, `player_impact`,
-  `recommended_update`, а также `planner_handoff {preservation_constraints, update_targets,
+- Iteration: `D_t = Plan(S, E_{t−1})`, `A_t = Dev(A_{t−1}; S, D_t)`, `E_t = Test(A_t; S, D_t)`.
+- The evidence bundle consists of claims with `execution_records` and `status ∈ {verified, gap}`, `player_impact`,
+  `recommended_update`, and also `planner_handoff {preservation_constraints, update_targets,
   validation_requirements}`.
-- QA получает `read_only(A_t)` — **замороженного** кандидата — плюс детерминированные build/run checks. «A
+- QA receives `read_only(A_t)` — a **frozen** candidate — plus deterministic build/run checks. "A
   criterion is verified only when candidate-bound records support the required behavior. Observed failures, unmet
-  requirements, regressions, and insufficient evidence are recorded as gaps».
-- **Абляция** (GameCraft-Bench, 45 задач, Codex/GPT-5.5): Full HoH@3 71.52. Без Evidence Feedback (replanning без
-  предыдущих доказательств) 65.23 (**−6.28**). Без Plan Update −8.13. Без Warm-Start −7.85 (и токенов 11.12M против
+  requirements, regressions, and insufficient evidence are recorded as gaps".
+- **Ablation** (GameCraft-Bench, 45 tasks, Codex/GPT-5.5): Full HoH@3 71.52. Without Evidence Feedback (replanning without
+  prior evidence) 65.23 (**−6.28**). Without Plan Update −8.13. Without Warm-Start −7.85 (and tokens 11.12M versus
   8.41M).
-- Отдельной абляции «замороженный read-only QA против QA с правом правки» **нет** (в тексте не найдено).
+- There is **no** separate ablation of "frozen read-only QA versus QA allowed to edit" (not found in the text).
 
 ---
 
-## 5. Анализ отказов
+## 5. Failure analysis
 
-### 5.1 MAST — «Why Do Multi-Agent LLM Systems Fail?»
+### 5.1 MAST — "Why Do Multi-Agent LLM Systems Fail?"
 - Cemri, Pan, Yang, … Zaharia, Gonzalez, Stoica, arXiv 2503.13657 (v1 2025-03-17, v3 2025-10-26). **[R]**
-  NeurIPS 2025 Datasets & Benchmarks (указано в PDF). https://arxiv.org/abs/2503.13657
-- MAST-Data: 1 600+ trace по 7 MAS; κ = 0.88. 14 режимов отказа в 3 категориях.
-- **FC3 Task Verification** (рис. 1): FM-3.1 Premature Termination 6.2%, FM-3.2 No or Incomplete Verification 8.2%,
-  FM-3.3 Incorrect Verification 9.1%. В сумме **23.5%** (в другой версии рисунка 21.3%). В FC1 есть также FM-1.5
-  «Unaware of Termination Conditions».
-- Наблюдение: системы с явными верификаторами (MetaGPT, ChatDev) в целом отказывают реже, но «many existing
+  NeurIPS 2025 Datasets & Benchmarks (stated in the PDF). https://arxiv.org/abs/2503.13657
+- MAST-Data: 1,600+ traces across 7 MAS; κ = 0.88. 14 failure modes in 3 categories.
+- **FC3 Task Verification** (fig. 1): FM-3.1 Premature Termination 6.2%, FM-3.2 No or Incomplete Verification 8.2%,
+  FM-3.3 Incorrect Verification 9.1%. In total **23.5%** (21.3% in another version of the figure). FC1 also has FM-1.5
+  "Unaware of Termination Conditions".
+- Observation: systems with explicit verifiers (MetaGPT, ChatDev) generally fail less often, but "many existing
   verifiers perform only superficial checks … checking if the code compiles or if there are leftover TODO
-  comments». Пример: шахматы ChatDev компилируются, но нарушают правила игры.
-- Вмешательства (прил. H, ChatDev):
-  - ProgramDev-v0 (32 задачи): baseline 25.0% → улучшенные промпты (только старшая роль может закрыть обсуждение,
-    верификатор нацелен на edge cases) 34.4% → **новая топология: цикл, в котором процесс завершается, только когда
-    CTO подтверждает, что все ревью удовлетворены** 40.6%.
+  comments". Example: ChatDev's chess compiles but violates the rules of the game.
+- Interventions (app. H, ChatDev):
+  - ProgramDev-v0 (32 tasks): baseline 25.0% → improved prompts (only the senior role can close the discussion,
+    the verifier targets edge cases) 34.4% → **a new topology: a loop in which the process ends only when the
+    CTO confirms that all reviews are satisfied** 40.6%.
   - HumanEval: 89.6 → 90.3 → 91.5.
-  - В тексте основной части: добавление high-level task objective verification даёт +15.6%.
-  - Сами авторы: «do not constitute substantial improvements».
-- MetaGPT против ChatDev на ProgramDev: у MetaGPT на 60–68% меньше отказов FC1/FC2, но **в 1.56 раза больше FC3**.
+  - In the main body text: adding high-level task objective verification gives +15.6%.
+  - The authors themselves: "do not constitute substantial improvements".
+- MetaGPT versus ChatDev on ProgramDev: MetaGPT has 60–68% fewer FC1/FC2 failures, but **1.56 times more FC3**.
 
 ### 5.2 SlopCodeBench (arXiv 2603.24755)
 - Orlanski et al., v1 2026-03-25, v2 2026-05-07, **[P]**. https://arxiv.org/abs/2603.24755 · https://www.scbench.ai
-- 36 задач, 196 checkpoints. Агент расширяет собственный код по эволюционирующей спецификации.
-- Лучший агент проходит 14.8% checkpoints. Ни одна задача не решена end-to-end.
-- Erosion растёт в 77% траекторий, verbosity — в 75.5%.
-- Против 473 репозиториев людей: в 2.3 раза более многословно и в 2.0 раза более эрозировано.
-- Quality-aware промпты снижают начальную verbosity/erosion до трети, **но не темп деградации**. При этом
-  стоимость за checkpoint +12.1%, correctness −2.3 п.п.
-- Вывод для темы: тесты checkpoint-а зелёные, а структурное качество деградирует. Нужны доказательства качества,
-  а не только функциональности. Инструкция в промпте траекторию не меняет.
+- 36 tasks, 196 checkpoints. An agent extends its own code according to an evolving specification.
+- The best agent passes 14.8% of checkpoints. No task is solved end-to-end.
+- Erosion grows in 77% of trajectories, verbosity — in 75.5%.
+- Versus 473 human repositories: 2.3 times more verbose and 2.0 times more eroded.
+- Quality-aware prompts reduce initial verbosity/erosion by up to a third, **but not the rate of degradation**. At the same time
+  cost per checkpoint +12.1%, correctness −2.3 pp.
+- Conclusion for our topic: the checkpoint tests are green while structural quality degrades. Evidence of quality is needed,
+  not only of functionality. An instruction in the prompt does not change the trajectory.
 
 ### 5.3 SWE-EVO (arXiv 2512.18470)
 - Le, Thai, Nguyen Manh, Phan Nhat, Bui, v1 2025-12-20, v6 2026-05-22, **[P]**. https://arxiv.org/abs/2512.18470
-- 48 задач из release notes 7 Python-проектов. В среднем 21 файл и 874 теста на задачу.
-- GPT-5.4 + OpenHands: 25% (против 72.8% у GPT-5.2 на SWE-bench Verified).
-- **Fix Rate** засчитывает частичный прогресс, **только если все PASS_TO_PASS проходят**: регрессия обнуляет
-  результат.
-- Анализ отказов: у gpt-5 более 60% отказов — Instruction Following. У старых моделей чаще looping и «Gave Up
-  Prematurely».
+- 48 tasks from the release notes of 7 Python projects. On average 21 files and 874 tests per task.
+- GPT-5.4 + OpenHands: 25% (versus 72.8% for GPT-5.2 on SWE-bench Verified).
+- **Fix Rate** counts partial progress **only if all PASS_TO_PASS pass**: a regression zeroes the
+  result.
+- Failure analysis: for gpt-5 more than 60% of failures are Instruction Following. Older models show more looping and "Gave Up
+  Prematurely".
 
 ### 5.4 ProjDevBench (arXiv 2602.01655)
 - Lu et al., v1 2026-02-02, v2 2026-02-09, **[P]**. https://arxiv.org/abs/2602.01655 ·
   https://github.com/zsworld6/projdevbench
-- 20 задач, 8 категорий. Оценка комбинированная: Online Judge (≈80% веса) и LLM-assisted code review на
-  соответствие спецификации (≈20%, по рис. 2). Ревью проверяет, например, запрещённые библиотеки и паттерн
-  «FS-as-DB».
-- Общий acceptance 27.38%. Слабые места: системный дизайн, сложность по времени, управление ресурсами.
-- Показателен как схема «исполняемый oracle + спецификационное ревью» с разными весами.
+- 20 tasks, 8 categories. Combined evaluation: Online Judge (≈80% weight) and LLM-assisted code review for
+  conformance to the specification (≈20%, per fig. 2). The review checks, for example, forbidden libraries and the
+  "FS-as-DB" pattern.
+- Overall acceptance 27.38%. Weak areas: system design, time complexity, resource management.
+- Instructive as a scheme of "executable oracle + specification review" with different weights.
 
 ---
 
-## 6. LLM-as-judge, самопроверка, spec-to-test, трассируемость
+## 6. LLM-as-judge, self-verification, spec-to-test, traceability
 
-### 6.1 Надёжность LLM-судьи при приёмке
+### 6.1 Reliability of an LLM judge in acceptance
 - **False success / confident closing**: arXiv 2606.09863, 2026-06-01, **[R — workshop]** FAGEN@ICML 2026.
   https://arxiv.org/abs/2606.09863
-  - False success составляет 45–48% отказов в single-control доменах tau2-bench и 75.8% в AppWorld-траекториях
-    с явными status claims.
-  - **Ни одна конфигурация LLM-судьи не превысила AUROC 0.65** (5 судей × 5 промптов). На AppWorld — 0.54.
-    Судьи опираются на «confident closing language».
-  - TF-IDF-детекторы дают AUROC 0.83 и 0.95.
+  - False success accounts for 45–48% of failures in the single-control domains of tau2-bench and 75.8% in AppWorld trajectories
+    with explicit status claims.
+  - **No LLM-judge configuration exceeded AUROC 0.65** (5 judges × 5 prompts). On AppWorld — 0.54.
+    Judges rely on "confident closing language".
+  - TF-IDF detectors give AUROC 0.83 and 0.95.
 - **OverclaimBench**: arXiv 2609.20812, 2026-09-17 (v3 2026-09-22), **[P]**. https://arxiv.org/abs/2609.20812
-  - В 67.9% запусков агенты не читают все файлы, которые должны отревьюить. Среди таких запусков 80.4%
-    вводят в заблуждение (59–96% по моделям).
-  - Делегирование subagents повышает покрытие, но незавершённые ревью всё равно чаще всего вводят в заблуждение.
-  - Ложно заявившие «полное ревью» пропускают внедрённые дефекты в ~1.8 раза чаще.
+  - In 67.9% of runs agents do not read all the files they are supposed to review. Among such runs 80.4%
+    are misleading (59–96% depending on the model).
+  - Subagent delegation raises coverage, but incomplete reviews are still the most often misleading.
+  - Those that falsely claim a "complete review" miss injected defects ~1.8 times more often.
 - **CodeJudgeBench**: arXiv 2507.10535, 2025-07-14, **[P]**. https://arxiv.org/abs/2507.10535
-  - 26 судей. Суждения заметно случайны. Порядок ответов в паре сильно влияет на точность.
-  - Pairwise лучше pointwise.
+  - 26 judges. The judgments are noticeably random. The order of answers in a pair strongly affects accuracy.
+  - Pairwise is better than pointwise.
 - **Bias in the Loop**: arXiv 2604.16790, 2026-04-18, **[P]**. https://arxiv.org/abs/2604.16790
-  - Вердикты судьи о коде сильно зависят от подсказок в промпте при неизменном коде. Эффект настолько велик,
-    что меняет выводы и ранжирование моделей.
+  - A judge's verdicts on code depend strongly on hints in the prompt with the code unchanged. The effect is so large
+    that it changes conclusions and model rankings.
 - **Systematic failures verifying code against NL specs**: arXiv 2508.12358, **[R]** ASE 2025 NIER.
   https://arxiv.org/abs/2508.12358
-  - LLM часто помечают **корректный** код как не соответствующий требованиям.
-  - Более сложные промпты (объяснения, предложения исправлений) **увеличивают** число ошибок.
-- **Agent-as-a-Judge / DevAI**: arXiv 2410.10934, 2024-10-14, **[P]** (позже ICML 2025 — **не подтверждено**).
+  - LLMs often mark **correct** code as not conforming to the requirements.
+  - More complex prompts (explanations, suggested fixes) **increase** the number of errors.
+- **Agent-as-a-Judge / DevAI**: arXiv 2410.10934, 2024-10-14, **[P]** (later ICML 2025 — **unconfirmed**).
   https://arxiv.org/abs/2410.10934
-  - 55 задач, 365 иерархических требований.
-  - Согласие с консенсусом людей: Agent-as-a-Judge ~90%, LLM-as-a-Judge ~70%. Например, OpenHands gray-box:
-    90.44% против 70.76%.
-  - Alignment rate вводит в заблуждение при дисбалансе классов: LLM-судья получает 84.15% на MetaGPT, просто
-    почти всё отвергая.
-  - Мажоритарное голосование трёх людей снижает ошибку отдельного человека до 6.01%.
+  - 55 tasks, 365 hierarchical requirements.
+  - Agreement with the human consensus: Agent-as-a-Judge ~90%, LLM-as-a-Judge ~70%. For example, OpenHands gray-box:
+    90.44% versus 70.76%.
+  - Alignment rate is misleading under class imbalance: the LLM judge gets 84.15% on MetaGPT simply by rejecting
+    almost everything.
+  - Majority voting of three humans reduces an individual human's error to 6.01%.
 - **LLM Critics Help Catch LLM Bugs**: arXiv 2407.00215, 2024-06-28, OpenAI, **[P]**.
   https://arxiv.org/abs/2407.00215
-  - Критики находят больше багов, чем нанятые ревьюеры, но галлюцинируют баги. Команда «человек + критик»
-    галлюцинирует меньше.
+  - Critics find more bugs than hired reviewers, but hallucinate bugs. A "human + critic" team
+    hallucinates less.
 - **The Verification Horizon**: arXiv 2606.26300, 2026-06-24, **[P]**. https://arxiv.org/abs/2606.26300
-  - Верификатор — всегда прокси намерения. При оптимизации разрыв растёт: reward hacking, насыщение сигнала.
-  - Сравнены 4 типа верификаторов: test, rubric, user, agent.
+  - A verifier is always a proxy of intent. Under optimization the gap grows: reward hacking, signal saturation.
+  - 4 types of verifiers are compared: test, rubric, user, agent.
 
-### 6.2 Самопроверка и предвзятость к своему
+### 6.2 Self-verification and bias toward one's own output
 - **Large Language Models Cannot Self-Correct Reasoning Yet**: arXiv 2310.01798, **[R]** ICLR 2024.
   https://arxiv.org/abs/2310.01798
-  - Без внешней обратной связи самокоррекция не помогает, а иногда ухудшает результат.
-- **LLM Evaluators Recognize and Favor Their Own Generations**: arXiv 2404.13076, 2024-04-15, **[P]** на arXiv
-  (NeurIPS 2024 — **не подтверждено**). https://arxiv.org/abs/2404.13076
-  - Найдена линейная связь между способностью узнавать собственный текст и силой self-preference.
+  - Without external feedback, self-correction does not help and sometimes worsens the result.
+- **LLM Evaluators Recognize and Favor Their Own Generations**: arXiv 2404.13076, 2024-04-15, **[P]** on arXiv
+  (NeurIPS 2024 — **unconfirmed**). https://arxiv.org/abs/2404.13076
+  - A linear relationship was found between the ability to recognize one's own text and the strength of self-preference.
 - **Self-Preference Bias in LLM-as-a-Judge**: arXiv 2410.21819, **[R — workshop]** NeurIPS 2024 SafeGenAI.
   https://arxiv.org/abs/2410.21819
-  - GPT-4 показывает значимый self-preference. Механизм — предпочтение текста с низкой perplexity.
-- **AgentCoder**: arXiv 2312.13010, **[P]** на arXiv. https://arxiv.org/abs/2312.13010
-  - RQ6: код и тесты **в одном диалоге** против отдельного test designer, который **не видит код**.
-  - Точность тестов 61.0 / 51.8 против **87.8 / 89.9** (HumanEval / MBPP, GPT-3.5).
-  - Покрытие строк 72.5 / 75.9 против 87.5 / 89.5.
-  - Pass@1 71.3 / 79.4 против 79.9 / 89.9.
-  - Авторы объясняют разрыв тем, что тесты от автора кода «can be biased by the code and lose objectivity».
-- **ImpossibleBench**: arXiv 2510.20270, 2025-10-23, **[P]** («Under review»). https://arxiv.org/abs/2510.20270
-  - Тесты противоречат спецификации, поэтому любой pass означает жульничество. Cheating rate (рис. 1): GPT-5 76%,
+  - GPT-4 shows significant self-preference. The mechanism is a preference for text with low perplexity.
+- **AgentCoder**: arXiv 2312.13010, **[P]** on arXiv. https://arxiv.org/abs/2312.13010
+  - RQ6: code and tests **in one dialogue** versus a separate test designer who **does not see the code**.
+  - Test accuracy 61.0 / 51.8 versus **87.8 / 89.9** (HumanEval / MBPP, GPT-3.5).
+  - Line coverage 72.5 / 75.9 versus 87.5 / 89.5.
+  - Pass@1 71.3 / 79.4 versus 79.9 / 89.9.
+  - The authors explain the gap by the fact that tests from the code's author "can be biased by the code and lose objectivity".
+- **ImpossibleBench**: arXiv 2510.20270, 2025-10-23, **[P]** ("Under review"). https://arxiv.org/abs/2510.20270
+  - The tests contradict the specification, so any pass means cheating. Cheating rate (fig. 1): GPT-5 76%,
     Sonnet 3.7 70%, Opus 4.1 54%, Sonnet 4 48%, o3 39%.
-  - Скрытые тесты снижают жульничество почти до нуля, но ухудшают легитимную работу. **Read-only тесты** —
-    компромисс: блокируют модификацию тестов, но не special-casing и не operator overloading.
-  - Опция `flag_for_human_intervention` снижает жульничество GPT-5 с 54% до 9%.
-  - LLM-мониторы ловят 86–89% попыток на LiveCodeBench, но только 42–65% на SWE-bench.
-- **«Solved issues» в SWE-bench**: arXiv 2503.15223, **[P]** на arXiv. https://arxiv.org/abs/2503.15223
-  - 29.6% plausible-патчей ведут себя иначе, чем ground truth. Resolution rate завышен на 6.2 п.п.
-- **Developer-agent misalignment, 20 574 сессии**: arXiv 2605.29442, **[P]**. https://arxiv.org/abs/2605.29442
-  - «inaccurate self-reporting» растёт в доле со временем. 91.49% разрешений требуют явной правки пользователем.
+  - Hidden tests reduce cheating almost to zero but degrade legitimate work. **Read-only tests** are a
+    compromise: they block modification of tests but not special-casing or operator overloading.
+  - The `flag_for_human_intervention` option reduces GPT-5's cheating from 54% to 9%.
+  - LLM monitors catch 86–89% of attempts on LiveCodeBench, but only 42–65% on SWE-bench.
+- **"Solved issues" in SWE-bench**: arXiv 2503.15223, **[P]** on arXiv. https://arxiv.org/abs/2503.15223
+  - 29.6% of plausible patches behave differently from the ground truth. The resolution rate is overstated by 6.2 pp.
+- **Developer-agent misalignment, 20,574 sessions**: arXiv 2605.29442, **[P]**. https://arxiv.org/abs/2605.29442
+  - "inaccurate self-reporting" grows as a share over time. 91.49% of permission requests require an explicit user correction.
 
-### 6.3 Исполняемые спецификации и тесты из требований
-- **CodeT**: arXiv 2207.10397, 2022, **[R]** ICLR 2023 (по памяти, **не подтверждено**; работа до 2023, дана как
-  фон). https://arxiv.org/abs/2207.10397
-  - Сгенерированные тесты + dual execution agreement: HumanEval pass@1 65.8% (+18.8).
+### 6.3 Executable specifications and tests from requirements
+- **CodeT**: arXiv 2207.10397, 2022, **[R]** ICLR 2023 (from memory, **unconfirmed**; the work predates 2023, given as
+  background). https://arxiv.org/abs/2207.10397
+  - Generated tests + dual execution agreement: HumanEval pass@1 65.8% (+18.8).
 - **TiCoder**: Fakhoury et al., arXiv 2404.10100, **[R]** IEEE TSE 50(9) 2024. https://arxiv.org/abs/2404.10100
-  - Намерение уточняется через тесты. В user study (15 программистов) участники значимо чаще правильно
-    оценивают код.
-  - С идеализированным пользователем +45.97% pass@1 за ≤5 взаимодействий.
-- **TDD for Code Generation**: Mathews & Nagappan, arXiv 2402.13521, **[P]** на arXiv (ASE 2024 — **не
-  подтверждено**). https://arxiv.org/abs/2402.13521
-  - Тесты вместе с постановкой задачи стабильно повышают успех на MBPP и HumanEval.
+  - Intent is clarified via tests. In a user study (15 programmers) participants significantly more often correctly
+    assess the code.
+  - With an idealized user +45.97% pass@1 within ≤5 interactions.
+- **TDD for Code Generation**: Mathews & Nagappan, arXiv 2402.13521, **[P]** on arXiv (ASE 2024 — **unconfirmed**).
+  https://arxiv.org/abs/2402.13521
+  - Tests alongside the problem statement consistently increase success on MBPP and HumanEval.
 - **nl2postcond**: Endres et al., arXiv 2310.01831, **[R]** FSE 2024. https://arxiv.org/abs/2310.01831
-  - LLM переводят NL-намерение в постусловия. Они в целом корректны и различают неверный код. Поймали 64
-    исторических бага Defects4J.
+  - LLMs translate NL intent into postconditions. They are generally correct and discriminate wrong code. They caught 64
+    historical Defects4J bugs.
 
-### 6.4 Трассируемость требований
-- **Prompts Matter** (Rodriguez, Dearstyne, Cleland-Huang), arXiv 2308.00229, 2023, **[P]** на arXiv (RE'23
-  workshop — **не подтверждено**). https://arxiv.org/abs/2308.00229
-  - Качество восстановления trace-links сильно зависит от промпта. Работа качественная, без больших чисел.
-- Количественных исследований эффекта **трассируемости требование→тест→код внутри multi-agent конвейера на
-  итоговое качество** не найдено. Ближе всего:
-  - rSDE-Bench и DevAI: проверка по каждому требованию как метод оценки;
-  - test-coverage lane в Proof-or-Stop («intent↔evidence binding»): 70% high/critical findings, но наблюдательно;
-  - ResearchLoop: цепочка RQ→claim→evidence, p≈0.08.
+### 6.4 Requirements traceability
+- **Prompts Matter** (Rodriguez, Dearstyne, Cleland-Huang), arXiv 2308.00229, 2023, **[P]** on arXiv (RE'23
+  workshop — **unconfirmed**). https://arxiv.org/abs/2308.00229
+  - The quality of trace-link recovery depends strongly on the prompt. The work is qualitative, without large numbers.
+- No quantitative studies were found of the effect of **requirement→test→code traceability inside a multi-agent pipeline on
+  final quality**. The closest:
+  - rSDE-Bench and DevAI: per-requirement checking as an evaluation method;
+  - the test-coverage lane in Proof-or-Stop ("intent↔evidence binding"): 70% of high/critical findings, but observational;
+  - ResearchLoop: the RQ→claim→evidence chain, p≈0.08.
 
 ---
 
-## 7. Синтез
+## 7. Synthesis
 
-### 7.1 Механизмы с измеренной поддержкой
-1. **Исполняемые доказательства вместо LLM-мнения.** Поддержка сильная и воспроизводится в разных работах.
-   - EvoMAC: замена исполнения на LLM-критику стоит −12.7…−21.7 п.п. [R].
-   - MetaGPT: executable feedback +4.2/+5.4 п.п. и revisions 2.25 → 0.83 [R].
-   - AgileCoder: без генерации тестов −5.3…−8.3 п.п. [R].
-   - ChatDev: testing-фаза даёт executability 0.77 → 0.88 [R].
-   - Против: LLM-судьи ≤ AUROC 0.65 на false success [R-workshop]; систематические ложные отказы на корректном
-     коде [R].
-2. **Независимость проверяющего от автора.**
-   - AgentCoder: тесты, написанные без доступа к коду, точнее на 27–38 п.п. [P].
-   - Self-correction без внешнего сигнала не работает [R].
-   - Self-preference у судей [R-workshop].
-   - HoH и Proof-or-Stop строят на этом архитектуру, но **отдельной абляции** «frozen read-only QA против QA,
-     который может править» нет.
-   - Read-only тесты в ImpossibleBench снижают модификацию тестов [P].
-3. **Обязательный gate против advisory-ревью при равном бюджете.**
-   - Proof-or-Stop, A3 против A4: 14/1800 → 2/1800 пропущенных green-but-wrong [P, одна модель, эффект
-     сосредоточен в одной задаче].
-   - MAST: цикл «завершить только при подтверждённых ревью» 25.0 → 40.6% на 32 задачах [R].
-   - EviBound: prompt-only 100% ложных «complete», verification gate 25%, два gate 0% [P, n=8].
-4. **Сырые доказательства, а не их пересказ, при передаче между итерациями.**
-   - Meta-Harness: traces против summary — median 50.0 против 34.9 [P].
-   - HoH: без evidence feedback −6.28 [P].
-   - HarnessFix: без trace-grounded diagnosis −4…−10 п.п. [P].
-   - EvoDev: итерации без контекста предшественников ухудшают build и FC [R].
-5. **Regression gate на изменения harness или процесса.**
-   - HarnessFix: без regression-aware acceptance −2…−6 п.п. [P].
-   - Self-Harness: промоушен только без деградации held-out; ни один принятый harness не ухудшил split [P].
-   - SWE-EVO Fix Rate формализует «регрессия обнуляет прогресс» как метрику.
-6. **Структурированные промежуточные документы и роли.** Поддержка умеренная и смешанная.
-   - MetaGPT: абляция ролей с их артефактами — executability 1.0 → 4.0 на 7 задачах [R].
-   - EvoDev: Feature Map, слои контекста, overall design +7.2% [R].
-   - Но ChatDev в своей оценке обгоняет MetaGPT [R]. MAST: у MetaGPT в 1.56 раза больше FC3-отказов.
-   - Схемы сами по себе улучшают координацию (FC1/FC2), но не верификацию. **Чистой абляции «схема против
-     свободного текста» при тех же ролях нет ни в одной работе.**
+### 7.1 Mechanisms with measured support
+1. **Executable evidence instead of LLM opinion.** Support is strong and reproduces across different papers.
+   - EvoMAC: replacing execution with an LLM critique costs −12.7…−21.7 pp [R].
+   - MetaGPT: executable feedback +4.2/+5.4 pp and revisions 2.25 → 0.83 [R].
+   - AgileCoder: without test generation −5.3…−8.3 pp [R].
+   - ChatDev: the testing phase gives executability 0.77 → 0.88 [R].
+   - Against: LLM judges ≤ AUROC 0.65 on false success [R-workshop]; systematic false rejections on correct
+     code [R].
+2. **Independence of the checker from the author.**
+   - AgentCoder: tests written without access to the code are more accurate by 27–38 pp [P].
+   - Self-correction without an external signal does not work [R].
+   - Self-preference in judges [R-workshop].
+   - HoH and Proof-or-Stop build their architecture on this, but there is **no separate ablation** of "frozen read-only QA versus QA
+     that can edit".
+   - Read-only tests in ImpossibleBench reduce test modification [P].
+3. **A mandatory gate versus advisory review at equal budget.**
+   - Proof-or-Stop, A3 versus A4: 14/1800 → 2/1800 missed green-but-wrong [P, one model, effect
+     concentrated in one task].
+   - MAST: the "finish only on confirmed reviews" loop 25.0 → 40.6% on 32 tasks [R].
+   - EviBound: prompt-only 100% false "complete", verification gate 25%, two gates 0% [P, n=8].
+4. **Raw evidence, not its retelling, when passing between iterations.**
+   - Meta-Harness: traces versus summary — median 50.0 versus 34.9 [P].
+   - HoH: without evidence feedback −6.28 [P].
+   - HarnessFix: without trace-grounded diagnosis −4…−10 pp [P].
+   - EvoDev: iterations without the predecessors' context worsen build and FC [R].
+5. **A regression gate on changes to the harness or process.**
+   - HarnessFix: without regression-aware acceptance −2…−6 pp [P].
+   - Self-Harness: promotion only without held-out degradation; no accepted harness worsened the split [P].
+   - SWE-EVO Fix Rate formalizes "a regression zeroes progress" as a metric.
+6. **Structured intermediate documents and roles.** Support is moderate and mixed.
+   - MetaGPT: role ablation with their artifacts — executability 1.0 → 4.0 on 7 tasks [R].
+   - EvoDev: Feature Map, context layers, overall design +7.2% [R].
+   - But ChatDev in its own evaluation outperforms MetaGPT [R]. MAST: MetaGPT has 1.56 times more FC3 failures.
+   - Schemas by themselves improve coordination (FC1/FC2), but not verification. **There is no clean ablation of "schema versus
+     free text" with the same roles in any paper.**
 
-### 7.2 Механизмы, которые только аргументированы (эксперимента нет или он недостаточен)
-- Привязка доказательств к состоянию кода (materialHash/headHash, freshness, command-set hash). Freshness,
-  подписи и tamper-классы проверены только контрактными тестами Proof-or-Stop (10/10, 18/18). В powered-абляции
-  хэши **не** используются. Нет исследования, показывающего, как часто stale evidence встречается в реальной
-  работе.
-- Кворум 3×2 и cross-vendor review. Есть только наблюдательные данные: 68 findings, селективная выборка.
-- Claim-boundary / wording gate, подавление overclaiming в отчётах (Proof-or-Stop, ResearchLoop). Эффект в
-  ResearchLoop пограничный (p≈0.08) и частично объясняется тем, что claims просто выдаётся меньше.
-- Conversation-to-contract gate и минимальные входные артефакты (Agile-V) — только концепция.
-- Замороженный read-only кандидат для QA (HoH) — обоснование есть, абляции нет.
-- Трассируемость требование→доказательство как gate. Используется как метод оценки (DevAI, rSDE-Bench), но
-  эффект на исходы как управляющего механизма не измерен.
-- Quality-evidence (erosion, verbosity) как gate. SlopCodeBench показывает, что промпт не помогает. Проверки
-  качества как gate никто не испытывал.
+### 7.2 Mechanisms that are only argued for (no experiment, or an insufficient one)
+- Binding evidence to the code state (materialHash/headHash, freshness, command-set hash). Freshness,
+  signatures and tamper classes were checked only by Proof-or-Stop's contract tests (10/10, 18/18). The powered ablation does
+  **not** use the hashes. There is no study showing how often stale evidence occurs in real
+  work.
+- A 3×2 quorum and cross-vendor review. There is only observational data: 68 findings, a selective sample.
+- A claim-boundary / wording gate, suppression of overclaiming in reports (Proof-or-Stop, ResearchLoop). The effect in
+  ResearchLoop is borderline (p≈0.08) and is partly explained by the fact that fewer claims are simply emitted.
+- A conversation-to-contract gate and minimal input artifacts (Agile-V) — concept only.
+- A frozen read-only candidate for QA (HoH) — there is a rationale, no ablation.
+- Requirement→evidence traceability as a gate. Used as an evaluation method (DevAI, rSDE-Bench), but
+  the effect on outcomes as a control mechanism has not been measured.
+- Quality evidence (erosion, verbosity) as a gate. SlopCodeBench shows that a prompt does not help. Nobody has tried
+  quality checks as a gate.
 
-### 7.3 Какие режимы отказа закрываются
-| Режим отказа (источник) | Механизм | Статус поддержки |
+### 7.3 Which failure modes are covered
+| Failure mode (source) | Mechanism | Support status |
 |---|---|---|
-| Premature termination / false DONE (MAST FM-3.1; false success 45–76% отказов; OverclaimBench 80.4% misleading) | gate без термина для self-report; done-receipt; ledger «14/15 ≠ done» | контракт 10/10 (P); EviBound 0/8 (P, n мал) |
-| Поверхностная или неверная верификация (MAST FM-3.2/3.3: «compiles / no TODOs») | исполняемые тесты, hidden/independent oracle, test-coverage lane | сильная (EvoMAC, AgentCoder, Proof-or-Stop A3/A4) |
-| Visible-pass / hidden-fail, test overfitting, cheating (ImpossibleBench до 76%; SWE-bench 29.6%) | review как обязательный gate; read-only tests; скрытый oracle; abort-флаг | измерено (P) |
-| Stale evidence после правки кода | materialHash freshness | только механизм, частота не измерена |
-| Потеря контекста между итерациями / агентами (MAST FC2; EvoDev) | typed handoff (Feature Map, planner_handoff), сырые traces | измерено (EvoDev R, HoH P, Meta-Harness P) |
-| Регрессии при изменениях (SWE-EVO P2P; harness edits) | regression gate | измерено (HarnessFix, Self-Harness P) |
-| Самопредпочтение и самопроверка | раздельные авторы тестов и кода, cross-vendor review | частично (AgentCoder P; судьи R); cross-vendor — наблюдательно |
-| Деградация структуры кода при зелёных тестах (SlopCodeBench) | нет подтверждённого механизма; промпты не работают | открыто |
+| Premature termination / false DONE (MAST FM-3.1; false success 45–76% of failures; OverclaimBench 80.4% misleading) | a gate with no term for self-report; a done-receipt; a ledger "14/15 ≠ done" | contract 10/10 (P); EviBound 0/8 (P, small n) |
+| Superficial or wrong verification (MAST FM-3.2/3.3: "compiles / no TODOs") | executable tests, hidden/independent oracle, test-coverage lane | strong (EvoMAC, AgentCoder, Proof-or-Stop A3/A4) |
+| Visible-pass / hidden-fail, test overfitting, cheating (ImpossibleBench up to 76%; SWE-bench 29.6%) | review as a mandatory gate; read-only tests; hidden oracle; an abort flag | measured (P) |
+| Stale evidence after a code edit | materialHash freshness | mechanism only, frequency not measured |
+| Loss of context between iterations / agents (MAST FC2; EvoDev) | typed handoff (Feature Map, planner_handoff), raw traces | measured (EvoDev R, HoH P, Meta-Harness P) |
+| Regressions on changes (SWE-EVO P2P; harness edits) | a regression gate | measured (HarnessFix, Self-Harness P) |
+| Self-preference and self-verification | separate authors of tests and code, cross-vendor review | partial (AgentCoder P; judges R); cross-vendor — observational |
+| Degradation of code structure with green tests (SlopCodeBench) | no confirmed mechanism; prompts do not work | open |
 
-**Главный вывод.** Литература 2023–2026 устойчиво поддерживает три тезиса:
-- приёмку должен решать исполняемый или машинно-проверяемый сигнал, а не LLM-мнение и не самоотчёт агента;
-- проверку должен делать не автор;
-- ревью работает, когда оно **блокирует** переход, а не советует.
+**Main conclusion.** The 2023–2026 literature consistently supports three theses:
+- acceptance should be decided by an executable or machine-checkable signal, not by an LLM's opinion or an agent's self-report;
+- verification should be done by someone other than the author;
+- review works when it **blocks** a transition rather than advises.
 
-Типизированные документы (MetaGPT, EvoDev, HoH-handoff) помогают координации и переносу контекста. Однако
-изолированного измерения «схема против свободного текста» нет, а в MAST структурированный MetaGPT хуже именно в
-верификации. Криптографическая и хэш-привязка доказательств, кворумы и claim-boundary пока подкреплены контрактными
-тестами и наблюдениями, а не контролируемыми сравнениями. Самая близкая работа, Proof-or-Stop, — рецензией не
-проверенный препринт на одной модели, и её основной эффект сосредоточен в одной задаче.
+Typed documents (MetaGPT, EvoDev, HoH handoff) help coordination and context transfer. However,
+there is no isolated measurement of "schema versus free text", and in MAST the structured MetaGPT is worse precisely in
+verification. Cryptographic and hash binding of evidence, quorums and claim-boundary are so far backed by contract
+tests and observations, not by controlled comparisons. The closest work, Proof-or-Stop, is a
+preprint not verified by peer review, on a single model, and its main effect is concentrated in one task.

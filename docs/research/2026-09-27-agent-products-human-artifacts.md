@@ -1,404 +1,404 @@
-# Как coding-agent продукты показывают работу агента человеку-ревьюеру
+# How coding-agent products show the agent's work to a human reviewer
 
-Состояние на 2026-09-27. Источники первичные, если не оговорено. Пометка «не подтверждено» — утверждение
-взято из вторичного источника или из поисковой выдачи, а первичную страницу открыть не удалось.
-Колонка «источник данных» везде различает: **исполнение** (артефакт порождён реальным запуском:
-запись браузера, лог команды, check run) и **модель** (текст, который написала модель и который может
-расходиться с фактом).
+State as of 2026-09-27. Sources are primary unless noted otherwise. The mark "unconfirmed" means the claim
+was taken from a secondary source or from search results, and the primary page could not be opened.
+The "data source" column always distinguishes **execution** (the artifact was produced by a real run:
+a browser recording, a command log, a check run) from **model** (text the model wrote, which may
+diverge from the facts).
 
 ---
 
-## 1. Google Antigravity — Artifacts (центральный кейс)
+## 1. Google Antigravity — Artifacts (the central case)
 
-Хронология: запуск 18–20 ноября 2025 (IDE, форк VS Code, Editor + Manager view); Antigravity 2.0 —
-Google I/O, 19 мая 2026: отдельное desktop-приложение, Go-CLI вместо Gemini CLI, SDK, Enterprise.
+Timeline: launched November 18–20, 2025 (IDE, a VS Code fork, Editor + Manager view); Antigravity 2.0 —
+Google I/O, May 19, 2026: a standalone desktop app, a Go CLI instead of Gemini CLI, an SDK, Enterprise.
 - https://antigravity.google/blog/introducing-google-antigravity (18.11.2025)
 - https://developers.googleblog.com/build-with-google-antigravity-our-new-agentic-development-platform/ (20.11.2025)
 - https://techcrunch.com/2026/05/19/google-launches-antigravity-2-0-with-an-updated-desktop-app-and-cli-tool-at-io-2026/
 
-### Зачем
-Google формулирует проблему прямо: «Delegating work to an agent requires trust, but scrolling through raw
-tool calls is tedious». Artifacts позволяют «verify the agent's logic at a glance»; UI показывает
-«tool calls grouped within tasks», а не каждое действие.
+### Why
+Google states the problem directly: "Delegating work to an agent requires trust, but scrolling through raw
+tool calls is tedious". Artifacts let you "verify the agent's logic at a glance"; the UI shows
+"tool calls grouped within tasks", not every action.
 https://developers.googleblog.com/build-with-google-antigravity-our-new-agentic-development-platform/ ,
 https://antigravity.google/blog/introducing-google-antigravity
 
-Определение в docs: artifact — «a structured deliverable created by the agent to accomplish its task and
-communicate its progress and thinking to the human user». Перечень типов: rich markdown plans, code diffs,
-architecture diagrams, images, browser recordings. Производятся в основном в **Planning Mode** (в Fast
-Mode планирования нет). https://antigravity.google/docs/artifacts/ , https://antigravity.google/docs/artifact-review/
+The definition in the docs: an artifact is "a structured deliverable created by the agent to accomplish its task and
+communicate its progress and thinking to the human user". The list of types: rich markdown plans, code diffs,
+architecture diagrams, images, browser recordings. They are produced mostly in **Planning Mode** (Fast
+Mode has no planning). https://antigravity.google/docs/artifacts/ , https://antigravity.google/docs/artifact-review/
 
-### Типы артефактов
+### Artifact types
 
-| Артефакт | Содержимое | Когда | Где | Источник данных |
+| Artifact | Contents | When | Where | Data source |
 |---|---|---|---|---|
-| **Task List** | структурированный список шагов (checklist), обновляется по ходу | перед кодом и во время работы | review pane / sidebar | модель |
-| **Implementation Plan** (`/plan`) | «technical details on what revisions are necessary and are meant to be reviewed by the user»; task breakdown + «verification checkpoints» | после analysis/discovery и уточняющих вопросов, до изменений | review pane; кнопка **Proceed** в разговоре и в шапке артефакта | модель |
-| **Code diffs / Review Changes** | все накопленные за разговор диффы в отдельном editor pane | по ходу | кнопка `Review Changes` в нижней панели Agent panel | исполнение (git diff) |
-| **Walkthrough** | «concise summary of the changes»; для браузерных задач — screenshots и screen recordings | после завершения реализации | review pane | текст — модель; медиа — исполнение |
-| **Visual Screenshots** | снимок страницы или элемента, снятый browser subagent | автономно или по просьбе | как image artifact | исполнение |
-| **Browser Recordings** | видео действий browser subagent; проигрывается в цикле | когда subagent «may choose to generate a recording» | внизу Browser step UI + как recording artifact | исполнение |
-| Architecture diagrams (Mermaid) | диаграммы в markdown-артефактах | в плане | desktop; в CLI — Kitty graphics / ASCII / raw | модель |
+| **Task List** | a structured list of steps (checklist), updated as work proceeds | before code and during work | review pane / sidebar | model |
+| **Implementation Plan** (`/plan`) | "technical details on what revisions are necessary and are meant to be reviewed by the user"; task breakdown + "verification checkpoints" | after analysis/discovery and clarifying questions, before changes | review pane; a **Proceed** button in the conversation and in the artifact header | model |
+| **Code diffs / Review Changes** | all diffs accumulated over the conversation in a separate editor pane | as work proceeds | the `Review Changes` button in the bottom bar of the Agent panel | execution (git diff) |
+| **Walkthrough** | a "concise summary of the changes"; for browser tasks — screenshots and screen recordings | after implementation is complete | review pane | text — model; media — execution |
+| **Visual Screenshots** | a snapshot of a page or element taken by the browser subagent | autonomously or on request | as an image artifact | execution |
+| **Browser Recordings** | a video of the browser subagent's actions; played in a loop | when the subagent "may choose to generate a recording" | at the bottom of the Browser step UI + as a recording artifact | execution |
+| Architecture diagrams (Mermaid) | diagrams in markdown artifacts | in the plan | desktop; in the CLI — Kitty graphics / ASCII / raw | model |
 
-Источники: https://antigravity.google/docs/implementation-plan , https://antigravity.google/docs/plan/ ,
+Sources: https://antigravity.google/docs/implementation-plan , https://antigravity.google/docs/plan/ ,
 https://antigravity.google/docs/walkthrough/ , https://antigravity.google/docs/screenshots ,
 https://antigravity.google/docs/ide/browser-recordings/ , https://antigravity.google/docs/ide/review-changes-editor/ ,
 https://antigravity.google/docs/cli/artifacts/
 
-Разделы Implementation Plan. Официальные docs точных заголовков не дают. Сторонние воспроизведения
-формата `implementation_plan.md` называют разделы Goal Description, User Review Required, Open Questions,
-Proposed Changes (файлы: create/modify/delete) и Verification Plan; для отчёта используют `walkthrough.md`
-(https://github.com/mohmaedeslam00116/cline/issues/42). **Не подтверждено** официальной документацией.
-Официально подтверждено только одно: план содержит task breakdown и «verification checkpoints»
+Implementation Plan sections. The official docs do not give exact headings. Third-party reproductions
+of the `implementation_plan.md` format name the sections Goal Description, User Review Required, Open Questions,
+Proposed Changes (files: create/modify/delete) and Verification Plan; for the report they use `walkthrough.md`
+(https://github.com/mohmaedeslam00116/cline/issues/42). **Unconfirmed** by the official documentation.
+Only one thing is officially confirmed: the plan contains a task breakdown and "verification checkpoints"
 (https://antigravity.google/docs/plan/).
 
-### Обратная связь и одобрение
-- **Комментарии как в Google Docs** на текстовых артефактах и «select-and-comment feedback on screenshots».
-  Обратная связь попадает в работу агента «without interruption».
+### Feedback and approval
+- **Comments as in Google Docs** on text artifacts and "select-and-comment feedback on screenshots".
+  Feedback enters the agent's work "without interruption".
   https://antigravity.google/blog/introducing-google-antigravity
-- В плане можно оставлять inline-комментарии на отдельных шагах и просить изменить объём работы. Дальше
-  есть два пути: **Proceed** или переключатель **Review**, который собирает все комментарии и отправляет
-  их агенту. Агент либо переделывает план и снова просит review, либо начинает работу.
+- In the plan you can leave inline comments on individual steps and ask to change the scope of work. Then
+  there are two paths: **Proceed** or the **Review** toggle, which collects all comments and sends
+  them to the agent. The agent either redoes the plan and asks for review again, or starts work.
   https://antigravity.google/docs/implementation-plan , https://antigravity.google/docs/plan/
-- На diffs в Review Changes тоже можно оставлять inline-комментарии, и агент их получает.
+- On diffs in Review Changes you can also leave inline comments, and the agent receives them.
   https://antigravity.google/docs/ide/review-changes-editor/
-- Практический пример Google Developer Advocate: комментарий к плану («FastAPI instead of Flask»), к
-  task list («more detailed verification instructions»), к коду, к скриншоту в walkthrough («color theme
-  from blue to orange»). Комментарии нужно явно отправить (submit), и они влияют на последующие шаги.
+- A practical example from a Google Developer Advocate: a comment on the plan ("FastAPI instead of Flask"), on the
+  task list ("more detailed verification instructions"), on the code, on a screenshot in the walkthrough ("color theme
+  from blue to orange"). Comments must be explicitly submitted, and they affect subsequent steps.
   https://atamel.dev/posts/2025/12-10_antigravity_provide_feedback/ (10.12.2025)
-- **Artifact Review Policy**: `Request Review` — рекомендуемый и стандартный режим: агент всегда
-  останавливается на плане или диффе и ждёт явного одобрения. `Always Proceed` — агент не
-  останавливается. https://antigravity.google/docs/artifact-review/
-- Отдельно существуют permission presets (Default / Request Review / Turbo) и правила Deny > Ask > Allow
-  для `command(...)`, `read_url`, `execute_url`. Для браузера по умолчанию действует Ask.
+- **Artifact Review Policy**: `Request Review` — the recommended and default mode: the agent always
+  stops at the plan or diff and waits for explicit approval. `Always Proceed` — the agent does not
+  stop. https://antigravity.google/docs/artifact-review/
+- Separately there are permission presets (Default / Request Review / Turbo) and Deny > Ask > Allow rules
+  for `command(...)`, `read_url`, `execute_url`. For the browser, Ask applies by default.
   https://antigravity.google/docs/permissions/
-- **CLI (2.0)**: `ctrl+r` открывает Artifact Picker. Файлы разделены на «Actionable Code Files»
-  (код, конфиги, планы — нужно approve) и «Media Drawer» (PNG/JPG/WebP/SVG/MP4/WebM). Клавиши: `y`
-  approve, `n` reject, `Shift+A`/`Shift+R` — массовые действия, `p` — превью, `c` — построчный
-  комментарий в detail viewer (отметка 💬), `m` — режим Mermaid. Статус-бар подсказывает
-  «/artifact to review». https://antigravity.google/docs/cli/artifacts/
+- **CLI (2.0)**: `ctrl+r` opens the Artifact Picker. Files are split into "Actionable Code Files"
+  (code, configs, plans — need approval) and a "Media Drawer" (PNG/JPG/WebP/SVG/MP4/WebM). Keys: `y`
+  approve, `n` reject, `Shift+A`/`Shift+R` — bulk actions, `p` — preview, `c` — a line comment
+  in the detail viewer (marked 💬), `m` — Mermaid mode. The status bar hints
+  "/artifact to review". https://antigravity.google/docs/cli/artifacts/
 
-### Ограничения
-- Walkthrough пишет модель. Его текст не привязан к логам так, как в Codex, и официальные docs не
-  описывают citations. Доказательной силой обладают только screenshots и recordings.
+### Limitations
+- The walkthrough is written by the model. Its text is not tied to logs the way it is in Codex, and the official docs do not
+  describe citations. Only screenshots and recordings carry evidentiary weight.
   https://antigravity.google/docs/walkthrough/
-- Browser recording создаётся, когда subagent «may choose» его сделать, то есть не гарантирован.
-  Docs не описывают формат записи и комментарии к видео (комментарии к screenshots описаны).
+- A browser recording is created when the subagent "may choose" to make it, that is, it is not guaranteed.
+  The docs do not describe the recording format or comments on video (comments on screenshots are described).
   https://antigravity.google/docs/ide/browser-recordings/
-- Весь цикл review работает только в Planning Mode. Режим `Always Proceed` фактически отключает gate.
+- The whole review cycle works only in Planning Mode. The `Always Proceed` mode effectively disables the gate.
   https://antigravity.google/docs/artifact-review/
-- Публичных первичных жалоб (например, «walkthrough утверждает то, чего не было») я не нашёл:
-  **не подтверждено**.
+- I found no public primary complaints (for example, "the walkthrough claims something that did not happen"):
+  **unconfirmed**.
 
 ---
 
 ## 2. OpenAI Codex
 
 ### Cloud tasks
-- С запуска (май 2025) Codex «trained to provide verifiable evidence of its actions through citations of
-  terminal logs and files». После задачи пользователь видит **diff view** и «comprehensive log of actions».
-  Citations ведут на изменённые файлы и на выполненные терминальные команды, чтобы можно было «verify the
-  outcomes of terminal commands, such as tests». System card, 16.05.2025:
+- Since launch (May 2025) Codex has been "trained to provide verifiable evidence of its actions through citations of
+  terminal logs and files". After a task the user sees a **diff view** and a "comprehensive log of actions".
+  Citations lead to changed files and to executed terminal commands, so that one can "verify the
+  outcomes of terminal commands, such as tests". System card, 16.05.2025:
   https://cdn.openai.com/pdf/8df7697b-c1b2-4222-be00-1fd3298f351d/codex_system_card.pdf
-- Там же риск «**falsely claim to have completed a task**»: в ранних тестах Codex на невыполнимых задачах
-  часто заявлял, что всё сделано. Меры: RL-штраф за «results inconsistent with its actions» и награда за
-  признание ограничений. Доля корректных признаний «couldn't complete» выросла с 0.15 до 0.85; также
-  помогает «User transparency and diff reviews». (тот же PDF, §2.3)
-- По выдаче поиска: в summary используются file citations для изменений кода, а terminal citations — в
-  секции Testing. Страница openai.com вернула 403, поэтому **не подтверждено** прямым чтением.
+- The same document has the risk "**falsely claim to have completed a task**": in early tests, on impossible tasks Codex
+  often claimed everything was done. Mitigations: an RL penalty for "results inconsistent with its actions" and a reward for
+  admitting limitations. The share of correct "couldn't complete" admissions rose from 0.15 to 0.85; also
+  helping is "User transparency and diff reviews". (the same PDF, §2.3)
+- Per search results: the summary uses file citations for code changes and terminal citations in the
+  Testing section. The openai.com page returned 403, so this is **unconfirmed** by direct reading.
   https://openai.com/index/introducing-codex/
-- Интерфейс cloud: «watch the task logs», «inspect the summary and diff», «open a pull request»,
-  follow-up. В списке задач видны repo, branch, статистика `+31−1` и статус merge.
+- The cloud interface: "watch the task logs", "inspect the summary and diff", "open a pull request",
+  follow-up. The task list shows repo, branch, `+31−1` statistics and merge status.
   https://learn.chatgpt.com/docs/cloud
-- Upgrades (сентябрь 2025): Codex в облаке может «spin up its own browser, look at what it built, iterate,
-  and attach a screenshot of the result to the task and GitHub PR». Взято из выдачи поиска, openai.com
-  отдал 403, поэтому **частично не подтверждено**. https://openai.com/index/introducing-upgrades-to-codex/
+- Upgrades (September 2025): Codex in the cloud can "spin up its own browser, look at what it built, iterate,
+  and attach a screenshot of the result to the task and GitHub PR". Taken from search results, openai.com
+  returned 403, so **partly unconfirmed**. https://openai.com/index/introducing-upgrades-to-codex/
 
 ### Codex app / review pane (2026)
-- `/review`: сравнение с base branch, uncommitted changes, отдельный commit или custom instructions. Review
-  pane показывает Unstaged / Staged / Commit / Branch / **Last turn** (только последние правки агента).
-  Inline-комментарий добавляется через `+` на строке. Stage и Revert доступны для всего диффа, файла или
-  hunk. При наличии `gh` рядом видны PR context и reviewer feedback.
+- `/review`: comparison with the base branch, uncommitted changes, a specific commit, or custom instructions. The review
+  pane shows Unstaged / Staged / Commit / Branch / **Last turn** (only the agent's latest edits).
+  An inline comment is added via `+` on a line. Stage and Revert are available for the whole diff, a file, or
+  a hunk. With `gh` present, PR context and reviewer feedback are visible alongside.
   https://learn.chatgpt.com/docs/code-review?surface=app
-- Встроенный браузер: annotation mode с комментариями к элементам и областям страницы. Агент делает
-  screenshots, чтобы проверить отрисовку, а человек сравнивает страницу «alongside the code diff».
+- The built-in browser: annotation mode with comments on page elements and regions. The agent takes
+  screenshots to check rendering, and the human compares the page "alongside the code diff".
   https://learn.chatgpt.com/docs/browser
-- Changelog сентября 2026: «agent command center» (группировка по модели, токены и оценка расхода),
-  recaps с отдельным блоком «next actions», Mermaid прямо в ответах. https://learn.chatgpt.com/docs/changelog
+- September 2026 changelog: an "agent command center" (grouping by model, tokens and cost estimate),
+  recaps with a separate "next actions" block, Mermaid directly in replies. https://learn.chatgpt.com/docs/changelog
 
 ### Codex code review (GitHub)
-- Запуск через `@codex review` (реакция 👀) или Automatic reviews. Показываются только **P0/P1**. Правила
-  берутся из `AGENTS.md`: в одном описании секция называется `## Code Review Rules`, во вторичных
-  источниках — `## Review guidelines`. После review можно написать `@codex fix the P1 issue`, и Codex
-  запустит cloud-задачу, которая отправит исправление в ветку.
+- Started via `@codex review` (a 👀 reaction) or Automatic reviews. Only **P0/P1** are shown. Rules
+  come from `AGENTS.md`: in one description the section is called `## Code Review Rules`, in secondary
+  sources — `## Review guidelines`. After a review you can write `@codex fix the P1 issue`, and Codex
+  will start a cloud task that pushes the fix to the branch.
   https://learn.chatgpt.com/docs/third-party/github.md
-- Заявлено, что review «matches the stated intent of a PR to the actual diff» и «executes code and tests to
-  validate behavior». Утверждение из выдачи поиска: **не подтверждено** прямым чтением.
+- The review is claimed to "match the stated intent of a PR to the actual diff" and "execute code and tests to
+  validate behavior". A claim from search results: **unconfirmed** by direct reading.
   https://openai.com/index/introducing-upgrades-to-codex/
 
-### Ограничения
-Citations и summary пишет модель, но они ссылаются на реальные логи, и это главная защита. Сама OpenAI
-признаёт риск ложного заявления о завершении задачи (system card).
+### Limitations
+Citations and summaries are written by the model, but they point to real logs, and that is the main protection.
+OpenAI itself acknowledges the risk of falsely claiming a task is complete (system card).
 
 ---
 
 ## 3. Devin (Cognition)
 
-| Артефакт | Содержимое | Источник данных |
+| Artifact | Contents | Data source |
 |---|---|---|
-| **Interactive Planning** (Devin 2.0, 03.04.2025) | за секунды: relevant files, findings, preliminary plan; план можно изменить до автономной работы | модель — https://cognition.com/blog/devin-2 |
-| **Progress tab** | единая лента: shell-команды, правки кода, действия в браузере; клик по шагу открывает детали; по истории команд можно перемещаться во времени (будущие шаги серые) | исполнение — https://docs.devin.ai/work-with-devin/devin-session-tools |
-| Shell / IDE / Browser | история команд с выводом, VS Code в реальном времени, браузер или desktop; есть takeover (read-only или writable) | исполнение — там же |
-| **Test plan** (testing mode) | «single most important end-to-end flow», шаги, основанные на реальных code paths; план отправляют человеку | модель — https://docs.devin.ai/work-with-devin/testing-and-recordings |
-| **Test recording** | запись экрана с аннотациями ключевых моментов, auto-zoom и сжатием простоев; приходит вложением в сообщение (webapp/Slack) | исполнение + аннотации агента — там же |
-| **Test report** | «labeled screenshots from key moments»; видеоплеер с **chapters** и хронологическим списком **assertions: passed / failed / untested** | исполнение + разметка агента — https://cognition.com/blog/testing-development (29.05.2026) |
-| **PR description** | наблюдаемый шаблон: Summary / Problem / Solution / **Review & Testing Checklist for Human** / Notes / **Link to Devin run** | модель; шаблон виден в реальном PR https://github.com/BerriAI/litellm/pull/43437 , официально не описан (**не подтверждено** как стандарт) |
-| **Devin Review** | PR, перегруппированный логически, а не по алфавиту, с объяснением каждого hunk; распознаёт move/copy; Bug Catcher: red (probable bug) / yellow (warning) / gray (FYI); Flags (Investigate / Informational); security с CWE; вкладки Changes / Bugs / Flags / Description / Discussion / Commits; chat с контекстом кодовой базы; Auto-Fix | модель — https://docs.devin.ai/work-with-devin/devin-review , https://cognition.com/blog/devin-review |
+| **Interactive Planning** (Devin 2.0, 03.04.2025) | within seconds: relevant files, findings, a preliminary plan; the plan can be changed before autonomous work | model — https://cognition.com/blog/devin-2 |
+| **Progress tab** | a single feed: shell commands, code edits, browser actions; clicking a step opens details; through the command history you can move in time (future steps are grayed out) | execution — https://docs.devin.ai/work-with-devin/devin-session-tools |
+| Shell / IDE / Browser | command history with output, VS Code in real time, a browser or desktop; takeover is available (read-only or writable) | execution — same |
+| **Test plan** (testing mode) | "single most important end-to-end flow", steps based on real code paths; the plan is sent to the human | model — https://docs.devin.ai/work-with-devin/testing-and-recordings |
+| **Test recording** | a screen recording with annotations of key moments, auto-zoom and idle-time compression; delivered as an attachment to a message (webapp/Slack) | execution + agent annotations — same |
+| **Test report** | "labeled screenshots from key moments"; a video player with **chapters** and a chronological list of **assertions: passed / failed / untested** | execution + agent markup — https://cognition.com/blog/testing-development (29.05.2026) |
+| **PR description** | observed template: Summary / Problem / Solution / **Review & Testing Checklist for Human** / Notes / **Link to Devin run** | model; the template is visible in a real PR https://github.com/BerriAI/litellm/pull/43437 , not officially described (**unconfirmed** as a standard) |
+| **Devin Review** | a PR regrouped logically rather than alphabetically, with an explanation of each hunk; recognizes move/copy; Bug Catcher: red (probable bug) / yellow (warning) / gray (FYI); Flags (Investigate / Informational); security with CWE; tabs Changes / Bugs / Flags / Description / Discussion / Commits; chat with codebase context; Auto-Fix | model — https://docs.devin.ai/work-with-devin/devin-review , https://cognition.com/blog/devin-review |
 
-Обратная связь: testing mode запускается кнопкой «Test the app» или настройкой «Pre-approve testing».
-Правки из chat в Devin Review применяются как commit. Триггеры Devin Review: `/devin review` или
-auto-review на open, push и ready-for-review. Для stacked PRs есть индикаторы готовности каждого слоя.
+Feedback: testing mode is launched by the "Test the app" button or the "Pre-approve testing" setting.
+Edits from the chat in Devin Review are applied as a commit. Devin Review triggers: `/devin review` or
+auto-review on open, push and ready-for-review. For stacked PRs there are readiness indicators for each layer.
 https://docs.devin.ai/work-with-devin/devin-review
 
-Ограничения, которые признаёт сама Cognition: screenshots пропускают быстро исчезающий UI (toasts). Модели
-«lean too heavily on executing JavaScript in the browser to trigger states programmatically instead of
-clicking through the UI», то есть проверка может не соответствовать реальному пользовательскому пути.
-Testing mode задуман как «quick sanity check», а не замена CI.
+Limitations acknowledged by Cognition itself: screenshots miss quickly disappearing UI (toasts). Models
+"lean too heavily on executing JavaScript in the browser to trigger states programmatically instead of
+clicking through the UI", meaning the check may not match the real user path.
+Testing mode is intended as a "quick sanity check", not a replacement for CI.
 https://cognition.com/blog/testing-development , https://docs.devin.ai/work-with-devin/testing-and-recordings
 
 ---
 
 ## 4. Cursor (cloud agents, Cursor 3.x, Bugbot)
 
-- **Cloud Agents with Computer Use**, 24.02.2026: каждый агент работает в своей VM, сам тестирует изменения
-  и прикладывает к PR **artifacts: videos, screenshots, log references**. Человек может взять управление
-  remote desktop, пощупать собранное ПО и вернуть управление агенту. По словам Cursor, «>30% of the PRs we
-  merge at Cursor» создают автономные cloud-агенты.
+- **Cloud Agents with Computer Use**, 24.02.2026: each agent works in its own VM, tests changes itself
+  and attaches to the PR **artifacts: videos, screenshots, log references**. A human can take over the
+  remote desktop, try the built software and hand control back to the agent. According to Cursor, ">30% of the PRs we
+  merge at Cursor" are created by autonomous cloud agents.
   https://cursor.com/blog/agent-computer-use , https://cursor.com/docs/cloud-agent/capabilities
-- Публикация artifacts в GitHub включается настройкой «Allow posting artifacts to GitHub». URL длинные и
-  неугадываемые, но **открываются без аутентификации**, потому что этого требует image proxy GitHub.
+- Publishing artifacts to GitHub is enabled by the "Allow posting artifacts to GitHub" setting. The URLs are long and
+  unguessable, but they **open without authentication**, because GitHub's image proxy requires this.
   https://cursor.com/docs/cloud-agent/capabilities
-- Жалоба из форума (26.02.2026): screenshots и видео не попадали в PR. Ответ сотрудника: постинг в GitHub
-  «not yet supported». Функцию выпустили 26.03 как opt-in. Остаётся ограничение: artifacts рендерятся только
-  в описании PR, созданного агентом, но не в комментариях и не в PR, созданных людьми.
+- A forum complaint (26.02.2026): screenshots and videos did not make it into the PR. A staff reply: posting to GitHub is
+  "not yet supported". The feature was released on 26.03 as opt-in. A limitation remains: artifacts render only
+  in the description of a PR created by the agent, but not in comments and not in PRs created by humans.
   https://forum.cursor.com/t/cursor-cloud-agents-do-not-post-their-screenshots-or-videos-to-pr/152974
-- **Plan Mode**: уточняющие вопросы, затем план с to-dos и путями файлов. План хранится в markdown (по
-  умолчанию в home, «Save to workspace» кладёт его в репозиторий), его можно редактировать, дальше кнопка
-  Build. https://cursor.com/docs/agent/plan-mode
-- **Cursor 3** (02.04.2026): Agents Window, новый diffs view (review, stage, commit, управление PR).
-  https://cursor.com/changelog/3-0 . **Agent Review** работает локально, автоматически после задачи или
-  через `/agent-review`, в режимах Quick и Deep, и учитывает `BUGBOT.md`.
+- **Plan Mode**: clarifying questions, then a plan with to-dos and file paths. The plan is stored in markdown (by
+  default in the home directory, "Save to workspace" puts it in the repository), it can be edited, then the Build
+  button. https://cursor.com/docs/agent/plan-mode
+- **Cursor 3** (02.04.2026): Agents Window, a new diffs view (review, stage, commit, PR management).
+  https://cursor.com/changelog/3-0 . **Agent Review** works locally, automatically after a task or
+  via `/agent-review`, in Quick and Deep modes, and takes `BUGBOT.md` into account.
   https://cursor.com/docs/agent/agent-review
-- **Bugbot**: комментарии в PR с полями Title, Severity (high/medium/low), Description, ссылками **Fix in
-  Cursor** и **Fix in Web**. Check run принимает значения `success` / `neutral` (найдены проблемы) /
-  `failure` (если включён fail-on-unresolved). Правила: `.cursor/BUGBOT.md`, learned rules, которые
-  строятся из реакций, ответов и пропусков, отмеченных людьми (`@cursor remember`), и manual rules.
-  Autofix запускает cloud agent и кладёт исправление в новую ветку или в текущую (не больше 3 попыток).
+- **Bugbot**: PR comments with the fields Title, Severity (high/medium/low), Description, and the links **Fix in
+  Cursor** and **Fix in Web**. The check run takes the values `success` / `neutral` (issues found) /
+  `failure` (if fail-on-unresolved is enabled). Rules: `.cursor/BUGBOT.md`, learned rules, which
+  are built from reactions, replies and misses marked by humans (`@cursor remember`), and manual rules.
+  Autofix starts a cloud agent and puts the fix into a new branch or the current one (no more than 3 attempts).
   https://cursor.com/docs/bugbot , https://cursor.com/blog/bugbot-learning , https://cursor.com/changelog/02-26-26
 
 ---
 
-## 5. GitHub Copilot coding agent (сейчас «Copilot cloud agent»)
+## 5. GitHub Copilot coding agent (now "Copilot cloud agent")
 
-- **Session log**: «Copilot's internal reasoning and the tools it used to understand your repository, make
-  changes, and validate its work». В overview видны токены и длительность. Лог стримится вживую, из PR
-  открывается кнопкой «View session», есть событие «Copilot started work».
+- **Session log**: "Copilot's internal reasoning and the tools it used to understand your repository, make
+  changes, and validate its work". The overview shows tokens and duration. The log streams live, opens from the PR
+  via the "View session" button, and there is a "Copilot started work" event.
   https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/manage-and-track-agents
-- **В сообщении каждого commit есть ссылка на session logs** «for code review and auditing». Commits
-  подписаны (Verified), а соавтором указан человек, запустивший задачу.
+- **Every commit message has a link to session logs** "for code review and auditing". Commits
+  are signed (Verified), and the human who started the task is listed as co-author.
   https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations
-- **PR body**: агент раскладывает issue в checklist и отмечает пункты по мере работы
+- **PR body**: the agent breaks the issue into a checklist and ticks items as work proceeds
   (https://github.blog/ai-and-ml/github-copilot/assigning-and-completing-issues-with-coding-agent-in-github-copilot/).
-  Title и body обновляются при ответах на feedback
+  The title and body are updated when responding to feedback
   (https://github.blog/changelog/2025-07-30-copilot-coding-agent-keeps-pull-request-titles-and-bodies-up-to-date/),
-  агент следует PR template (https://github.blog/changelog/2025-11-05-copilot-coding-agent-now-supports-pull-request-templates/).
-- **Screenshots в PR**: Playwright MCP включён по умолчанию, и Copilot «share screenshots of what it has done
-  in its pull request» (02.07.2025).
+  the agent follows the PR template (https://github.blog/changelog/2025-11-05-copilot-coding-agent-now-supports-pull-request-templates/).
+- **Screenshots in the PR**: Playwright MCP is enabled by default, and Copilot can "share screenshots of what it has done
+  in its pull request" (02.07.2025).
   https://github.blog/changelog/2025-07-02-copilot-coding-agent-now-has-its-own-web-browser/
-- **Self-validation перед завершением** (28.10.2025): CodeQL, проверка новых зависимостей по Advisory DB,
-  secret scanning и Copilot code review как «second opinion». Найденное агент пытается исправить, а
-  результат описывает в PR summary. Набор проверок настраивается (03.2026).
+- **Self-validation before finishing** (28.10.2025): CodeQL, a check of new dependencies against the Advisory DB,
+  secret scanning and Copilot code review as a "second opinion". The agent tries to fix what is found and
+  describes the result in the PR summary. The set of checks is configurable (03.2026).
   https://github.blog/changelog/2025-10-28-copilot-coding-agent-now-automatically-validates-code-security-and-quality/ ,
   https://github.blog/changelog/2026-03-18-configure-copilot-coding-agents-validation-tools/
-- **Agents panel / Agents page / Agents tab** (mission control): список сессий, живые логи, **steering**
-  без остановки агента (каждое сообщение расходует AI credits), Stop, Archive, переход в PR.
+- **Agents panel / Agents page / Agents tab** (mission control): a list of sessions, live logs, **steering**
+  without stopping the agent (each message consumes AI credits), Stop, Archive, a jump to the PR.
   https://docs.github.com/en/copilot/concepts/agents/cloud-agent/agent-management
-- После сессии можно спросить Copilot Chat «what changed, what was validated, and why», и он ответит по
-  session logs. (manage-and-track-agents, см. выше)
-- **Gates**: GitHub Actions не запускаются, пока человек с write-доступом не нажмёт «**Approve and run
-  workflows**». Агент не может approve или merge свой PR, и **тот, кто запустил агента, тоже не может его
-  approve**. Агент пушит только в `copilot/*`. Комментарии пользователей без write-доступа агенту не
-  передаются. https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations
-- Руководство GitHub для ревьюеров агентных PR (07.05.2026): блокировать любое ослабление CI; требовать
-  тесты, которые падают на старом поведении, rollback plan и явный implementation plan.
+- After a session you can ask Copilot Chat "what changed, what was validated, and why", and it answers from
+  the session logs. (manage-and-track-agents, see above)
+- **Gates**: GitHub Actions do not run until a person with write access clicks "**Approve and run
+  workflows**". The agent cannot approve or merge its own PR, and **the person who started the agent cannot approve it
+  either**. The agent pushes only to `copilot/*`. Comments from users without write access are not
+  passed to the agent. https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations
+- GitHub's guide for reviewers of agent PRs (07.05.2026): block any weakening of CI; require
+  tests that fail on the old behavior, a rollback plan and an explicit implementation plan.
   https://github.blog/ai-and-ml/generative-ai/agent-pull-requests-are-everywhere-heres-how-to-review-them/
 
 ---
 
-## 6. Остальные продукты
+## 6. Other products
 
 ### Google Jules
-- Перед кодом показывается **plan approval**: reasoning и шаги, которые можно раскрыть и откомментировать
-  в чате. Для **auto-approved plans** с 26.01.2026 работает **Planning Critic** — второй агент, который
-  критикует и уточняет план до выполнения. Заявлено «9.5% reduction in task failure rates».
+- Before code, a **plan approval** is shown: reasoning and steps that can be expanded and commented on
+  in the chat. For **auto-approved plans**, since 26.01.2026 a **Planning Critic** works — a second agent that
+  critiques and refines the plan before execution. A "9.5% reduction in task failure rates" is claimed.
   https://jules.google/docs/changelog/2026-01-26-1/
-- **Critic** (08.2025) проверяет итоговый патч в один проход. Он ничего не исправляет, только помечает
-  проблемы и возвращает патч Jules. https://developers.googleblog.com/en/meet-jules-sharpest-critic-and-most-valuable-ally/
-- **Activity feed**: шаги, вывод, ошибки, запросы feedback, мини-диффы и inline-объяснения изменений.
-  Полный diff editor. **Итоговый summary**: изменённые файлы, runtime, строки added/changed, branch name,
-  commit message. Кнопки Publish branch / Publish PR. Есть pause.
+- **Critic** (08.2025) checks the final patch in a single pass. It fixes nothing, only flags
+  problems and returns the patch to Jules. https://developers.googleblog.com/en/meet-jules-sharpest-critic-and-most-valuable-ally/
+- **Activity feed**: steps, output, errors, feedback requests, mini-diffs and inline explanations of changes.
+  A full diff editor. **Final summary**: changed files, runtime, lines added/changed, branch name,
+  commit message. Publish branch / Publish PR buttons. There is pause.
   https://jules.google/docs/code/ , https://jules.google/docs/running-tasks/
-- Для frontend Jules отправляет **screenshot**, в base image есть Playwright (07.08.2025). Изображения
-  рендерятся прямо в diff viewer (22.08.2025). Jules реагирует на комментарии в PR (23.09.2025) и сам
-  чинит упавший CI (19.02.2026). https://jules.google/docs/changelog/
+- For frontend Jules sends a **screenshot**, and Playwright is in the base image (07.08.2025). Images
+  render directly in the diff viewer (22.08.2025). Jules reacts to comments in the PR (23.09.2025) and
+  fixes failing CI itself (19.02.2026). https://jules.google/docs/changelog/
 
 ### Replit Agent
-- **Task system**: board со столбцами **Drafts / Active / Ready / Done**. У каждой предложенной задачи есть
-  title, description и детальный план через «**View plan**», в котором описано, «what it will do and what
-  "done" looks like». Кнопки «Accept tasks» и «Revise plan». Готовая задача показывает **work log, test
-  results и live preview**, дальше «Apply changes to main version» или «Dismiss».
+- **Task system**: a board with the columns **Drafts / Active / Ready / Done**. Each proposed task has a
+  title, description and a detailed plan via "**View plan**", which describes "what it will do and what
+  "done" looks like". Buttons "Accept tasks" and "Revise plan". A finished task shows a **work log, test
+  results and live preview**, then "Apply changes to main version" or "Dismiss".
   https://docs.replit.com/core-concepts/agent/task-system.md
-- **App Testing**: агент сам решает, когда тестировать. Тестирование идёт в настоящем браузере с видимым
-  курсором, затем агент выдаёт summary и исправляет найденное. После прогона доступен **interactive video
-  replay** с навигацией по секциям. «Begin take over» используется для логина и CAPTCHA; если человек
-  10 минут не отвечает, срабатывает Skip. Работает только для Full Stack JS и Streamlit.
+- **App Testing**: the agent decides itself when to test. Testing runs in a real browser with a visible
+  cursor, then the agent produces a summary and fixes what it found. After the run an **interactive video
+  replay** with section navigation is available. "Begin take over" is used for login and CAPTCHA; if the human
+  does not respond for 10 minutes, Skip fires. Works only for Full Stack JS and Streamlit.
   https://docs.replit.com/core-concepts/agent/app-testing.md
-- **Checkpoints**: автоматические снимки кода, контекста разговора и БД на вехах, откат через history view.
+- **Checkpoints**: automatic snapshots of code, conversation context and the DB at milestones, rollback via the history view.
   https://docs.replit.com/core-concepts/agent/checkpoints-and-rollbacks
 
 ### Claude Code
-- **Cloud (claude.ai/code)**: индикатор `+42 -18` открывает diff view с inline-комментариями, которые
-  уходят со следующим сообщением. Есть «Compare against» и **Create PR** (full, draft или страница compose с
-  готовыми title и description). **CI status bar** с **Auto-fix**: агент подписывается на события PR,
-  исправляет упавшие checks и review-комментарии. Если комментарий неоднозначен, агент спрашивает
-  человека. Ответы в GitHub помечаются как написанные Claude Code. Сессию можно расшарить ссылкой.
+- **Cloud (claude.ai/code)**: the `+42 -18` indicator opens a diff view with inline comments that
+  go out with the next message. There is "Compare against" and **Create PR** (full, draft, or a compose page with
+  ready title and description). A **CI status bar** with **Auto-fix**: the agent subscribes to PR events,
+  fixes failed checks and review comments. If a comment is ambiguous, the agent asks the
+  human. Replies on GitHub are marked as written by Claude Code. The session can be shared by link.
   https://code.claude.com/docs/en/claude-code-on-the-web
-- **Desktop**: Browser pane с preview dev-сервера и **auto-verify**: агент делает screenshots, инспектирует
-  DOM, кликает и заполняет формы. Diff view с построчными комментариями, отправка через Cmd+Enter. Кнопка
-  **Review code** ищет только high-signal проблемы. CI status bar с Auto-fix и Auto-merge. Отдельные panes
-  для plan и tasks. Permission modes Manual / Accept edits / Plan / Auto / Bypass.
+- **Desktop**: a Browser pane with a dev-server preview and **auto-verify**: the agent takes screenshots, inspects the
+  DOM, clicks and fills in forms. A diff view with line comments, sent via Cmd+Enter. The
+  **Review code** button looks only for high-signal problems. A CI status bar with Auto-fix and Auto-merge. Separate panes
+  for plan and tasks. Permission modes Manual / Accept edits / Plan / Auto / Bypass.
   https://code.claude.com/docs/en/desktop
-- **Artifacts** (claude.ai/code/artifact): живая HTML-страница из сессии, которая обновляется на месте и
-  хранит версии. Документированный сценарий — «Walk a reviewer through a pull request with annotated
-  diffs» или вести «investigation timeline» по ходу длинной задачи. Страница private, пока ею не поделились.
+- **Artifacts** (claude.ai/code/artifact): a live HTML page from the session that updates in place and
+  keeps versions. The documented scenario is "Walk a reviewer through a pull request with annotated
+  diffs" or keeping an "investigation timeline" during a long task. The page is private until shared.
   https://code.claude.com/docs/en/artifacts
-- **Code Review** (managed): несколько агентов ищут проблемы, отдельный **verification step** проверяет
-  кандидатов на реальном поведении кода. Severity: 🔴 Important / 🟡 Nit / 🟣 Pre-existing. У каждой
-  находки раскрывается «extended reasoning… how it verified the problem». Check run «Claude Code Review»
-  содержит таблицу Severity | File:Line | Issue, annotations в Files changed и машиночитаемый итог
-  (`bughunter-severity`). Conclusion всегда **neutral**, то есть PR не блокируется. Настраивается через
-  `REVIEW.md` и `CLAUDE.md`. https://code.claude.com/docs/en/code-review
-- **claude-code-action**: трекинг-комментарий с чекбоксами, которые обновляются по мере работы
-  (`track_progress`), и `use_sticky_comment`.
+- **Code Review** (managed): several agents look for problems, a separate **verification step** checks
+  the candidates against the real behavior of the code. Severity: 🔴 Important / 🟡 Nit / 🟣 Pre-existing. For each
+  finding, "extended reasoning… how it verified the problem" expands. The check run "Claude Code Review"
+  contains a table Severity | File:Line | Issue, annotations in Files changed and a machine-readable result
+  (`bughunter-severity`). The conclusion is always **neutral**, meaning the PR is not blocked. Configured via
+  `REVIEW.md` and `CLAUDE.md`. https://code.claude.com/docs/en/code-review
+- **claude-code-action**: a tracking comment with checkboxes that update as work proceeds
+  (`track_progress`), and `use_sticky_comment`.
   https://github.com/anthropics/claude-code-action/blob/main/README.md
-- **Hooks** (Stop и другие) позволяют запускать детерминированные проверки перед завершением. Spotify
-  использует этот механизм, см. §7. https://code.claude.com/docs/en/hooks-guide
+- **Hooks** (Stop and others) allow running deterministic checks before finishing. Spotify
+  uses this mechanism, see §7. https://code.claude.com/docs/en/hooks-guide
 
 ### Factory (Droids)
-- **Specification Mode** (Shift+Tab): Droid пишет spec, человек одобряет, spec можно сохранить в репо.
+- **Specification Mode** (Shift+Tab): the Droid writes a spec, the human approves, the spec can be saved to the repo.
   https://docs.factory.ai/cli/user-guides/implementing-large-features
-- **Droid Control**: `/verify` проверяет behavior claim и выносит вердикт **CONFIRMED / REFUTED /
-  INCONCLUSIVE** с evidence. `/demo` записывает side-by-side видео PR (до и после). `/qa-test` прогоняет e2e.
-  Результат: step-level pass/fail table с inline evidence, screenshots или text snapshots терминала,
-  отрендеренные видео. Дата не указана. https://docs.factory.ai/software-factory/droid-control
+- **Droid Control**: `/verify` checks a behavior claim and delivers a verdict **CONFIRMED / REFUTED /
+  INCONCLUSIVE** with evidence. `/demo` records a side-by-side video of the PR (before and after). `/qa-test` runs e2e.
+  The result: a step-level pass/fail table with inline evidence, screenshots or text snapshots of the terminal,
+  rendered videos. No date given. https://docs.factory.ai/software-factory/droid-control
 
 ### Amp (Sourcegraph)
-- Review panel (25.10.2025): выбор commit range, **AI summary**, «**tour**» с рекомендуемым порядком чтения
-  файлов, редактируемые full-file diffs, commit message.
+- Review panel (25.10.2025): choosing a commit range, an **AI summary**, a "**tour**" with a recommended reading order of
+  files, editable full-file diffs, a commit message.
   https://ampcode.com/news/review
-- Agentic Review (18.12.2025): summary по каждому файлу и по changeset, отдельный review agent со списком
-  actionable improvements, которые можно передать основному агенту. Команда Amp прямо называет открытым
-  вопрос «How do reviews map to threads?». https://ampcode.com/news/agentic-code-review
-- **Checks** (04.02.2026): `.agents/checks/*.md` — пользовательские инварианты с областью действия по
-  каталогу. Для каждого check запускается **отдельный агент**, «a stronger guarantee that each check will
-  actually be checked». https://ampcode.com/news/liberating-code-review
-- Diffs (16.06.2026): review диффа любого thread на desktop и mobile, duplicate block detection.
+- Agentic Review (18.12.2025): a summary per file and per changeset, a separate review agent with a list of
+  actionable improvements that can be passed to the main agent. The Amp team itself calls an open
+  question "How do reviews map to threads?". https://ampcode.com/news/agentic-code-review
+- **Checks** (04.02.2026): `.agents/checks/*.md` — user invariants scoped by
+  directory. For each check a **separate agent** is launched, "a stronger guarantee that each check will
+  actually be checked". https://ampcode.com/news/liberating-code-review
+- Diffs (16.06.2026): review of any thread's diff on desktop and mobile, duplicate block detection.
   https://ampcode.com/news/diffs
 
-### Linear — Agent Interaction Guidelines и Agent Session
-- **AIG** (30.07.2025), шесть принципов: disclose agent identity; inhabit the platform natively; provide
+### Linear — Agent Interaction Guidelines and Agent Session
+- **AIG** (30.07.2025), six principles: disclose agent identity; inhabit the platform natively; provide
   instant feedback; be clear and transparent about internal state (thinking / waiting / executing /
-  complete); respect requests to disengage; «an agent cannot be held accountable» — ответственность
-  остаётся у человека. https://linear.app/developers/aig
-- **Agent Session**: состояния `pending | active | error | awaitingInput | complete | stale` выводятся
-  автоматически из последней activity. Типы activity: `thought`, `elicitation`, `action` (поля `action`,
-  `parameter` и опциональный `result`), `response`, `error`, а также `prompt` от человека. `thought` и
-  `action` можно сделать **ephemeral**. **Agent Plan** — чеклист уровня сессии, у шагов есть `content` и
-  статус `pending | inProgress | completed | canceled`, обновляется только целиком. `externalUrls` —
-  подписанные ссылки на dashboard агента. Первая activity должна прийти в течение 10 секунд, ответ на
-  webhook — в течение 5 секунд. https://linear.app/developers/agent-interaction
-- **Signals**: `stop` (человек → агент: немедленно остановиться и подтвердить это через response или
-  error), `auth` (elicitation с «Link account»), `select` (elicitation со списком вариантов, можно ответить
-  свободным текстом). https://linear.app/developers/agent-signals
+  complete); respect requests to disengage; "an agent cannot be held accountable" — responsibility
+  stays with the human. https://linear.app/developers/aig
+- **Agent Session**: the states `pending | active | error | awaitingInput | complete | stale` are derived
+  automatically from the latest activity. Activity types: `thought`, `elicitation`, `action` (fields `action`,
+  `parameter` and an optional `result`), `response`, `error`, and also `prompt` from the human. `thought` and
+  `action` can be made **ephemeral**. **Agent Plan** is a session-level checklist, steps have `content` and
+  a status `pending | inProgress | completed | canceled`, updated only as a whole. `externalUrls` —
+  signed links to the agent's dashboard. The first activity must arrive within 10 seconds, the response to the
+  webhook within 5 seconds. https://linear.app/developers/agent-interaction
+- **Signals**: `stop` (human → agent: stop immediately and confirm this via response or
+  error), `auth` (an elicitation with "Link account"), `select` (an elicitation with a list of options, free-text
+  reply possible). https://linear.app/developers/agent-signals
 
 ---
 
-## 7. In-house системы
+## 7. In-house systems
 
-- **Stripe Minions** (Part 1 и Part 2, февраль 2026; 1 000, затем 1 300+ merged PR в неделю): «completely
-  minion-produced, human-reviewed». PR оформляется по **Stripe PR template**. Локальный lint (<5 с) как
-  детерминированный узел blueprint работает как shift-left. **Не больше 2 раундов CI**: первый прогон,
-  автоприменение autofixes, второй прогон, затем передача человеку даже с непочиненными падениями. **Web UI**
-  показывает «the decisions and actions the minion took», инженер может дать «further instructions» до
+- **Stripe Minions** (Part 1 and Part 2, February 2026; 1,000, then 1,300+ merged PRs per week): "completely
+  minion-produced, human-reviewed". A PR follows the **Stripe PR template**. A local lint (<5 s) as a
+  deterministic node of the blueprint works as shift-left. **No more than 2 CI rounds**: the first run,
+  automatic application of autofixes, the second run, then handoff to a human even with unfixed failures. The **web UI**
+  shows "the decisions and actions the minion took", and an engineer can give "further instructions" before
   review. https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents ,
   https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents-part-2
-- **Spotify Honk** (Part 1–3, ноябрь–декабрь 2025): детерминированные **verifiers** (например, Maven при
-  наличии `pom.xml`) возвращают сжатый результат success или failure. Они доступны как tool и
-  **автоматически запускаются через stop hook перед открытием PR**: при провале PR не открывается. Поверх
-  них работает **LLM-judge** (diff + исходный prompt), который ветирует примерно 1 из 4 сессий, и примерно
-  половина из них исправляется. Для judge ещё не сделали evals. Traces пишутся в MLflow. PR идут через
-  обычный Fleet Management без особого оформления.
+- **Spotify Honk** (Part 1–3, November–December 2025): deterministic **verifiers** (for example, Maven when
+  `pom.xml` is present) return a compact success or failure result. They are available as a tool and
+  **run automatically via a stop hook before a PR is opened**: on failure the PR is not opened. On top of
+  them works an **LLM judge** (diff + the original prompt), which vetoes roughly 1 in 4 sessions, and about
+  half of those get fixed. Evals for the judge have not been built yet. Traces are written to MLflow. PRs go through the usual
+  Fleet Management without special formatting.
   https://engineering.atspotify.com/2025/12/feedback-loops-background-coding-agents-part-3 ,
   https://engineering.atspotify.com/2025/11/spotifys-background-coding-agent-part-1 .
-  К QCon London (март 2026) judge **убрали**, потому что хватает verification steps в prompt. Также
-  появились PR inbox и auto-merge для docs. Это пересказ доклада в InfoQ, **вторичный источник**.
+  By QCon London (March 2026) the judge was **removed**, because verification steps in the prompt are enough. Also
+  a PR inbox and auto-merge for docs appeared. This is a retelling of the talk on InfoQ, a **secondary source**.
   https://www.infoq.com/news/2026/03/spotify-honk-rewrite/
-- **Shopify**: security harness присылает **draft PR с тестом, доказывающим эксплуатируемость**. Verifier
-  работает на другой модели, чем Hunting agent (adversarial review). Недоказанные находки отклоняются или
-  понижаются. Credentials, Git и storage обслуживает детерминированный код.
-  https://shopify.engineering/building-an-agentic-harness-that-outlasts-the-model (июль 2026).
-  **River**: работает только в публичных Slack-каналах, промежуточные находки публикуются в thread, session
-  logs хранятся в Postgres. За 30 дней 3 536 merged PR. https://shopify.engineering/under-the-river (28.05.2026)
-- **Uber**: uReview. Генерация, затем confidence-фильтр, dedup и подавление категорий по истории
-  feedback. Кнопки Useful / Not Useful, useful >75%, исправляется 65% комментариев.
-  https://www.uber.com/us/en/blog/ureview/ (12.08.2025). Software Factory: >70% PR с участием агентов,
-  метрики качества managed agents (revert rate, F1, MTTR).
-  https://www.uber.com/us/en/blog/efficient-software-factory/ (27.08.2026). Фоновая платформа «Minion» —
-  **не подтверждено** первичным источником Uber (упоминание только у Pragmatic Engineer:
+- **Shopify**: the security harness sends a **draft PR with a test proving exploitability**. The verifier
+  runs on a different model than the Hunting agent (adversarial review). Unproven findings are rejected or
+  downgraded. Credentials, Git and storage are handled by deterministic code.
+  https://shopify.engineering/building-an-agentic-harness-that-outlasts-the-model (July 2026).
+  **River**: works only in public Slack channels, intermediate findings are published in a thread, session
+  logs are stored in Postgres. 3,536 merged PRs in 30 days. https://shopify.engineering/under-the-river (28.05.2026)
+- **Uber**: uReview. Generation, then a confidence filter, dedup and suppression of categories based on feedback
+  history. Useful / Not Useful buttons, useful >75%, 65% of comments are addressed.
+  https://www.uber.com/us/en/blog/ureview/ (12.08.2025). Software Factory: >70% of PRs involve agents,
+  quality metrics of managed agents (revert rate, F1, MTTR).
+  https://www.uber.com/us/en/blog/efficient-software-factory/ (27.08.2026). The background platform "Minion" —
+  **unconfirmed** by an Uber primary source (mentioned only by Pragmatic Engineer:
   https://newsletter.pragmaticengineer.com/p/how-uber-uses-ai-for-development).
 
 ---
 
-## 8. Каталог паттернов
+## 8. Pattern catalog
 
-| Паттерн | Что содержит | Продукты | Что делает его доверенным |
+| Pattern | What it contains | Products | What makes it trustworthy |
 |---|---|---|---|
-| **Plan / Spec** (до кода) | цель, затрагиваемые файлы, шаги, как будет проверено, открытые вопросы | Antigravity Implementation Plan, Devin Interactive Planning, Cursor Plan Mode, Jules plan, Replit View plan, Factory Spec Mode, Claude Code Plan mode | явный gate (Proceed, Accept, Build); комментарии на уровне шага; критик плана (Jules Planning Critic); наличие раздела верификации, то есть заранее заявленного критерия «done» (Replit, Antigravity) |
-| **Task list / Plan checklist** (живой) | шаги со статусами | Antigravity Task List, Linear Agent Plan (`pending/inProgress/completed/canceled`), Copilot PR checklist, claude-code-action tracking comment, Replit board | обновление по факту выполнения; статусы из фиксированного набора; `canceled` вместо тихого исчезновения шага |
-| **Walkthrough / Summary** (после) | что изменено, зачем, как проверить | Antigravity Walkthrough, Codex summary, Jules summary, Copilot PR body, Devin PR description, Amp AI summary и tour | **citations на логи и файлы** (Codex); ссылка на session log (Devin «Link to Devin run», Copilot — в каждом commit); без привязки остаётся просто текстом модели |
-| **Diff, организованный для чтения** | порядок чтения, группировка, move/copy detection, объяснение hunk | Devin Review, Amp tour и Diffs, Codex «Last turn», Antigravity Review Changes | детерминированный diff плюс объяснения модели; inline-комментарии возвращаются агенту |
-| **Check results с citations** | тесты, линтеры, CI, security | Codex terminal citations, Copilot self-validation (CodeQL, secret scanning, deps), Stripe CI ≤2 раунда, Spotify verifiers, Replit test results, Bugbot и Claude Code Review check runs | результат порождён исполнением, а не моделью; check run в CI; verifier в stop hook блокирует PR |
-| **Evidence media** | screenshots, видео, записи браузера | Antigravity screenshots и recordings, Devin test video и report, Cursor artifacts, Copilot screenshots (Playwright), Codex screenshots, Jules screenshots, Replit replay, Factory `/demo`, Claude Desktop auto-verify | снято с реального запуска; аннотации и chapters; **список assertions passed / failed / untested** (Devin); side-by-side до и после (Factory) |
-| **Verdict на claim** | утверждение, вердикт, evidence | Factory `/verify` CONFIRMED / REFUTED / INCONCLUSIVE, Claude Code Review «how it verified» | допускает отрицательный и неопределённый результат; evidence приложено |
-| **Preview / live result** | ссылка на работающее приложение или remote desktop | Replit live preview, Cursor remote desktop takeover, Claude Desktop Browser pane, Codex in-app browser, Devin Browser tab | человек проверяет сам и не зависит от рассказа агента |
-| **Session log / timeline** | все команды, правки, браузер | Devin Progress (с переходами во времени), Copilot session log, Codex task logs, Jules activity feed, Stripe web UI, Linear activities, Shopify River Slack thread | лог сырой и неизменяемый, с доступом из PR и commit |
-| **Findings review** | находки с severity | Bugbot, Codex P0/P1, Devin Bug Catcher и Flags, Claude Code Review 🔴🟡🟣, uReview, Amp Checks | severity; отдельный verification step; обучение на реакциях (Bugbot learned rules, uReview); отдельный агент на каждый инвариант (Amp Checks); не блокирует merge без явной настройки |
-| **Open questions / Elicitation** | вопрос человеку, выбор вариантов | Linear `elicitation` + `select` и `auth`, Antigravity/Cursor clarifying questions, Claude auto-fix «asks you before acting», Devin просит secrets | структурированный вопрос с вариантами; состояние `awaitingInput` видно в списке |
-| **Human checklist** | что человек должен проверить сам | Devin «Review & Testing Checklist for Human» (наблюдаемо), GitHub guidance: тест, падающий до изменения, и rollback plan | явно отделяет «проверено агентом» от «проверить человеку» |
-| **Approval gates** | кто и что одобряет | Antigravity Request Review, Copilot «Approve and run workflows» и запрет самоодобрения, Replit Apply/Dismiss, Stripe и Spotify: только человек мержит | gate на стороне платформы, а не в тексте prompt |
-| **Rollback / checkpoints** | возврат к состоянию | Replit checkpoints (код, контекст, БД), Codex revert по hunk, Antigravity undo | детерминированное восстановление |
+| **Plan / Spec** (before code) | goal, affected files, steps, how it will be verified, open questions | Antigravity Implementation Plan, Devin Interactive Planning, Cursor Plan Mode, Jules plan, Replit View plan, Factory Spec Mode, Claude Code Plan mode | an explicit gate (Proceed, Accept, Build); step-level comments; a plan critic (Jules Planning Critic); the presence of a verification section, that is, a "done" criterion declared in advance (Replit, Antigravity) |
+| **Task list / Plan checklist** (live) | steps with statuses | Antigravity Task List, Linear Agent Plan (`pending/inProgress/completed/canceled`), Copilot PR checklist, claude-code-action tracking comment, Replit board | updated as things are actually done; statuses from a fixed set; `canceled` instead of a step silently vanishing |
+| **Walkthrough / Summary** (after) | what changed, why, how to verify | Antigravity Walkthrough, Codex summary, Jules summary, Copilot PR body, Devin PR description, Amp AI summary and tour | **citations to logs and files** (Codex); a link to the session log (Devin "Link to Devin run", Copilot — in every commit); without such a binding it remains just model text |
+| **Diff organized for reading** | reading order, grouping, move/copy detection, hunk explanation | Devin Review, Amp tour and Diffs, Codex "Last turn", Antigravity Review Changes | a deterministic diff plus model explanations; inline comments go back to the agent |
+| **Check results with citations** | tests, linters, CI, security | Codex terminal citations, Copilot self-validation (CodeQL, secret scanning, deps), Stripe CI ≤2 rounds, Spotify verifiers, Replit test results, Bugbot and Claude Code Review check runs | the result is produced by execution, not by the model; a check run in CI; a verifier in a stop hook blocks the PR |
+| **Evidence media** | screenshots, video, browser recordings | Antigravity screenshots and recordings, Devin test video and report, Cursor artifacts, Copilot screenshots (Playwright), Codex screenshots, Jules screenshots, Replit replay, Factory `/demo`, Claude Desktop auto-verify | captured from a real run; annotations and chapters; a **list of assertions passed / failed / untested** (Devin); side-by-side before and after (Factory) |
+| **Verdict on a claim** | claim, verdict, evidence | Factory `/verify` CONFIRMED / REFUTED / INCONCLUSIVE, Claude Code Review "how it verified" | allows a negative and an inconclusive result; evidence attached |
+| **Preview / live result** | a link to the running app or a remote desktop | Replit live preview, Cursor remote desktop takeover, Claude Desktop Browser pane, Codex in-app browser, Devin Browser tab | the human checks it personally and does not depend on the agent's account |
+| **Session log / timeline** | all commands, edits, browser | Devin Progress (with time navigation), Copilot session log, Codex task logs, Jules activity feed, Stripe web UI, Linear activities, Shopify River Slack thread | the log is raw and immutable, reachable from the PR and commit |
+| **Findings review** | findings with severity | Bugbot, Codex P0/P1, Devin Bug Catcher and Flags, Claude Code Review 🔴🟡🟣, uReview, Amp Checks | severity; a separate verification step; learning from reactions (Bugbot learned rules, uReview); a separate agent per invariant (Amp Checks); does not block merge without explicit configuration |
+| **Open questions / Elicitation** | a question to the human, a choice of options | Linear `elicitation` + `select` and `auth`, Antigravity/Cursor clarifying questions, Claude auto-fix "asks you before acting", Devin asks for secrets | a structured question with options; the `awaitingInput` state is visible in the list |
+| **Human checklist** | what the human must verify personally | Devin "Review & Testing Checklist for Human" (observed), GitHub guidance: a test that fails before the change, and a rollback plan | explicitly separates "verified by the agent" from "to be verified by the human" |
+| **Approval gates** | who approves what | Antigravity Request Review, Copilot "Approve and run workflows" and the ban on self-approval, Replit Apply/Dismiss, Stripe and Spotify: only a human merges | a gate on the platform side, not in the prompt text |
+| **Rollback / checkpoints** | return to a state | Replit checkpoints (code, context, DB), Codex revert per hunk, Antigravity undo | deterministic restoration |
 
-Общие выводы:
-1. Доверие держится на связи текста модели с артефактами исполнения: citations у Codex, ссылки на
-   сессию в commit у Copilot и Devin, check runs, видео. Walkthrough без таких связей остаётся «рассказом».
-2. Верификация смещается в инфраструктуру: stop-hook verifiers (Spotify), лимит раундов CI (Stripe),
-   self-validation (Copilot), verification step в review (Claude Code Review). LLM-judge как отдельный слой
-   Spotify в 2026 убрал (по данным вторичного источника).
-3. Видео доказывает многое, но им легко злоупотребить. Cognition признаёт, что агент может выставлять
-   состояние через JS вместо кликов. Лучшие реализации добавляют assertions list и test plan, то есть
-   показывают, что именно проверялось.
-4. Почти везде обратная связь идёт через inline-комментарии к артефакту (план, diff, screenshot, элемент
-   страницы), и агент получает их в следующем ходе.
-5. Нерешённые вопросы, которые признают сами вендоры: как review соотносится с threads (Amp); публичность
-   URL artifacts (Cursor); findings не блокируют merge (Claude Code Review, Bugbot `neutral`), а gating
-   нужно собирать самостоятельно.
+General conclusions:
+1. Trust rests on linking the model's text to execution artifacts: Codex citations, session links in
+   commits at Copilot and Devin, check runs, video. A walkthrough without such links remains a "story".
+2. Verification moves into infrastructure: stop-hook verifiers (Spotify), a CI round limit (Stripe),
+   self-validation (Copilot), a verification step in review (Claude Code Review). Spotify removed the LLM judge
+   as a separate layer in 2026 (per a secondary source).
+3. Video proves a lot, but it is easy to abuse. Cognition acknowledges that an agent can set up
+   state via JS instead of clicks. The best implementations add an assertions list and a test plan, that is,
+   they show what exactly was checked.
+4. Almost everywhere feedback goes through inline comments on the artifact (plan, diff, screenshot, page
+   element), and the agent receives them on the next turn.
+5. Unresolved questions acknowledged by the vendors themselves: how review relates to threads (Amp); the public
+   nature of artifact URLs (Cursor); findings do not block merge (Claude Code Review, Bugbot `neutral`), and gating
+   has to be built separately.

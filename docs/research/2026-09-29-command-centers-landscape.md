@@ -1,322 +1,322 @@
-# Research 5: «командный центр» для параллельных coding agents (состояние на 2026-09-29)
+# Research 5: a "command center" for parallel coding agents (state as of 2026-09-29)
 
-Метод: метаданные GitHub через `gh api` (звёзды, последний push, лицензия, архивность) на 2026-09-29;
-README и официальные страницы продуктов; для коммерческих продуктов — официальные блоги/доки, где
-удалось; вторичные источники помечены. «не подтверждено» = не удалось проверить по первоисточнику.
+Method: GitHub metadata via `gh api` (stars, last push, license, archived status) as of 2026-09-29;
+READMEs and official product pages; for commercial products — official blogs/docs where
+available; secondary sources are marked. "unconfirmed" = could not be verified against a primary source.
 
 ## 1. Paperclip (paperclipai/paperclip)
 
-Источник: https://github.com/paperclipai/paperclip (README), https://docs.paperclip.ing
+Source: https://github.com/paperclipai/paperclip (README), https://docs.paperclip.ing
 
-- **Что это.** «Open-source orchestration for teams of AI agents… If OpenClaw is an employee,
-  Paperclip is the company.» Node.js server + React UI. Позиционирование — «Manage business goals,
-  not pull requests»: цель компании → org chart агентов (CEO, CTO, инженеры…) → бюджеты → heartbeat.
-- **Модель данных.** Company (multi-org, полная изоляция) → Goals → Projects → Issues (связи с
-  company/project/goal/parent, blocker-зависимости, comments, documents, attachments, work products,
-  labels, inbox state) ; Agents (роль, title, reporting line, permissions, budget); Heartbeat runs
-  (DB-очередь wakeup, coalescing, budget check, workspace resolution, secret injection, skill loading,
+- **What it is.** "Open-source orchestration for teams of AI agents… If OpenClaw is an employee,
+  Paperclip is the company." Node.js server + React UI. Positioning — "Manage business goals,
+  not pull requests": company goal → org chart of agents (CEO, CTO, engineers…) → budgets → heartbeat.
+- **Data model.** Company (multi-org, full isolation) → Goals → Projects → Issues (links to
+  company/project/goal/parent, blocker dependencies, comments, documents, attachments, work products,
+  labels, inbox state) ; Agents (role, title, reporting line, permissions, budget); Heartbeat runs
+  (DB wakeup queue, coalescing, budget check, workspace resolution, secret injection, skill loading,
   structured logs, cost events, session state); Approvals/execution policies; Routines (cron/webhook/API
-  → каждое срабатывание создаёт issue); Activity log (immutable audit); Plugins (out-of-process
+  → each trigger creates an issue); Activity log (immutable audit); Plugins (out-of-process
   workers, UI contributions); Secrets; Company export/import.
-- **Как запускает агентов.** Adapters: Claude Code, Codex, Cursor/Gemini/bash CLI, OpenCode,
-  HTTP/webhook (OpenClaw), внешние adapter-плагины. Агенты не «живут» в терминале — они просыпаются
-  по heartbeat/событию (назначение задачи, @-mention), делают atomic checkout задачи и работают.
+- **How it launches agents.** Adapters: Claude Code, Codex, Cursor/Gemini/bash CLI, OpenCode,
+  HTTP/webhook (OpenClaw), external adapter plugins. Agents do not "live" in a terminal — they wake up
+  on a heartbeat/event (task assignment, @-mention), do an atomic checkout of the task and work.
   Workspaces: project workspace, isolated execution workspaces (git worktrees, operator branches),
   runtime services (dev servers, preview URLs). Sandboxes: e2b, Cloudflare, Daytona, Modal, Novita,
   self-hosted Kubernetes (roadmap: ✅).
 - **UI.** Dashboard, task manager (issues/inbox), org chart, costs/budgets, approvals, activity,
   skills studio, evals; mobile-ready UI.
-- **Артефакты/ревью.** «Artifacts & Work Products» ✅, «Deep Planning (revisioned plans, plan
-  approvals)» ✅, review gates, verify from diffs/screenshots/tests. Но прямо: «Not a code review
-  tool. Paperclip orchestrates work, not pull requests. Bring your own review process.»
-- **Трекер.** Собственный ticket system. «Bring-your-own-ticket-system (Asana / Linear / Jira as
-  on-ramps)» — ⚪ roadmap, т.е. **синхронизации с GitHub Issues/Projects нет** (по README).
-- **Бюджеты.** Token/cost tracking по company/agent/project/goal/issue/provider/model; hard stop,
-  пауза агентов и отмена очереди при перерасходе.
-- **Стек/хостинг.** TypeScript (основной), немного Rust; embedded PostgreSQL локально либо свой
-  Postgres; Node.js 24.11+, pnpm 9.15+; `npx paperclipai onboard`; режимы local_trusted / lan / tailnet.
-- **Лицензия/активность.** MIT; создан 2026-03-02; ~93k звёзд; push 2026-09-29; релиз v2026.916.1
-  (2026-09-21); ~6000 открытых issues+PR — очень высокий шум/скорость изменений.
-- **Зрелость/риски.** Критические уязвимости, опубликованы 2026-08-05: CVE-2026-41679 (CVSS 10,
-  RCE через импорт агентов на сетевых инсталляциях), DNS rebinding в local_trusted (9.6), отсутствие
-  auth на части API (8.3); исправлено в v2026.416.0
-  (https://thehackernews.com/2026/08/paperclip-ai-flaws-let-attackers-run.html). Открытые PR про
-  redaction секретов в логах запусков, «40+ hour outage» из-за UUID-валидации checkout (issue #4060).
-- **Почему тяжело для соло-разработчика с GitHub-пайплайном.**
-  1. Своя модель работы (компания/цели/org chart/heartbeat), а не ваш pipeline idea→spec→tickets→
-     implementation→review→acceptance; второй tracker параллельно GitHub Issues/Projects.
-  2. Агенты — автономные «сотрудники» по расписанию; у вас — интерактивные сессии в Herdr под
-     контролем владельца. Heartbeat = LLM-вызов, расход трудно прогнозировать (обзор eesel:
-     https://www.eesel.ai/blog/paperclip-ai-review — вторичный).
-  3. Не code review tool — ревью PR всё равно в GitHub.
-  4. Эксплуатация: сервер + Postgres + security-патчи быстро меняющегося проекта.
-  5. Сам README: «If you have one agent, you probably don't need Paperclip».
+- **Artifacts/review.** "Artifacts & Work Products" ✅, "Deep Planning (revisioned plans, plan
+  approvals)" ✅, review gates, verify from diffs/screenshots/tests. But explicitly: "Not a code review
+  tool. Paperclip orchestrates work, not pull requests. Bring your own review process."
+- **Tracker.** Its own ticket system. "Bring-your-own-ticket-system (Asana / Linear / Jira as
+  on-ramps)" — ⚪ roadmap, i.e. **there is no sync with GitHub Issues/Projects** (per the README).
+- **Budgets.** Token/cost tracking by company/agent/project/goal/issue/provider/model; hard stop,
+  agent pause and queue cancellation on overspend.
+- **Stack/hosting.** TypeScript (main), some Rust; embedded PostgreSQL locally or your own
+  Postgres; Node.js 24.11+, pnpm 9.15+; `npx paperclipai onboard`; modes local_trusted / lan / tailnet.
+- **License/activity.** MIT; created 2026-03-02; ~93k stars; push 2026-09-29; release v2026.916.1
+  (2026-09-21); ~6000 open issues+PRs — very high noise/rate of change.
+- **Maturity/risks.** Critical vulnerabilities, published 2026-08-05: CVE-2026-41679 (CVSS 10,
+  RCE via agent import on networked installations), DNS rebinding in local_trusted (9.6), missing
+  auth on part of the API (8.3); fixed in v2026.416.0
+  (https://thehackernews.com/2026/08/paperclip-ai-flaws-let-attackers-run.html). Open PRs about
+  redaction of secrets in run logs, a "40+ hour outage" due to UUID validation of checkout (issue #4060).
+- **Why it is heavy for a solo developer with a GitHub pipeline.**
+  1. Its own work model (company/goals/org chart/heartbeat), not your pipeline idea→spec→tickets→
+     implementation→review→acceptance; a second tracker alongside GitHub Issues/Projects.
+  2. Agents are autonomous "employees" on a schedule; yours are interactive sessions in Herdr under
+     the owner's control. A heartbeat = an LLM call, spend is hard to predict (eesel review:
+     https://www.eesel.ai/blog/paperclip-ai-review — secondary).
+  3. Not a code review tool — PR review still happens in GitHub.
+  4. Operations: a server + Postgres + security patches for a fast-changing project.
+  5. The README itself: "If you have one agent, you probably don't need Paperclip".
 
-## 2. Ландшафт инструментов
+## 2. Tool landscape
 
-### 2a. Локальные desktop/TUI «workspace managers» (worktree на задачу, BYO CLI agent)
+### 2a. Local desktop/TUI "workspace managers" (worktree per task, BYO CLI agent)
 
-| Инструмент | Статус (GitHub на 2026-09-29) | Суть |
+| Tool | Status (GitHub as of 2026-09-29) | Essence |
 |---|---|---|
-| **Conductor** (conductor.build) | коммерч., закрытый; YC S24, Series A $22M (вторичн.) | Mac-app; Claude Code, Codex, Cursor, OpenCode в изолированных workspaces (branch + worktree + terminals + diff), review diff → PR → merge → archive. Локально бесплатно, свои подписки. Главная страница теперь «Run a team of coding agents in the cloud» — облачные workspaces (детали не подтверждено). Win/Linux нет. https://www.conductor.build/docs/ |
-| **Agent Orchestrator (AO)** Untrivial-ai/agent-orchestrator (ранее ComposioHQ) | Apache-2.0, 12.5k★, push 09-29, v0.13.1 (09-26); anonymous telemetry | Desktop+daemon+CLI; worker session на задачу (branch/worktree), **project orchestrator-агент** планирует и раздаёт задачи; **Kanban, где позиция карточки выводится из фактов session/PR/CI/review**; открыть worker: терминал, changed files, PR summary, reviews, preview, отправить CI/review feedback тому же агенту. Tracker adapters в коде: GitHub, GitLab. 25+ harness. https://github.com/Untrivial-ai/agent-orchestrator |
-| **Emdash** generalaction/emdash (YC W26) | Apache-2.0, 5.9k★, push 09-29 | Worktree на агента, локально и по SSH; **задачи из Linear, GitHub, Jira, GitLab, Asana…**; diff, PR, CI checks, merge; ставит lifecycle hooks в агенты для статуса/уведомлений/resume. https://github.com/generalaction/emdash |
-| **Superset** superset-sh/superset | **Elastic License 2.0** (source-available), 14.7k★, push 09-29 | «agentic IDE»: worktree+terminals, diff viewer, browser preview с портами на worktree, PR review → отправка строк агенту, «Pages» для отчётов с комментариями. https://github.com/superset-sh/superset |
-| **Nimbalyst** (ex Crystal) nimbalyst/nimbalyst | MIT, 1.8k★, push 09-28. Crystal (stravu/crystal, 3.1k★) deprecated 2026-02 | Visual workspace: сессии в worktree, **session kanban**, task tracking в markdown-файлах в репо, WYSIWYG red/green diff по документам/мокапам/диаграммам, iOS companion с push. https://github.com/nimbalyst/nimbalyst |
-| **Sculptor** (Imbue) imbue-ai/sculptor | MIT, 233★, push 09-28, «experimental research preview» | Workspaces (worktree), chat, Changes, PR tracking. |
-| **Xum** (coder/xum, ex coder/mux) | AGPL-3.0, 2k★, push 09-29 | Собственный agent loop; worktree/remote runtimes; code review, agent status sidebar, costs, mermaid-планы. |
-| **Vibe Kanban** BloopAI/vibe-kanban | Apache-2.0, 28k★; **компания Bloop закрыта 2026-04-10**, cloud (issues, projects, orgs) удалён; последний релиз 2026-04-24; push 09-19 (community) | Kanban issues → workspaces, inline-комментарии к diff → агенту, preview, 10+ агентов, PR. https://www.vibekanban.com/blog/shutdown |
-| **Claude Squad** smtg-ai/claude-squad | AGPL-3.0, 8.5k★, push 2026-08-20 | TUI поверх tmux+worktree; Claude Code, Codex, OpenCode, Amp. |
-| **parallel-code** johannesjo | MIT, 1k★ | Claude/Codex/Gemini бок о бок, worktree на каждого. |
-| **Claude Code Agent Farm** | 919★, push 09-21 | Скрипт-фреймворк для 20+ Claude Code в tmux, lock-координация. Для sweep-задач, не для pipeline. |
+| **Conductor** (conductor.build) | commercial, closed; YC S24, Series A $22M (secondary) | Mac app; Claude Code, Codex, Cursor, OpenCode in isolated workspaces (branch + worktree + terminals + diff), review diff → PR → merge → archive. Free locally, your own subscriptions. The home page now says "Run a team of coding agents in the cloud" — cloud workspaces (details unconfirmed). No Win/Linux. https://www.conductor.build/docs/ |
+| **Agent Orchestrator (AO)** Untrivial-ai/agent-orchestrator (formerly ComposioHQ) | Apache-2.0, 12.5k★, push 09-29, v0.13.1 (09-26); anonymous telemetry | Desktop+daemon+CLI; a worker session per task (branch/worktree), a **project orchestrator agent** plans and hands out tasks; a **Kanban where the card position is derived from session/PR/CI/review facts**; opening a worker: terminal, changed files, PR summary, reviews, preview, send CI/review feedback to the same agent. Tracker adapters in code: GitHub, GitLab. 25+ harnesses. https://github.com/Untrivial-ai/agent-orchestrator |
+| **Emdash** generalaction/emdash (YC W26) | Apache-2.0, 5.9k★, push 09-29 | A worktree per agent, local and over SSH; **tasks from Linear, GitHub, Jira, GitLab, Asana…**; diff, PR, CI checks, merge; installs lifecycle hooks into agents for status/notifications/resume. https://github.com/generalaction/emdash |
+| **Superset** superset-sh/superset | **Elastic License 2.0** (source-available), 14.7k★, push 09-29 | "agentic IDE": worktree+terminals, diff viewer, browser preview with ports per worktree, PR review → sending lines to the agent, "Pages" for reports with comments. https://github.com/superset-sh/superset |
+| **Nimbalyst** (ex Crystal) nimbalyst/nimbalyst | MIT, 1.8k★, push 09-28. Crystal (stravu/crystal, 3.1k★) deprecated 2026-02 | Visual workspace: sessions in worktrees, **session kanban**, task tracking in markdown files in the repo, WYSIWYG red/green diff for documents/mockups/diagrams, iOS companion with push. https://github.com/nimbalyst/nimbalyst |
+| **Sculptor** (Imbue) imbue-ai/sculptor | MIT, 233★, push 09-28, "experimental research preview" | Workspaces (worktree), chat, Changes, PR tracking. |
+| **Xum** (coder/xum, ex coder/mux) | AGPL-3.0, 2k★, push 09-29 | Its own agent loop; worktree/remote runtimes; code review, agent status sidebar, costs, mermaid plans. |
+| **Vibe Kanban** BloopAI/vibe-kanban | Apache-2.0, 28k★; **the Bloop company shut down 2026-04-10**, cloud (issues, projects, orgs) removed; last release 2026-04-24; push 09-19 (community) | Kanban issues → workspaces, inline comments on the diff → agent, preview, 10+ agents, PR. https://www.vibekanban.com/blog/shutdown |
+| **Claude Squad** smtg-ai/claude-squad | AGPL-3.0, 8.5k★, push 2026-08-20 | TUI on top of tmux+worktree; Claude Code, Codex, OpenCode, Amp. |
+| **parallel-code** johannesjo | MIT, 1k★ | Claude/Codex/Gemini side by side, a worktree for each. |
+| **Claude Code Agent Farm** | 919★, push 09-21 | A script framework for 20+ Claude Code instances in tmux, lock coordination. For sweep tasks, not for a pipeline. |
 
-### 2b. Терминальные среды (сессии как примитив) — ближе всего к текущему стеку владельца
+### 2b. Terminal environments (sessions as a primitive) — closest to the owner's current stack
 
-- **Herdr** herdrdev/herdr — Apache-2.0, 41k★, push 09-29; у владельца стоит `herdr 0.9.1`.
-  Persistent background server, статус агентов working/blocked/idle, multi-machine по SSH,
+- **Herdr** herdrdev/herdr — Apache-2.0, 41k★, push 09-29; the owner has `herdr 0.9.1` installed.
+  Persistent background server, agent status working/blocked/idle, multi-machine over SSH,
   socket API = CLI (`herdr api snapshot|schema`, `herdr agent list|get|read|prompt|wait`,
-  `herdr worktree`, `herdr notification`), плагины, web client. https://herdr.dev/ .
-  Экосистема: kcosr/herdr-web (143★), umutciloglu/herdr-session-manager (3★, v0.1 — поиск по всем
-  сессиям Claude/Codex + agent-to-agent сообщения).
-- **cmux** manaflow-ai/cmux — 27k★, push 09-29; Ghostty-based macOS terminal: вертикальные вкладки
-  с branch, PR status/номером, портами, последним уведомлением; CLI+socket API; встроенный браузер.
-  Лицензия: README «GPL», LICENSE в GitHub = NOASSERTION (не подтверждено).
-- **Warp** (Oz cloud agents, «Warp Factories» live 2026-08 — вторичн., не подтверждено), оборачивает
+  `herdr worktree`, `herdr notification`), plugins, web client. https://herdr.dev/ .
+  Ecosystem: kcosr/herdr-web (143★), umutciloglu/herdr-session-manager (3★, v0.1 — search across all
+  Claude/Codex sessions + agent-to-agent messages).
+- **cmux** manaflow-ai/cmux — 27k★, push 09-29; a Ghostty-based macOS terminal: vertical tabs
+  with branch, PR status/number, ports, the latest notification; CLI+socket API; built-in browser.
+  License: the README says "GPL", the LICENSE on GitHub = NOASSERTION (unconfirmed).
+- **Warp** (Oz cloud agents, "Warp Factories" live 2026-08 — secondary, unconfirmed), wraps
   Claude Code/Codex/Gemini/OpenCode. https://docs.warp.dev/changelog/2026/
 
-### 2c. Удалённый доступ / мобильные клиенты к локальным сессиям
+### 2c. Remote access / mobile clients for local sessions
 
-- **Happy** slopus/happy — MIT, 24k★, push 09-28; mobile/web клиент Codex и Claude Code, E2E encryption.
-- **CloudCLI / claudecodeui** siteboon — AGPL-3.0, 13.8k★, push 09-28; web UI для Claude Code,
+- **Happy** slopus/happy — MIT, 24k★, push 09-28; a mobile/web client for Codex and Claude Code, E2E encryption.
+- **CloudCLI / claudecodeui** siteboon — AGPL-3.0, 13.8k★, push 09-28; a web UI for Claude Code,
   OpenCode, Cursor CLI, Codex.
-- **opcode** (ex Claudia) winfunc/opcode — AGPL-3.0, 22k★, push 09-18; GUI для Claude Code, custom agents.
-- **Omnara** — **пивот**: теперь «open-source alternative to Claude Managed Agents» (durable agents,
-  sandboxes, Postgres state), Apache-2.0, 2.9k★. Больше не «командный центр для Claude Code» в
-  исходном смысле. https://www.omnara.com/
+- **opcode** (ex Claudia) winfunc/opcode — AGPL-3.0, 22k★, push 09-18; a GUI for Claude Code, custom agents.
+- **Omnara** — **pivot**: now an "open-source alternative to Claude Managed Agents" (durable agents,
+  sandboxes, Postgres state), Apache-2.0, 2.9k★. No longer a "command center for Claude Code" in the
+  original sense. https://www.omnara.com/
 
-### 2d. Облачные/вендорские панели
+### 2d. Cloud/vendor panels
 
-- **Codex app** (macOS, с 2026-02-02; OpenAI называет «command center for agents»): projects →
-  threads, worktree на thread, review pane (inline diff, stage, revert, request changes),
-  automations (local/worktree). Только Codex. https://openai.com/index/introducing-the-codex-app/
-- **Claude Code desktop** (редизайн 2026-04-14): sidebar со всеми сессиями, фильтр по статусу/проекту/
-  окружению, worktree на сессию (`.claude/worktrees/`), терминал, редактор, routines. Только Claude.
+- **Codex app** (macOS, since 2026-02-02; OpenAI calls it a "command center for agents"): projects →
+  threads, a worktree per thread, review pane (inline diff, stage, revert, request changes),
+  automations (local/worktree). Codex only. https://openai.com/index/introducing-the-codex-app/
+- **Claude Code desktop** (redesign 2026-04-14): a sidebar with all sessions, filter by status/project/
+  environment, a worktree per session (`.claude/worktrees/`), terminal, editor, routines. Claude only.
   https://claude.com/blog/claude-code-desktop-redesign , https://code.claude.com/docs/en/desktop
-- **GitHub Agent HQ / Mission Control** — public preview Claude и Codex с 2026-02-04 для Copilot
-  Pro+/Enterprise; задачи из issues (Assignees), Agents tab, VS Code; session logs «View session»;
-  draft PR и итерации по review; 1 premium request на сессию. Облако (Actions), **родной GitHub
+- **GitHub Agent HQ / Mission Control** — public preview of Claude and Codex since 2026-02-04 for Copilot
+  Pro+/Enterprise; tasks from issues (Assignees), Agents tab, VS Code; session logs "View session";
+  draft PRs and iterations on review; 1 premium request per session. Cloud (Actions), **native GitHub
   tracker**. https://github.blog/changelog/2026-02-04-claude-and-codex-are-now-available-in-public-preview-on-github/
-- **Cursor Cloud Agents** — VM в облаке (или self-hosted Enterprise), cursor.com/agents + Agents
-  Window, триггеры Slack/GitHub/Linear/webhooks, видео-артефакты. https://cursor.com/blog/cloud-agents
-- **Linear Agents** — не дашборд, а **модель данных**: AgentSession (states: working / awaiting
-  input / error / complete), AgentActivity (thought, action, elicitation, response, error), plan как
-  полный массив шагов. Хороший образец протокола статуса. https://linear.app/developers/agent-interaction
-- **Devin** (release notes 2026 существуют: https://docs.devin.ai/release-notes/2026), **Factory**
-  (Droids, Missions), **Google Jules** (вторичн.: нет changelog с 2026-03 — не подтверждено), **Amp**
-  — все живы, но это свой агент + свой облачный UI; Claude Code/Codex CLI не оркестрируют (кроме Warp).
+- **Cursor Cloud Agents** — VMs in the cloud (or self-hosted Enterprise), cursor.com/agents + Agents
+  Window, Slack/GitHub/Linear/webhooks triggers, video artifacts. https://cursor.com/blog/cloud-agents
+- **Linear Agents** — not a dashboard but a **data model**: AgentSession (states: working / awaiting
+  input / error / complete), AgentActivity (thought, action, elicitation, response, error), the plan as a
+  full array of steps. A good model of a status protocol. https://linear.app/developers/agent-interaction
+- **Devin** (2026 release notes exist: https://docs.devin.ai/release-notes/2026), **Factory**
+  (Droids, Missions), **Google Jules** (secondary: no changelog since 2026-03 — unconfirmed), **Amp**
+  — all alive, but each is its own agent + its own cloud UI; they do not orchestrate Claude Code/Codex CLI (except Warp).
 
-### 2e. Self-hosted control planes (класса Paperclip)
+### 2e. Self-hosted control planes (Paperclip class)
 
 - **builderz-labs/mission-control** — MIT, 6.3k★, alpha; tasks inbox → execution → review →
-  receipts, spend, fleet по runtime (OpenClaw, Claude Code, Codex), REST/OpenAPI, MCP, SSE; SQLite.
-  README честно: «one agent on one machine already stays understandable from its native CLI».
-- **Omnara** (после пивота) — инфраструктура для durable agents, не UI для разработчика.
+  receipts, spend, fleet by runtime (OpenClaw, Claude Code, Codex), REST/OpenAPI, MCP, SSE; SQLite.
+  The README is honest: "one agent on one machine already stays understandable from its native CLI".
+- **Omnara** (after the pivot) — infrastructure for durable agents, not a UI for a developer.
 
-### Умершие / свернувшиеся и почему
+### Dead / wound down, and why
 
-- **Terragon Labs** — закрыт 2026-02-09, «weren't able to reach the level of traction»; OSS-снимок
-  terragon-labs/terragon-oss без поддержки. https://docs.terragonlabs.com/docs/resources/shutdown
-- **Vibe Kanban / Bloop** — 2026-04-10, «vast majority are free users… couldn't find a business
-  model»; cloud-часть удалена, локальная — community, по HN «stopped improving… annoying bugs».
-- **Crystal** → переименован/заменён Nimbalyst (2026-02).
-- **Omnara** — пивот из мобильного пульта Claude Code в инфраструктуру managed agents.
-- Причина общая: вендоры (Codex app, Claude Code desktop, GitHub Agent HQ, Cursor) встроили
-  «список сессий + worktree + diff» бесплатно; обёртки без своей ценности сверх этого не выжили.
+- **Terragon Labs** — shut down 2026-02-09, "weren't able to reach the level of traction"; OSS snapshot
+  terragon-labs/terragon-oss without support. https://docs.terragonlabs.com/docs/resources/shutdown
+- **Vibe Kanban / Bloop** — 2026-04-10, "vast majority are free users… couldn't find a business
+  model"; the cloud part removed, the local one is community-run, per HN "stopped improving… annoying bugs".
+- **Crystal** → renamed/replaced by Nimbalyst (2026-02).
+- **Omnara** — a pivot from a mobile remote for Claude Code to managed-agents infrastructure.
+- The common cause: vendors (Codex app, Claude Code desktop, GitHub Agent HQ, Cursor) built in
+  "session list + worktree + diff" for free; wrappers with no value of their own beyond that did not survive.
 
-## 3. Паттерны и боли пользователей
+## 3. User patterns and pains
 
-Боли (первоисточники — HN):
-- **Узкое место — ревью, а не генерация**: «8 parallel cards means 8x the diffs to read»; «30 minutes of
-  planning and 30 minutes of implementation… is too big to review» (HN, Kanbots, ~май 2026 по id —
-  дата оценочная) https://news.ycombinator.com/item?id=48239413
-- «What does the kanban interface add here?» — доска без связи с реальными фактами (PR/CI) не нужна.
-- Нужен свой ключ и интеграция с GitHub при уходе сервиса (Terragon) — lock-in облачных оркестраторов
+Pains (primary sources — HN):
+- **The bottleneck is review, not generation**: "8 parallel cards means 8x the diffs to read"; "30 minutes of
+  planning and 30 minutes of implementation… is too big to review" (HN, Kanbots, ~May 2026 by id —
+  the date is an estimate) https://news.ycombinator.com/item?id=48239413
+- "What does the kanban interface add here?" — a board without a link to real facts (PR/CI) is not needed.
+- You need your own key and a GitHub integration when a service goes away (Terragon) — lock-in of cloud orchestrators
   https://news.ycombinator.com/item?id=46589735
-- Рынок: «handoff» (один промпт → агент) vs «pipeline» (детерминированные шаги с human gates);
-  коммерческие продукты почти все handoff, внутренние платформы крупных компаний — pipeline
-  (Jack Kora, 2026-06-29, вторичн.: https://jackkora.com/p/mapping-the-ai-coding-orchestrator).
-  Пайплайн владельца — это «pipeline»-класс, которого на рынке для соло почти нет.
+- The market: "handoff" (one prompt → agent) vs "pipeline" (deterministic steps with human gates);
+  commercial products are almost all handoff, internal platforms of large companies are pipeline
+  (Jack Kora, 2026-06-29, secondary: https://jackkora.com/p/mapping-the-ai-coding-orchestrator).
+  The owner's pipeline is of the "pipeline" class, which almost does not exist on the market for solo users.
 
-Каталог функций хорошего командного центра (информационная архитектура):
-1. **Портфель**: проекты → открытые задачи по стадиям pipeline (из трекера, а не своя БД).
-2. **Карточка задачи = join фактов**: issue + стадия + ветка/worktree + сессии агентов (runtime,
-   машина, статус) + PR + CI + review + артефакты стадии. Статус выводится из фактов (как AO), а не
-   двигается руками.
-3. **Живой статус агентов**: working / waiting-for-input / blocked / idle / error (Herdr, Linear
-   AgentSession) + уведомление «нужен человек» + jump-to-pane.
-4. **Лента «что сделал агент»**: transcript/summary, tool actions, изменённые файлы, стоимость.
-5. **Артефакты стадий**: spec, план, delivery report, evidence (скриншоты/видео), handoff — рендер
-   прямо в карточке.
-6. **Ревью**: diff с комментариями → отправка обратно тому же агенту (Superset, Vibe Kanban, AO).
-7. **Gates**: явные действия владельца «принять стадию / запустить следующую» с записью в трекер.
-8. **Recent / quick-jump**: последние задачи, командная палитра, deep links в терминал/GitHub.
-9. **Запуск**: «новая сессия по задаче» = создать worktree + ветку + агента с контекстом задачи.
-10. **Открытые данные/API**: всё состояние в git/GitHub/файлах, UI — только проекция (Nimbalyst
-    «plain files on disk»), чтобы пережить смерть инструмента.
+A catalog of features of a good command center (information architecture):
+1. **Portfolio**: projects → open tasks by pipeline stage (from the tracker, not your own DB).
+2. **Task card = a join of facts**: issue + stage + branch/worktree + agent sessions (runtime,
+   machine, status) + PR + CI + review + stage artifacts. Status is derived from facts (as in AO), not
+   moved by hand.
+3. **Live agent status**: working / waiting-for-input / blocked / idle / error (Herdr, Linear
+   AgentSession) + a "human needed" notification + jump-to-pane.
+4. **A feed of "what the agent did"**: transcript/summary, tool actions, changed files, cost.
+5. **Stage artifacts**: spec, plan, delivery report, evidence (screenshots/video), handoff — rendered
+   right in the card.
+6. **Review**: diff with comments → sent back to the same agent (Superset, Vibe Kanban, AO).
+7. **Gates**: explicit owner actions "accept the stage / start the next one" with a record in the tracker.
+8. **Recent / quick-jump**: recent tasks, command palette, deep links into the terminal/GitHub.
+9. **Launch**: "new session for a task" = create a worktree + branch + an agent with the task context.
+10. **Open data/API**: all state in git/GitHub/files, the UI is only a projection (Nimbalyst
+    "plain files on disk"), so it survives the death of the tool.
 
-## 4. Сравнительная таблица
+## 4. Comparison table
 
-| Инструмент | Для кого | Claude Code / Codex | Где | Источник задач | Worktree | Ревью/артефакты | API | Лицензия/цена | Активность | Lock-in |
+| Tool | Who it is for | Claude Code / Codex | Where | Task source | Worktree | Review/artifacts | API | License/price | Activity | Lock-in |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Paperclip | «AI-компании», автономные агенты | да/да (+Cursor, OpenCode, HTTP) | self-host server+Postgres | свой ticket system (BYO tracker — roadmap) | да | work products, plans, approvals; не PR-review | REST, plugins | MIT | 93k★, очень активен, CVE 10.0 в 2026-08 | высокий (своя модель) |
-| Agent Orchestrator | разработчик/команда | да/да, 25+ | local desktop+daemon | GitHub, GitLab + orchestrator | да | PR, CI, reviews, preview в карточке | CLI, plugins | Apache-2.0, telemetry | 12.5k★, релиз 09-26 | низкий-средний |
-| Emdash | разработчик | да/да | local + SSH | Linear, GitHub, Jira, GitLab… | да | diff, PR, CI, merge | — (не подтверждено) | Apache-2.0 | 5.9k★, активен | низкий |
-| Conductor | разработчик на Mac | да/да (+Cursor, OpenCode) | local (+cloud — не подтв.) | свой ввод; Linear/GitHub — не подтв. | да | diff, PR, merge | — | закрытый, free local | активен, $22M | средний |
-| Superset | разработчик | да/да | local | свой | да | diff, PR-feedback, preview, Pages | — | ELv2 | 14.7k★ | средний |
-| Nimbalyst | разработчик, visual | да/да (+OpenCode) | local desktop + iOS | markdown-трекеры в репо | да | red/green diff, session kanban | MCP | MIT | 1.8k★ | низкий |
-| Vibe Kanban | разработчик | да/да, 10+ | local | свой kanban | да | inline diff comments, preview | MCP | Apache-2.0 | компания закрыта 04-2026 | риск заброшенности |
-| Herdr | терминальные power users | да/да, 25+ | local + SSH | нет | helpers | нет | socket API, plugins, web | Apache-2.0 | 41k★, активен | низкий |
-| cmux | терминал на Mac | да/да | local | нет | нет | PR status в sidebar | CLI/socket | GPL (не подтв.) | 27k★ | низкий |
-| Codex app | пользователи Codex | нет/да | local + cloud | свой | да | review pane | — | подписка OpenAI | активен | вендорный |
-| Claude Code desktop | пользователи Claude | да/нет | local + cloud | свой | да | diff, терминал | — | подписка Anthropic | активен | вендорный |
-| GitHub Agent HQ | команды на GitHub | да/да (+Copilot) | cloud (Actions) | **GitHub Issues** | ветки/PR | session log, draft PR | GitHub API | Copilot Pro+/Ent | preview с 02-2026 | средний (GitHub уже используется) |
-| Cursor Cloud Agents | команды Cursor | свой агент | cloud VM | GitHub, Linear, Slack | ветки/PR | video artifacts | API | платно | активен | высокий |
-| mission-control | self-host ops | да/да | self-host | свой | — | runs, review, receipts | REST/MCP/SSE | MIT, alpha | 6.3k★ | средний |
-| Devin/Factory/Jules/Amp | команды | свои агенты | cloud | GitHub/Linear/Slack | облачно | свои UI | API | платно | живы | высокий |
+| Paperclip | "AI companies", autonomous agents | yes/yes (+Cursor, OpenCode, HTTP) | self-host server+Postgres | its own ticket system (BYO tracker — roadmap) | yes | work products, plans, approvals; not PR review | REST, plugins | MIT | 93k★, very active, CVE 10.0 in 2026-08 | high (its own model) |
+| Agent Orchestrator | developer/team | yes/yes, 25+ | local desktop+daemon | GitHub, GitLab + orchestrator | yes | PR, CI, reviews, preview in the card | CLI, plugins | Apache-2.0, telemetry | 12.5k★, release 09-26 | low-medium |
+| Emdash | developer | yes/yes | local + SSH | Linear, GitHub, Jira, GitLab… | yes | diff, PR, CI, merge | — (unconfirmed) | Apache-2.0 | 5.9k★, active | low |
+| Conductor | developer on Mac | yes/yes (+Cursor, OpenCode) | local (+cloud — unconfirmed) | its own input; Linear/GitHub — unconfirmed | yes | diff, PR, merge | — | closed, free local | active, $22M | medium |
+| Superset | developer | yes/yes | local | its own | yes | diff, PR feedback, preview, Pages | — | ELv2 | 14.7k★ | medium |
+| Nimbalyst | developer, visual | yes/yes (+OpenCode) | local desktop + iOS | markdown trackers in the repo | yes | red/green diff, session kanban | MCP | MIT | 1.8k★ | low |
+| Vibe Kanban | developer | yes/yes, 10+ | local | its own kanban | yes | inline diff comments, preview | MCP | Apache-2.0 | company shut down 04-2026 | risk of abandonment |
+| Herdr | terminal power users | yes/yes, 25+ | local + SSH | none | helpers | none | socket API, plugins, web | Apache-2.0 | 41k★, active | low |
+| cmux | terminal on Mac | yes/yes | local | none | none | PR status in the sidebar | CLI/socket | GPL (unconfirmed) | 27k★ | low |
+| Codex app | Codex users | no/yes | local + cloud | its own | yes | review pane | — | OpenAI subscription | active | vendor |
+| Claude Code desktop | Claude users | yes/no | local + cloud | its own | yes | diff, terminal | — | Anthropic subscription | active | vendor |
+| GitHub Agent HQ | teams on GitHub | yes/yes (+Copilot) | cloud (Actions) | **GitHub Issues** | branches/PR | session log, draft PR | GitHub API | Copilot Pro+/Ent | preview since 02-2026 | medium (GitHub already in use) |
+| Cursor Cloud Agents | Cursor teams | its own agent | cloud VM | GitHub, Linear, Slack | branches/PR | video artifacts | API | paid | active | high |
+| mission-control | self-host ops | yes/yes | self-host | its own | — | runs, review, receipts | REST/MCP/SSE | MIT, alpha | 6.3k★ | medium |
+| Devin/Factory/Jules/Amp | teams | their own agents | cloud | GitHub/Linear/Slack | cloud | their own UIs | API | paid | alive | high |
 
-## 5. Оценка вариантов для владельца
+## 5. Evaluation of options for the owner
 
-Ключевой вывод: готового инструмента, который (а) берёт задачи и стадии из **GitHub Issues/Projects**,
-(б) знает **ваш версионированный pipeline и артефакты стадий**, (в) видит **живые Herdr-сессии
-Claude Code и Codex** на нескольких репо, — нет. Рынок делится на «workspace managers» (worktree+diff+PR,
-без pipeline) и «control planes» (своя БД, автономные агенты, свой трекер).
+Key conclusion: there is no ready-made tool that (a) takes tasks and stages from **GitHub Issues/Projects**,
+(b) knows **your versioned pipeline and stage artifacts**, and (c) sees **live Herdr sessions
+of Claude Code and Codex** across several repos. The market splits into "workspace managers" (worktree+diff+PR,
+no pipeline) and "control planes" (their own DB, autonomous agents, their own tracker).
 
-- **Adopt Paperclip** — не рекомендуется: второй трекер, модель «автономной компании» вместо
-  owner-driven stages, не code review tool, тяжёлая эксплуатация и свежие критические CVE.
-- **Adopt ближайший готовый: Agent Orchestrator (AO).** Ближе всего по идее: GitHub tracker adapter,
-  карточки выводятся из фактов session/PR/CI/review, Claude Code+Codex, worktree, Apache-2.0.
-  Пробелы: не знает ваших стадий (idea→spec→tickets…), артефактов (spec, delivery report, evidence,
-  handoff) и owner gates; хочет сам запускать workers (конфликт с Herdr как местом жизни сессий);
-  молод (v0.13), telemetry. Альтернатива того же класса — Emdash (шире трекеры, SSH, hooks).
-- **Combine (рекомендуемо как первый шаг):** оставить Herdr runtime (+ herdr-web для обзора сессий),
-  GitHub Projects как канон стадий (поле Stage/Status), GitHub PR как место ревью и delivery report,
-  а один из workspace managers (AO/Emdash/Conductor) — опционально для diff/PR-итераций. Минус: 2–3
-  окна, нет единой карточки «задача ↔ сессии ↔ артефакты».
-- **Build thin (рекомендуемо, если нужен презентабельный единый центр):** read-mostly web-проекция
-  без своей БД-истины: источники = GitHub GraphQL (Issues/Projects/PR/checks), `git worktree list` по
-  репо из реестра, `herdr api snapshot` / `herdr agent list|read|wait` (статус, jump), файлы
-  артефактов в ветке/PR (spec, report, evidence), transcripts Claude/Codex. Действия = тонкие команды:
-  «открыть сессию по issue» (herdr worktree + agent start), «перевести стадию» (поле Project +
-  комментарий), «отправить review-замечание агенту» (`herdr agent prompt`). Модель статуса взять у
-  Linear AgentSession. Harness — источник определения стадий/артефактов (схема в репо), UI её только
-  рендерит. Это «pipeline»-класс, которого на рынке для соло нет; риск — поддержка своего кода, но
-  без собственной БД и с GitHub/Herdr как истиной lock-in и цена отказа минимальны.
+- **Adopt Paperclip** — not recommended: a second tracker, an "autonomous company" model instead of
+  owner-driven stages, not a code review tool, heavy operations and fresh critical CVEs.
+- **Adopt the closest ready-made one: Agent Orchestrator (AO).** Closest in idea: a GitHub tracker adapter,
+  cards derived from session/PR/CI/review facts, Claude Code+Codex, worktree, Apache-2.0.
+  Gaps: it does not know your stages (idea→spec→tickets…), artifacts (spec, delivery report, evidence,
+  handoff) and owner gates; it wants to launch workers itself (a conflict with Herdr as the place where sessions live);
+  young (v0.13), telemetry. An alternative of the same class is Emdash (broader trackers, SSH, hooks).
+- **Combine (recommended as a first step):** keep the Herdr runtime (+ herdr-web for a session overview),
+  GitHub Projects as the canon of stages (Stage/Status field), GitHub PRs as the place for review and the delivery report,
+  and one of the workspace managers (AO/Emdash/Conductor) optionally for diff/PR iterations. Downside: 2–3
+  windows, no single card "task ↔ sessions ↔ artifacts".
+- **Build thin (recommended if a presentable single center is needed):** a read-mostly web projection
+  without its own DB as a source of truth: sources = GitHub GraphQL (Issues/Projects/PR/checks), `git worktree list` over
+  the repos from the registry, `herdr api snapshot` / `herdr agent list|read|wait` (status, jump), artifact
+  files in the branch/PR (spec, report, evidence), Claude/Codex transcripts. Actions = thin commands:
+  "open a session for an issue" (herdr worktree + agent start), "advance the stage" (Project field +
+  comment), "send a review remark to the agent" (`herdr agent prompt`). Take the status model from
+  Linear AgentSession. The harness is the source of the stage/artifact definitions (a schema in the repo), the UI only
+  renders it. This is the "pipeline" class that does not exist on the market for solo users; the risk is maintaining your own code, but
+  with no DB of its own and with GitHub/Herdr as the truth, lock-in and the cost of abandoning it are minimal.
 
-## 6. Уточнение владельца: небольшие компонуемые инструменты (приоритет)
+## 6. Owner's clarification: small composable tools (priority)
 
-Владельцу не нужен продукт уровня Paperclip. Ниже — кирпичи, которые складываются вокруг уже
-установленного Herdr (`herdr 0.9.1`), `gh` и небольшого своего веб-интерфейса.
+The owner does not need a Paperclip-level product. Below are the bricks that fit together around the already
+installed Herdr (`herdr 0.9.1`), `gh` and a small web interface of their own.
 
-### 6a. Платформа Herdr-плагинов (основа сборки)
+### 6a. The Herdr plugin platform (the basis of the build)
 
-Плагин = `herdr-plugin.toml` (id, version, min_herdr_version) + любой исполняемый код (Bash, JS,
-Rust, Lua…). Умеет: actions (клавиши, `herdr plugin action invoke`), свои терминальные панели
-(overlay/popup/split/tab), обработчики событий Herdr, link handlers (ctrl-click по ссылке → action),
-доступ к CLI/socket API и env (`HERDR_PLUGIN_STATE_DIR`, ID pane/workspace). Без sandbox.
-Реестр: https://herdr.dev/plugins — автоиндекс GitHub-репо с topic `herdr-plugin`
-(https://assets.herdr.dev/plugins/index.json: 1375 плагинов на 2026-09-29). Гайд:
-https://flaviocopes.com/herdr-plugins/ (вторичный, автор известен). Сам API: `herdr api schema|snapshot`,
+A plugin = `herdr-plugin.toml` (id, version, min_herdr_version) + any executable code (Bash, JS,
+Rust, Lua…). It can: actions (keys, `herdr plugin action invoke`), its own terminal panes
+(overlay/popup/split/tab), handlers for Herdr events, link handlers (ctrl-click on a link → action),
+access to the CLI/socket API and env (`HERDR_PLUGIN_STATE_DIR`, pane/workspace IDs). No sandbox.
+Registry: https://herdr.dev/plugins — an auto-index of GitHub repos with the topic `herdr-plugin`
+(https://assets.herdr.dev/plugins/index.json: 1375 plugins as of 2026-09-29). Guide:
+https://flaviocopes.com/herdr-plugins/ (secondary, the author is known). The API itself: `herdr api schema|snapshot`,
 `herdr agent list|get|read|prompt|wait|explain`, `herdr worktree`, `herdr notification`.
 
-Звёзды/даты — из реестра Herdr на 2026-09-29; все ниже MIT, если не указано иное (проверено для
+Stars/dates are from the Herdr registry as of 2026-09-29; all below are MIT unless noted otherwise (verified for
 reviewr, radar, projects, roamgate, herdr-web).
 
-| Плагин / инструмент | ★ / push | Что даёт | Роль в центре |
+| Plugin / tool | ★ / push | What it provides | Role in the center |
 |---|---|---|---|
-| **eliasstravik/herdr-projects** | 510 / 09-28 (создан 09-18) | coordinator-разговор + worker threads в своих worktree/branch; sidebar «what needs you», строка `review · PR #4`, `~40%`; агенты сами репортят прогресс; ticker следит за PR | ближе всего к «оркестратору внутри Herdr»; забрать модель «thread = задача», self-reported progress |
-| **eliasstravik/herdr-agent-progress** | 31 / 09-15 | агент сам пишет прогресс/активность в sidebar | протокол статуса стадии от агента |
-| **hhdebb/herdr-radar** | 102 / 09-28 | sidebar: working / ждёт вас / done-до-просмотра / 3 уровня idle, группировка по проекту, worktree под репо | готовый «кто где и кто ждёт меня» |
-| **persiyanov/herdr-reviewr** | 790 / 09-23 | review-панель: diff (uncommitted / branch / last turn / commits), комментарии к строкам → агенту, read-only PR view, markdown preview | ревью в терминале, «last-turn diff» = «что агент сделал» |
-| **jhochenbaum/herdr-hunk-diff** | 133 / 09-27 | ревью в hunk + inline-комментарии обратно агенту | альтернатива reviewr |
-| **plannotator/herdr-annotate** | 580 / 09-27 | аннотировать ответы агента и документы (spec/план) → обратно агенту | ревью spec/плана на стадиях до кода |
-| **tomasvarga/herdr-pickr** | 20 / 07-13 | ctrl-click по PR-ссылке → выбрать ревьюер-тул, опционально AI first pass | маршрутизация ревью |
-| **wyattjoh/herdr-plugin-gh-pr** | 22 / 07-16 | статус PR ветки фокусного pane в sidebar | связка pane ↔ PR |
-| **bredebjorhovd/herdr-board** | 1 / 08-14 | TUI-доска: GitHub issues/PR (+Linear) → dispatch в pane; BLOCKED/WORKING/READY/REVIEW/FAILED; PR review доставляется агенту-автору | **концептуально ближе всего к нужному**, но 1★ — брать как образец/форк, не как зависимость |
-| nelsonPires5/herdr-board | 162 / 09-29 | kanban, карточки = промпты в видимые pane | своя доска, не GitHub |
-| thanhdat77/herdr-navigator | 175 / 09-24 | fuzzy-переход к workspace/agent/project/session/action | quick-jump |
-| andrewchng/herdr-sessionizer | 49 / 09-26 | открыть проект/worktree + TOML-раскладка tabs/panes/команд | лаунчер «сессия по задаче» |
-| devashish2203/herdr-worktrunk | 164 / 09-21 | интеграция Worktrunk | worktree на задачу |
-| tdi/herdr-worktree-setup | 27 / 09-11 | setup при создании worktree (.env, mise, direnv, deps) | готовность worktree |
-| cloudmanic/herdr-plus (Go) | 340 / 09-04 | Projects + Quick Actions | проекты/быстрые действия |
-| aemrebarut/herdr-dagr | 88 / 08-23 | swarm как live DAG: attempts, review gates, evidence | идея визуализации стадий/гейтов |
-| deimantasnork/captains-deck | 29 / 09-28 | read-only flow kanban | образец read-only доски |
-| furkankly/zoetrope | 956 / 09-15 | сессия Claude Code/Codex как live flow graph, терминал или браузер | «что делал агент» |
-| nicosuave/memex | 234 / 09-22 | поиск по транскриптам Claude/Codex/…, resume, токены | история сессий |
-| Davidcreador/herdr-token-dashboard | 23 / 09-14 | токены по pane | расход |
-| **Веб/мобильные клиенты Herdr**: powerfooI/roamgate (256, TS; терминалы, агенты, файлы и diff-аннотации, desktop+mobile), kcosr/herdr-web (143, MIT; использует приватные API Herdr — хрупко), devswha/herdr-web-ui (35), 0cv/herdr-mobile-relay (261, Go; approve с телефона, push) | | | готовый веб-слой к сессиям; roamgate — кандидат на основу/форк |
+| **eliasstravik/herdr-projects** | 510 / 09-28 (created 09-18) | a coordinator conversation + worker threads in their own worktrees/branches; a "what needs you" sidebar, a `review · PR #4` line, `~40%`; agents report progress themselves; a ticker watches PRs | closest to an "orchestrator inside Herdr"; take the "thread = task" model, self-reported progress |
+| **eliasstravik/herdr-agent-progress** | 31 / 09-15 | the agent itself writes progress/activity to the sidebar | a stage status protocol from the agent |
+| **hhdebb/herdr-radar** | 102 / 09-28 | sidebar: working / waiting for you / done-before-viewing / 3 idle levels, grouping by project, worktrees under the repo | a ready "who is where and who is waiting for me" |
+| **persiyanov/herdr-reviewr** | 790 / 09-23 | a review panel: diff (uncommitted / branch / last turn / commits), line comments → agent, read-only PR view, markdown preview | review in the terminal, "last-turn diff" = "what the agent did" |
+| **jhochenbaum/herdr-hunk-diff** | 133 / 09-27 | review in hunk + inline comments back to the agent | an alternative to reviewr |
+| **plannotator/herdr-annotate** | 580 / 09-27 | annotate agent replies and documents (spec/plan) → back to the agent | review of spec/plan at the pre-code stages |
+| **tomasvarga/herdr-pickr** | 20 / 07-13 | ctrl-click on a PR link → choose a reviewer tool, optionally an AI first pass | review routing |
+| **wyattjoh/herdr-plugin-gh-pr** | 22 / 07-16 | the PR status of the focused pane's branch in the sidebar | a pane ↔ PR link |
+| **bredebjorhovd/herdr-board** | 1 / 08-14 | a TUI board: GitHub issues/PRs (+Linear) → dispatch into a pane; BLOCKED/WORKING/READY/REVIEW/FAILED; PR review is delivered to the authoring agent | **conceptually closest to what is needed**, but 1★ — take as a model/fork, not as a dependency |
+| nelsonPires5/herdr-board | 162 / 09-29 | kanban, cards = prompts into visible panes | its own board, not GitHub |
+| thanhdat77/herdr-navigator | 175 / 09-24 | fuzzy jump to workspace/agent/project/session/action | quick-jump |
+| andrewchng/herdr-sessionizer | 49 / 09-26 | open a project/worktree + a TOML layout of tabs/panes/commands | a "session per task" launcher |
+| devashish2203/herdr-worktrunk | 164 / 09-21 | Worktrunk integration | a worktree per task |
+| tdi/herdr-worktree-setup | 27 / 09-11 | setup on worktree creation (.env, mise, direnv, deps) | worktree readiness |
+| cloudmanic/herdr-plus (Go) | 340 / 09-04 | Projects + Quick Actions | projects/quick actions |
+| aemrebarut/herdr-dagr | 88 / 08-23 | a swarm as a live DAG: attempts, review gates, evidence | an idea for visualizing stages/gates |
+| deimantasnork/captains-deck | 29 / 09-28 | a read-only flow kanban | a model of a read-only board |
+| furkankly/zoetrope | 956 / 09-15 | a Claude Code/Codex session as a live flow graph, terminal or browser | "what the agent did" |
+| nicosuave/memex | 234 / 09-22 | search across Claude/Codex/… transcripts, resume, tokens | session history |
+| Davidcreador/herdr-token-dashboard | 23 / 09-14 | tokens per pane | spend |
+| **Herdr web/mobile clients**: powerfooI/roamgate (256, TS; terminals, agents, files and diff annotations, desktop+mobile), kcosr/herdr-web (143, MIT; uses private Herdr APIs — fragile), devswha/herdr-web-ui (35), 0cv/herdr-mobile-relay (261, Go; approve from a phone, push) | | | a ready web layer over sessions; roamgate is a candidate for a base/fork |
 
-Экосистема очень молодая (большинство создано 06–09.2026), у многих 1 автор — выбирать 2–4 плагина,
-закреплять версии, критичную логику держать у себя.
+The ecosystem is very young (most created 06–09.2026), many have a single author — pick 2–4 plugins,
+pin versions, keep the critical logic in-house.
 
-### 6b. Не-Herdr кирпичи
+### 6b. Non-Herdr bricks
 
-- **gh-dash** dlvhdr/gh-dash — MIT, 12.6k★, push 09-22: TUI по PR/issues с секциями per-repo (YAML),
-  **custom actions** (например, «запустить Herdr-сессию по этому issue»). https://github.com/dlvhdr/gh-dash
-- **Worktrunk** max-sixty/worktrunk — 8.5k★, push 09-29 (Rust; лицензия в API NOASSERTION — не
-  подтверждено): `wt switch/create/remove`, пути по шаблону, hooks. https://worktrunk.dev
-- **ghzinga** osolmaz/ghzinga — 87★: кликабельный TUI одного issue/PR.
-- **Agent Sessions** jazzyalex/agent-sessions — MIT, 882★: macOS app — поиск по локальным сессиям
-  Codex/Claude/…, resume, quota/стоимость на сессию. **claude-code-log** daaain — 1.2k★: JSONL→HTML/MD
-  транскрипта (для evidence/delivery report). **ccusage** — 18.8k★: расход.
-- **coder/agentapi** — 1.5k★, push 09-13: HTTP API поверх Claude Code/Codex/… (альтернатива, если
-  когда-нибудь уходить от терминала).
-- **TUI-менеджеры сессий (альтернативы Herdr, не нужны при Herdr, но источники идей)**:
+- **gh-dash** dlvhdr/gh-dash — MIT, 12.6k★, push 09-22: a TUI over PRs/issues with per-repo sections (YAML),
+  **custom actions** (for example, "launch a Herdr session for this issue"). https://github.com/dlvhdr/gh-dash
+- **Worktrunk** max-sixty/worktrunk — 8.5k★, push 09-29 (Rust; the license in the API is NOASSERTION —
+  unconfirmed): `wt switch/create/remove`, template-based paths, hooks. https://worktrunk.dev
+- **ghzinga** osolmaz/ghzinga — 87★: a clickable TUI for a single issue/PR.
+- **Agent Sessions** jazzyalex/agent-sessions — MIT, 882★: a macOS app — search across local Codex/Claude/…
+  sessions, resume, quota/cost per session. **claude-code-log** daaain — 1.2k★: JSONL→HTML/MD
+  of a transcript (for evidence/delivery report). **ccusage** — 18.8k★: spend.
+- **coder/agentapi** — 1.5k★, push 09-13: an HTTP API on top of Claude Code/Codex/… (an alternative if
+  one ever moves away from the terminal).
+- **TUI session managers (alternatives to Herdr, not needed with Herdr, but sources of ideas)**:
   agent-of-empires (MIT, 3.3k★; TUI+web, worktree/container), agent-deck (970★), ccmanager (1.25k★),
-  amux (162★), seshagy (20★; tmux+herdr, zoxide-лаунчер).
-- **Linear AgentSession** как схема статуса (не продукт): states + activity types + plan.
-- **tsk** smarzban/tsk (151★): терминальный трекер «TUI для вас, CLI для агентов» — идея, но у
-  владельца трекер GitHub.
+  amux (162★), seshagy (20★; tmux+herdr, zoxide launcher).
+- **Linear AgentSession** as a status schema (not a product): states + activity types + plan.
+- **tsk** smarzban/tsk (151★): a terminal tracker, "a TUI for you, a CLI for agents" — an idea, but the
+  owner's tracker is GitHub.
 
-### 6c. Что забрать у крупных продуктов (кратко)
+### 6c. What to take from the large products (briefly)
 
-| Продукт | Забрать идею / часть |
+| Product | Idea / part to take |
 |---|---|
-| Paperclip | atomic checkout задачи (одна задача — одна активная сессия); goal ancestry в брифе агента; routines → issue; immutable activity log; run = структурированный лог + cost event |
-| Agent Orchestrator | **позиция карточки выводится из фактов** (session, PR, CI, review), а не двигается руками; «отправить CI/review feedback тому же агенту»; tracker adapter интерфейс (backend/internal/ports/tracker.go, Apache-2.0 — можно читать/заимствовать) |
-| Emdash | установка lifecycle hooks в агенты для статуса/уведомлений/resume; задачи из GitHub/Linear |
-| Conductor | жизненный цикл workspace: create → review → PR → merge → **archive**; «shared context folder» на workspace |
-| Superset | превью dev server с портами на worktree; «Pages» — отчёт с комментариями, который агент переделывает по той же ссылке (аналог delivery report) |
-| Nimbalyst | всё состояние — plain files в репо; session kanban со связью сессия ↔ файлы |
-| Vibe Kanban | inline-комментарии к diff → агенту; урок: облачная часть без бизнес-модели умерла, локальная пережила |
-| Codex app / Claude Code desktop | sidebar сессий с фильтром по статусу/проекту; review pane с revert/stage; automations |
-| GitHub Agent HQ | задача = issue, запуск через Assignees, лог сессии привязан к PR — модель, совместимая с вашим трекером |
-| Linear | AgentSession/AgentActivity как словарь статусов и «elicitation» (агент ждёт человека) |
-| mission-control | «completion receipt» — итоговая квитанция задачи (что исполнено, что прошло ревью) |
-| Cursor Cloud Agents | видео-артефакт как доказательство работы |
+| Paperclip | atomic task checkout (one task — one active session); goal ancestry in the agent brief; routines → issue; immutable activity log; a run = a structured log + a cost event |
+| Agent Orchestrator | **the card position is derived from facts** (session, PR, CI, review), not moved by hand; "send CI/review feedback to the same agent"; the tracker adapter interface (backend/internal/ports/tracker.go, Apache-2.0 — can be read/borrowed) |
+| Emdash | installing lifecycle hooks into agents for status/notifications/resume; tasks from GitHub/Linear |
+| Conductor | the workspace lifecycle: create → review → PR → merge → **archive**; a "shared context folder" per workspace |
+| Superset | dev server preview with ports per worktree; "Pages" — a report with comments that the agent reworks at the same link (an analog of the delivery report) |
+| Nimbalyst | all state as plain files in the repo; session kanban with a session ↔ files link |
+| Vibe Kanban | inline diff comments → agent; the lesson: the cloud part without a business model died, the local one survived |
+| Codex app / Claude Code desktop | a session sidebar with a status/project filter; a review pane with revert/stage; automations |
+| GitHub Agent HQ | task = issue, launch via Assignees, the session log tied to the PR — a model compatible with your tracker |
+| Linear | AgentSession/AgentActivity as a vocabulary of statuses and "elicitation" (the agent waits for a human) |
+| mission-control | a "completion receipt" — the task's final receipt (what was executed, what passed review) |
+| Cursor Cloud Agents | a video artifact as proof of work |
 
-### 6d. Пересмотренная рекомендация (с учётом уточнения)
+### 6d. Revised recommendation (taking the clarification into account)
 
-**Combine + тонкий свой слой, без платформы.**
-1. Runtime и живой статус: Herdr + `herdr-radar` (кто ждёт) + `herdr-navigator` (прыжки).
-2. Лаунчер «сессия по issue»: Worktrunk (+ `herdr-worktrunk`, `herdr-worktree-setup`) +
-   `herdr-sessionizer`-раскладка; вызов из **gh-dash custom action** или своего Herdr-action
-   `start-issue <repo>#<n>` → worktree + ветка + агент с брифом из issue/spec.
-3. Ревью: `herdr-reviewr` (diff/last-turn/PR, комментарии → агенту), `herdr-annotate` для spec/плана;
-   финальное ревью и delivery report — в GitHub PR.
-4. «Портфель и стадии»: маленький свой веб-интерфейс (read-mostly, без своей БД): GitHub GraphQL
-   (Project field Stage, issues, PR, checks) × `git worktree list` по реестру × `herdr api snapshot`
-   × артефакты в ветке/PR. Действия — вызовы `gh` и `herdr` (перевод стадии, `agent prompt`,
-   focus). Это та часть, которой нет ни у кого, и она знает ваш harness.
-5. Как отправную точку для веба рассмотреть форк **roamgate** (TS, MIT; уже умеет терминалы, агентов,
-   diff) или только позаимствовать его клиент к Herdr API; для доски — идеи `bredebjorhovd/herdr-board`
-   и derived-status AO.
-6. Протокол статуса от агента: skill/hook в harness пишет прогресс (как `herdr-agent-progress`) и
-   ссылки на артефакты стадии в issue/PR-комментарий; центр только читает.
+**Combine + a thin layer of your own, no platform.**
+1. Runtime and live status: Herdr + `herdr-radar` (who is waiting) + `herdr-navigator` (jumps).
+2. A "session per issue" launcher: Worktrunk (+ `herdr-worktrunk`, `herdr-worktree-setup`) +
+   the `herdr-sessionizer` layout; invoked from a **gh-dash custom action** or your own Herdr action
+   `start-issue <repo>#<n>` → worktree + branch + an agent with a brief from the issue/spec.
+3. Review: `herdr-reviewr` (diff/last-turn/PR, comments → agent), `herdr-annotate` for spec/plan;
+   the final review and delivery report — in the GitHub PR.
+4. "Portfolio and stages": a small web interface of your own (read-mostly, no DB of its own): GitHub GraphQL
+   (Project field Stage, issues, PR, checks) × `git worktree list` over the registry × `herdr api snapshot`
+   × artifacts in the branch/PR. Actions are `gh` and `herdr` calls (stage transition, `agent prompt`,
+   focus). This is the part nobody else has, and it knows your harness.
+5. As a starting point for the web part, consider forking **roamgate** (TS, MIT; it already handles terminals, agents,
+   diff) or just borrowing its client for the Herdr API; for the board — the ideas of `bredebjorhovd/herdr-board`
+   and AO's derived status.
+6. A status protocol from the agent: a skill/hook in the harness writes progress (like `herdr-agent-progress`) and
+   links to stage artifacts into an issue/PR comment; the center only reads.
 
-Риски: молодость и bus factor Herdr-плагинов (закреплять версии, минимум зависимостей); kcosr/herdr-web
-использует приватные API Herdr; своё веб-приложение — поддержка, но при GitHub/Herdr/git как единственных
-источниках истины его можно выбросить без потери данных.
+Risks: the youth and bus factor of Herdr plugins (pin versions, minimal dependencies); kcosr/herdr-web
+uses private Herdr APIs; your own web app is maintenance, but with GitHub/Herdr/git as the only
+sources of truth it can be thrown away without losing data.
 
-Ограничения исследования: коммерческие продукты (Conductor cloud, Warp Factories, Jules) частично
-по вторичным источникам; AO docs по плагинам не открылись (404), трекеры определены по дереву кода;
-даты HN-тредов оценены по id.
+Research limitations: commercial products (Conductor cloud, Warp Factories, Jules) are partly
+from secondary sources; the AO plugin docs did not open (404), trackers were determined from the code tree;
+HN thread dates are estimated from ids.
