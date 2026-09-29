@@ -154,6 +154,18 @@ Decisions from the harness requirements map, one ticket per decision.
   P×I×D); `docs/research/2026-09-25-artifact-pipelines-academic.md` §6.1;
   `docs/research/2026-09-25-artifact-pipelines-industry.md` §1.2;
   `docs/research/2026-09-29-mattpocock-skills-design.md` §2.5.
+- **Human gates stay conventions in skills** (D14, #19). No human gate becomes a check in the harness's
+  code: grilling waits for confirmation, `tdd` confirms seams, `to-tickets` waits for approval of the
+  breakdown, and whether an agent may merge follows the acceptance-mode label (D13) read by the `pr`
+  skill. A project that wants platform-level protection against merging can use GitHub branch
+  protection with a required review; the example setup mentions it as an option, not in the built-in
+  default, since it would block `acceptance:auto`.
+- **Product focus: a well-designed pipeline and developer convenience, not constraints on agents**
+  (stated by the owner while resolving D14, #19). agent-workbench assembles the best practices of Matt
+  Pocock's pipeline, Harness of Harness, and Anthropic's and OpenAI's guidance into a pipeline of
+  skills and conventions, and invests in making the work visible and understandable for the
+  developer (the command center, result cards, clear labels). It does not build rigid wrappers,
+  validators or restrictions around agents. Complements ADR 0004.
 
 ## 2026-09-29 (open questions from the brief)
 
