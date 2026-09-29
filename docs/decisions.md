@@ -201,6 +201,18 @@ Decisions from the harness requirements map, one ticket per decision.
   start editing code in practice or when an orchestrator (A4) needs roles as data, as Harness of
   Harness does. Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §6;
   `docs/research/2026-09-29-hoh-harness-design.md` §2.1, §3.
+- **Any tracker, configured by the agent at setup** (G28, #33). As with Matt Pocock's skills, the
+  harness works with any tracker: at setup an agent (the setup skill) asks which tracker the project
+  uses and writes `docs/agents/issue-tracker.md` describing its operations; skills go through that
+  file and stay tracker-agnostic. The command center is code and cannot follow prose, so its first
+  version reads facts from GitHub only, behind one fact-source seam; support for other trackers there
+  is decided in #3. Homes of facts: the issue and its labels (task, track, acceptance mode, status),
+  the PR (delivered work, evidence, result card, acceptance by merge), issue comments (handoffs),
+  repository files (lasting decisions, ADRs). Intent approval is the owner's `ready-for-agent`-style
+  label on a small-track issue or the merge of the spec PR on a medium track. Owner decisions are
+  recognised by the actor of GitHub events (who labelled, merged or approved), so no store of our
+  own is needed. Evidence: `docs/research/2026-09-29-mattpocock-skills-design.md` §4;
+  `docs/research/2026-09-29-harness-frameworks-compared.md` §3.5, §11.3.1, §11.3.6.
 
 ## 2026-09-29 (open questions from the brief)
 
