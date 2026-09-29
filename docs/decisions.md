@@ -213,6 +213,13 @@ Decisions from the harness requirements map, one ticket per decision.
   recognised by the actor of GitHub events (who labelled, merged or approved), so no store of our
   own is needed. Evidence: `docs/research/2026-09-29-mattpocock-skills-design.md` §4;
   `docs/research/2026-09-29-harness-frameworks-compared.md` §3.5, §11.3.1, §11.3.6.
+- **Tracker operations are prose templates, Matt Pocock's way** (G29, #34). Skills perform tracker
+  operations through `docs/agents/issue-tracker.md`, written by the setup skill for the project's
+  tracker; there is no CLI of ours in between. Our fork fixes the known template bugs of upstream:
+  `gh issue view --comments` combined with `jq` (#733), comments output without the issue body
+  (#964), `issue_dependencies_summary` as an invalid `--json` field (#1118), and the blocking recipe
+  hidden in the wayfinder section (#855) — verified `gh api` / `--json` commands and the blocking
+  recipe in a shared section. Evidence: `docs/research/2026-09-29-mattpocock-skills-design.md` §4.
 
 ## 2026-09-29 (open questions from the brief)
 
