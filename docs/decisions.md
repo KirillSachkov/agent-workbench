@@ -242,6 +242,16 @@ Decisions from the harness requirements map, one ticket per decision.
   both `.claude/skills` and `.agents/skills`. Evidence:
   `docs/research/2026-09-29-agent-instructions-in-repos.md` §2.2, §2.4;
   `docs/research/2026-09-29-cross-runtime-portability.md` §3.2, §10.4.
+- **The invocation policy lives in `SKILL.md` frontmatter** (E20, #25). `disable-model-invocation:
+  true` marks a user-invoked skill; it is the one field several runtimes read (Claude Code, Cursor,
+  Copilot in VS Code, Zed, Kimi). `sync` renders it into Codex `agents/openai.yaml`
+  (`policy.allow_implicit_invocation: false`) and an OpenCode `permission` rule on the skill tool;
+  the smoke check (E17) confirms the skill stays callable by name in OpenCode. A skill registry is
+  generated from frontmatter as an index for people and the router, never a source. Gemini CLI has no
+  per-skill field and is listed with the limit "user-invoked skills are visible to the model". This
+  removes the hand-maintained parity bugs seen upstream (`writing-for-agents` invisible to Codex until
+  1.2.2). Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §3.3;
+  `docs/research/2026-09-29-mattpocock-skills-design.md` §3.
 
 ## 2026-09-29 (open questions from the brief)
 
