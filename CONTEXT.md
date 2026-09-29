@@ -70,6 +70,11 @@ _Avoid_: approval, sign-off
 Observable conditions, stated before the work, that show the work is done.
 _Avoid_: definition of done, exit criteria
 
+**Repair round**:
+One attempt by the agent to fix a failed check or review finding and rerun the checks. Infrastructure
+failures do not count.
+_Avoid_: retry, iteration
+
 **Preservation criteria**:
 Behaviour the work must not break, stated before the work.
 _Avoid_: constraints, non-goals

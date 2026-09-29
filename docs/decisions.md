@@ -71,6 +71,17 @@ Decisions from the harness requirements map, one ticket per decision.
   edited harness files in a project are normal and must survive updates. Evidence:
   `docs/research/2026-09-29-mattpocock-skills-design.md` §2.7, §4, §5;
   `docs/research/2026-09-29-harness-frameworks-compared.md` §6.3–6.4.
+- **Agents repair failed checks themselves, within a limit** (B7, #12). When a mechanical check or
+  review finding fails with a clear signal, the agent fixes it and reruns without involving the owner,
+  for at most 2 repair rounds by default (changeable in the project configuration). Past the limit it
+  stops with a report of what it tried and where it is stuck. Ambiguity in intent or a conflict with
+  the spec goes back to the owner at once instead of being guessed. Infrastructure failures (network,
+  timeouts, runners) do not count as rounds and are reported separately from product failures.
+  Repairs must not weaken checks: changes to tests and CI are listed separately in the report. Rounds
+  are counted from facts (CI runs on the PR), since the harness does not launch agents. Evidence:
+  `docs/research/2026-09-29-hoh-harness-design.md` §2.2, §7;
+  `docs/research/2026-09-27-agent-products-human-artifacts.md` §8 (Stripe);
+  `docs/research/2026-09-27-reviewing-agent-work-practices.md` §1, §6.
 
 ## 2026-09-29 (open questions from the brief)
 
