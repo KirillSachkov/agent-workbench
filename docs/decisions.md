@@ -135,6 +135,13 @@ Decisions from the harness requirements map, one ticket per decision.
   `handoff` instead (C10). Agents get facts themselves with `gh` and `git`; skills do not depend on
   our CLI, which serves the command center and installation. Evidence:
   `docs/research/2026-09-29-mattpocock-skills-design.md` §2.3, §6, §7.
+- **The harness executes no gates** (D12, #17). No CLI validators, no hooks and no CI step of the
+  harness block anything (follows ADR 0004). Two things block, and both belong to the project: its own
+  CI, made required through branch protection, and the owner's merge. Projects may add their own
+  hooks; hooks for observation are ticket D15, and the 2026-09-27 order "hooks after the artifact
+  contract" stands. The built-in default ships an example CI workflow that runs the project's checks,
+  as a sample to adapt, not a requirement. Evidence:
+  `docs/research/2026-09-29-harness-frameworks-compared.md` §11.3.2.
 
 ## 2026-09-29 (open questions from the brief)
 
