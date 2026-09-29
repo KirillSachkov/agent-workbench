@@ -23,6 +23,8 @@ of extra weight, and many command centers have already shut down.
 4. **Command center.** A data aggregation core (GitHub: issues, stages, PRs, checks, tracker sessions;
    artifacts; Herdr: live agents; git: branches and worktrees) with two interfaces on top: a TUI in
    Herdr and a web dashboard.
+   (Amended 2026-09-29 by the command center decisions in `docs/decisions.md`: outcomes 3 and 4 are
+   one single-user command center, whose jobs, form and home are being decided on map #41.)
 5. **One-command installation** on the developer machine and into a project.
 
 ## Principles

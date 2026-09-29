@@ -116,6 +116,13 @@ _Avoid_: rule, policy, gate
 Behaviour the work must not break, stated before the work.
 _Avoid_: constraints, non-goals
 
+### Command center
+
+**Command center**:
+The owner's single-user layer around the harness for checking agents' results and seeing what
+happens across projects. It shows facts from their sources and keeps no state of its own.
+_Avoid_: shell, dashboard, workspace (a Herdr term), cockpit
+
 ### Configuration
 
 **Harness source**:

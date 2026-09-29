@@ -2,6 +2,36 @@
 
 Owner decisions, newest first. Each entry has a date, the decision and where it came from.
 
+## 2026-09-29 (command center, wayfinder #41)
+
+Decisions taken while charting the command center map (#41), before its tickets.
+
+- **Destination of the map** (#41). The map ends when the owner can start `/to-spec` for the first
+  slice of the command center: its jobs, its form and how the parts combine (Herdr plugin, own TUI,
+  web, canvas), the harness seam, the home repository and the first useful slice are decided. Later
+  layers such as a canvas overview stay a sketched direction, not a design.
+- **Two jobs on par** (#41). The command center serves two jobs equally: checking an agent's result
+  fast (report and artifacts, PR or commit, changed files at the right lines, branches and worktrees,
+  the running app, screenshots) and an overview across projects (agents, tasks, how they relate).
+  Launching and switching agents stays with Herdr and its plugins.
+- **One effort for the command center and the workspace** (#41). The map covers both former outcome
+  issues #3 (command center) and #4 (workspace: Herdr plugins, key bindings, setup); both stay open
+  as outcome issues. C12 (result package) and G30 (label vocabulary) return as tickets of the map.
+  The setup command itself is implementation; the map decides what it sets up.
+- **The command center is single-user** (#41). One user on one machine: no team or multi-user
+  features (shared boards, access control, a server for colleagues). It may rely on the owner's stack
+  (Herdr, GitHub, macOS, their editor), but personal data such as the list of projects and paths
+  lives in local configuration, never in code, since the repository is public. It stays adaptable to
+  any harness. For the command center this replaces the 2026-09-29 requirement "must work for a
+  team"; the harness itself stays team-ready. Team visibility stays in GitHub (PRs, issues, the
+  result card in the PR).
+- **The term is "command center"** (#41). One name for the whole layer around the harness — the
+  owner's workspace in Herdr and the overview. "Shell", "dashboard" and "workspace" (a Herdr term)
+  are avoided as names for it.
+- **Out of scope of the map** (#41): team and multi-user features, mobile and remote access to
+  sessions, trackers other than GitHub in the command center (G28 left this to #3), launching and
+  orchestrating agents of our own, reading agents' internal session files.
+
 ## 2026-09-29 (harness requirements, wayfinder #5)
 
 Decisions from the harness requirements map, one ticket per decision.
