@@ -16,3 +16,8 @@ is marked "unconfirmed". The owner's local paths are anonymized.
 | [command-centers-landscape](2026-09-29-command-centers-landscape.md) | Paperclip, command centers, Herdr plugins |
 | [command-center-build-options](2026-09-29-command-center-build-options.md) | Data sources, interface options, architecture |
 | [stack-landscape](2026-09-29-stack-landscape.md) | Stack landscape: what comparable developer and agent tools are built with |
+| [hoh-harness-design](2026-09-29-hoh-harness-design.md) | Harness of Harness as a design: roles, runtime adapters, artifacts, configuration, limits |
+| [mattpocock-skills-design](2026-09-29-mattpocock-skills-design.md) | Matt Pocock's skills: philosophy, distribution, per-repo configuration, evolution |
+| [harness-frameworks-compared](2026-09-29-harness-frameworks-compared.md) | spec-kit, OpenSpec, BMAD, Superpowers, Kiro, GSD, Ruflo, Agent OS as products |
+| [cross-runtime-portability](2026-09-29-cross-runtime-portability.md) | AGENTS.md, Agent Skills, plugins, hooks, MCP, headless modes: parity across runtimes |
+| [harness-requirements-agenda](2026-09-29-harness-requirements-agenda.md) | Synthesis: 33 open questions for the harness requirements grilling |
