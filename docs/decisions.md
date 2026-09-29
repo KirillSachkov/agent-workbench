@@ -232,6 +232,16 @@ Decisions from the harness requirements map, one ticket per decision.
   how popular repositories and `vercel-labs/skills` already lay things out. Evidence:
   `docs/research/2026-09-29-agent-instructions-in-repos.md` §0, §1.3, §1.6, §2, §4;
   `docs/research/2026-09-29-cross-runtime-portability.md` §10.
+- **Skills reach Claude Code through a committed directory symlink; Windows is best effort**
+  (E19, #24; the owner asked for the usual practice). A relative symlink `.claude/skills` →
+  `../.agents/skills` is committed, as next.js, sentry, PostHog and supabase do; a project that needs
+  Claude-only skills may switch to per-skill links, which `sync` supports. No copies per runtime.
+  Windows is not a first-version target: following `vercel-labs/skills`, `sync` on Windows creates a
+  junction or a local uncommitted copy and warns when a committed link arrived as a text stub (the
+  failure n8n documents). The smoke check (E17) must confirm how OpenCode treats a skill it sees in
+  both `.claude/skills` and `.agents/skills`. Evidence:
+  `docs/research/2026-09-29-agent-instructions-in-repos.md` §2.2, §2.4;
+  `docs/research/2026-09-29-cross-runtime-portability.md` §3.2, §10.4.
 
 ## 2026-09-29 (open questions from the brief)
 
