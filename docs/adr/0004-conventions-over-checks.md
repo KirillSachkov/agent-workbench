@@ -1,8 +1,8 @@
 # Conventions over checks: the harness's code enforces nothing
 
 The pipeline rests on skills, conventions and worked examples, as Matt Pocock's skills do. The
-harness's own code only collects facts — node state for the command center, answers to agents'
-questions — and installs; it does not validate artifacts and does not block anything. What still
+harness's own code only collects facts for the command center (node state) and installs; agents
+read facts with `gh` and `git` themselves; it does not validate artifacts and does not block anything. What still
 blocks lives outside the harness: the project's own CI and the owner's merge. The owner chose this
 over a hybrid (conventions plus a small project-chosen blocking set) because rigid tooling breaks as
 models and runtimes change, gets in the way of deliberate deviations, and costs upkeep, while skills

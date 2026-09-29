@@ -109,7 +109,7 @@ Decisions from the harness requirements map, one ticket per decision.
 - **Conventions over checks: the harness's code enforces nothing** (principle raised while resolving
   C10, #15; the owner chose it over a hybrid with a minimal blocking set). Like Matt Pocock's skills,
   the pipeline rests on skills, conventions and worked examples. The harness's own code only collects
-  facts (for the command center and for agents' questions) and installs; it validates nothing and
+  facts for the command center and installs (agents read facts with `gh` and `git` themselves, C11); it validates nothing and
   blocks nothing. What still blocks is outside the harness: the project's own CI and the owner's merge.
   Amends A1 and C9 (the artifact contract and evidence are documented shapes with examples, not a
   schema checked by code), softens A3, B4, B7 and C8 into conventions, and replaces the brief's
@@ -128,6 +128,13 @@ Decisions from the harness requirements map, one ticket per decision.
   `docs/research/2026-09-29-mattpocock-skills-design.md` §2.4;
   `docs/research/2026-09-27-artifact-review-surfaces.md` §6;
   `docs/research/2026-09-27-reporting-tooling-github.md` §0.
+- **Completion lives in the forked skills, Matt Pocock's way** (C11, #16). No separate completion
+  skill of ours, no CLI command, no hook. `implement` closes with `code-review`, then Matt Pocock's
+  `pr` skill (beta upstream, adopted into our fork) writes the PR from the primary source (issue or
+  spec) following the result-card shape of the artifact contract; unfinished work ends with
+  `handoff` instead (C10). Agents get facts themselves with `gh` and `git`; skills do not depend on
+  our CLI, which serves the command center and installation. Evidence:
+  `docs/research/2026-09-29-mattpocock-skills-design.md` §2.3, §6, §7.
 
 ## 2026-09-29 (open questions from the brief)
 

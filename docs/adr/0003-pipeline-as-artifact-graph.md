@@ -16,5 +16,5 @@ Decision ticket: #9.
 
 - Conditional rules (for example "a risky change needs a second reviewer") are expressed as
   properties of a track or profile, not as control flow.
-- The CLI can serve per-node instructions to agents at run time instead of freezing them into
-  generated files (the OpenSpec `instructions --json` pattern).
+- Per-node instructions for agents live in skills; after ADR 0004 and decision C11 skills do not
+  depend on the CLI.
