@@ -220,6 +220,18 @@ Decisions from the harness requirements map, one ticket per decision.
   (#964), `issue_dependencies_summary` as an invalid `--json` field (#1118), and the blocking recipe
   hidden in the wayfinder section (#855) — verified `gh api` / `--json` commands and the blocking
   recipe in a shared section. Evidence: `docs/research/2026-09-29-mattpocock-skills-design.md` §4.
+- **Standard files are the source; `AGENTS.md` belongs to the project** (E18, #23; research R1, #40).
+  No neutral format of our own. `AGENTS.md` and `SKILL.md` are the source files people edit. For
+  `AGENTS.md` the harness only: creates a minimal skeleton when none exists and never overwrites an
+  existing file; owns one clearly marked managed block with pointers to its skills and pipeline;
+  wires the one-line `@AGENTS.md` bridge in `CLAUDE.md`; and ships a skill for editing `AGENTS.md`
+  instead of generating its content. Skills live in one canonical directory, `.agents/skills`, with
+  links for Claude Code in `.claude/skills` (link strategy and Windows: E19). A `sync` command
+  produces only the derived pieces: skill links, Codex `agents/openai.yaml`, OpenCode permission
+  rules and the managed block; a stale derived file is reported, not blocked (ADR 0004). This matches
+  how popular repositories and `vercel-labs/skills` already lay things out. Evidence:
+  `docs/research/2026-09-29-agent-instructions-in-repos.md` §0, §1.3, §1.6, §2, §4;
+  `docs/research/2026-09-29-cross-runtime-portability.md` §10.
 
 ## 2026-09-29 (open questions from the brief)
 

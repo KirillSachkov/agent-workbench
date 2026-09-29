@@ -118,6 +118,11 @@ _Avoid_: constraints, non-goals
 
 ### Configuration
 
+**Managed block**:
+The one clearly marked section of a project's `AGENTS.md` that the harness owns and may rewrite; the
+rest of the file belongs to the project.
+_Avoid_: generated section, harness block
+
 **Built-in default**:
 The tracks, skills, conventions and tracker settings the harness ships for software development, used
 wherever a project does not configure otherwise.
