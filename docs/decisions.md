@@ -264,6 +264,16 @@ Decisions from the harness requirements map, one ticket per decision.
   a machine is #4. Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §9.1, §11.2.3;
   `docs/research/2026-09-29-agent-instructions-in-repos.md` §2.3–2.4, §3.2;
   `docs/research/2026-09-29-cross-runtime-portability.md` §4.2.
+- **Everything agents need is committed, derived files and lock included** (F23, #28). So that
+  `git clone` is enough: `.agents/skills`, the `.claude/skills` symlink, the Codex and OpenCode
+  invocation files produced by `sync`, the `CLAUDE.md` bridge, the project's `AGENTS.md` with the
+  harness's managed block, the project configuration, `docs/agents/*`, and a lock recording the
+  harness version, the upstream commit of every forked skill (A2) and file hashes (like
+  `skills-lock.json`). Machine-specific things stay out: secrets (environment) and local copies that
+  replace links on Windows. Rejected: committing only configuration and lock with generation on each
+  machine (1 of 46 sampled repositories does that). Evidence:
+  `docs/research/2026-09-29-agent-instructions-in-repos.md` §2.2–2.4;
+  `docs/research/2026-09-29-harness-frameworks-compared.md` §9.1.
 
 ## 2026-09-29 (open questions from the brief)
 

@@ -118,6 +118,11 @@ _Avoid_: constraints, non-goals
 
 ### Configuration
 
+**Harness lock**:
+The committed record of which harness version a project uses, the upstream commit of each forked
+skill and the hashes of the files the harness wrote.
+_Avoid_: manifest, lockfile
+
 **Managed block**:
 The one clearly marked section of a project's `AGENTS.md` that the harness owns and may rewrite; the
 rest of the file belongs to the project.
