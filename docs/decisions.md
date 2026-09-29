@@ -60,6 +60,17 @@ Decisions from the harness requirements map, one ticket per decision.
   repositories becomes painful. Amends `docs/brief.md` outcome 1 ("Profiles for different kinds of
   projects"). Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §3.3, §8.3,
   §11.1.7–8, §11.3.3; `docs/research/2026-09-29-hoh-harness-design.md` §5.
+- **Customise by editing files, keep configuration minimal** (B6, #11). Close to Matt Pocock's
+  "Config is death": a project changes the pipeline by editing the files it owns — skills, templates,
+  pipeline documents — as we did with the fork, not through settings. The project configuration holds
+  only what our code (CLI, CI) must read to compute facts: artifact graphs, check commands, enabled
+  skills, tracker and label mapping, artifact locations. No switches that change skill behaviour
+  (no `tdd_mode`-style toggles); preferences that need judgment are plain text in the project's
+  documents. No personal uncommitted layer: personal preferences belong in each runtime's user-level
+  instruction files, secrets in environment variables. Consequence for "Local edits across updates":
+  edited harness files in a project are normal and must survive updates. Evidence:
+  `docs/research/2026-09-29-mattpocock-skills-design.md` §2.7, §4, §5;
+  `docs/research/2026-09-29-harness-frameworks-compared.md` §6.3–6.4.
 
 ## 2026-09-29 (open questions from the brief)
 

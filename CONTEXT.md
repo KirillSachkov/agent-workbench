@@ -82,6 +82,7 @@ wherever a project does not configure otherwise.
 _Avoid_: preset, template
 
 **Project configuration**:
-The one committed file in a project's repository that adapts or replaces any part of the built-in
-default, up to its own artifact graphs. It wins over the built-in default.
+The one committed file in a project's repository that holds what the harness's code must read —
+artifact graphs, check commands, enabled skills, tracker settings — and wins over the built-in
+default. Everything else is customised by editing the project's own harness files.
 _Avoid_: profile, settings
