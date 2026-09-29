@@ -1,0 +1,406 @@
+<!doctype html>
+<!--
+  PROTOTYPE — throwaway. Ticket CC4 · Result card (#45), map #41.
+  Question: what does the owner see and do to check one agent's finished result in one step?
+  Four structurally different variants, switchable with ?variant=A|B|C|D, the bottom bar or ←/→.
+  Press S to show where every field comes from: written by the agent (the PR body the `pr` skill
+  writes) or derived by the command center from facts (GitHub, git, Herdr).
+  All data is invented. Open the file in a browser; nothing is fetched or saved.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Result card prototype</title>
+<style>
+  :root {
+    --bg: #f4f4f1; --fg: #1d1d1b; --muted: #6b6b66; --line: #d9d8d2; --card: #fff;
+    --ok: #1f7a3a; --bad: #b3261e; --warn: #a15c00; --stale: #7a5ab8; --unv: #6b6b66;
+    --agent: #c2410c; --fact: #0f6cbd;
+    --term-bg: #16181d; --term-fg: #d6d8dd; --term-dim: #7d828c; --term-acc: #7cc4ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding-bottom: 90px; }
+  code, .mono, .term { font-family: "SF Mono", "JetBrains Mono", Menlo, monospace; }
+  a { color: inherit; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px; }
+  .caption { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .caption b { color: var(--fg); }
+
+  /* origin badges, shown with S */
+  [data-src] { position: relative; }
+  body.show-src [data-src="agent"] { outline: 2px dashed var(--agent); outline-offset: 2px; }
+  body.show-src [data-src="fact"] { outline: 2px dashed var(--fact); outline-offset: 2px; }
+  .legend { display: none; gap: 14px; font-size: 12px; margin-bottom: 10px; }
+  body.show-src .legend { display: flex; }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px;
+    vertical-align: -2px; border: 2px dashed currentColor; }
+  .legend .a { color: var(--agent); } .legend .f { color: var(--fact); }
+
+  .mark { font-weight: 600; white-space: nowrap; }
+  .m-verified { color: var(--ok); } .m-failed { color: var(--bad); }
+  .m-stale { color: var(--stale); } .m-unverified { color: var(--unv); }
+
+  /* ---------- terminal shell (A, D) ---------- */
+  .herdr { background: #0e1014; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+  .herdr-top { display: flex; gap: 2px; padding: 6px 8px; background: #1b1e24; color: var(--term-dim); font: 12px monospace; }
+  .herdr-top span { padding: 2px 10px; border-radius: 4px; }
+  .herdr-top .on { background: #2a2f38; color: var(--term-fg); }
+  .herdr-body { display: grid; grid-template-columns: 210px 1fr; min-height: 560px; }
+  .herdr-side { border-right: 1px solid #262a31; padding: 10px; color: var(--term-dim); font: 12px/1.7 monospace; }
+  .herdr-side .ag { color: var(--term-fg); }
+  .herdr-side .done { color: #8fd694; } .herdr-side .work { color: #f0c36b; } .herdr-side .wait { color: #ff8b7a; }
+  .herdr-side .sel { background: #2a2f38; border-radius: 4px; margin: 0 -6px; padding: 0 6px; }
+  .herdr-main { position: relative; padding: 12px; color: #4b5059; font: 12px/1.6 monospace; }
+  .term { background: var(--term-bg); color: var(--term-fg); font-size: 12.5px; line-height: 1.55; }
+  .popup { position: absolute; inset: 18px 22px; border: 1px solid #3a404b; border-radius: 6px; padding: 12px 16px;
+    overflow: auto; }
+  .popup h3 { margin: 0 0 4px; font-size: 13px; color: var(--term-acc); font-weight: 600; }
+  .t-dim { color: var(--term-dim); } .t-acc { color: var(--term-acc); } .t-ok { color: #8fd694; }
+  .t-bad { color: #ff8b7a; } .t-warn { color: #f0c36b; } .t-stale { color: #c3a6ff; }
+  .t-key { display: inline-block; min-width: 18px; padding: 0 4px; border: 1px solid #4a515d; border-radius: 3px;
+    text-align: center; color: var(--term-fg); margin-right: 4px; }
+  .t-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 6px; }
+  .t-sec { margin-top: 10px; padding-top: 8px; border-top: 1px solid #2a2f38; }
+  .t-keys { margin-top: 12px; padding-top: 8px; border-top: 1px solid #2a2f38; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .t-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .t-link { text-decoration: underline; text-decoration-style: dotted; }
+
+  /* ---------- GitHub mock (B) ---------- */
+  .gh { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden; }
+  .gh-head { padding: 16px 20px; border-bottom: 1px solid #d0d7de; }
+  .gh-head h2 { margin: 0; font-size: 22px; font-weight: 400; }
+  .gh-head h2 span { color: #59636e; }
+  .gh-state { display: inline-block; background: #1f883d; color: #fff; border-radius: 16px; padding: 3px 10px; font-size: 12px; margin-right: 8px; }
+  .gh-tabs { display: flex; gap: 18px; padding: 0 20px; border-bottom: 1px solid #d0d7de; font-size: 13px; }
+  .gh-tabs span { padding: 10px 0; } .gh-tabs .on { border-bottom: 2px solid #fd8c73; font-weight: 600; }
+  .gh-grid { display: grid; grid-template-columns: 1fr 240px; gap: 20px; padding: 20px; }
+  .gh-body { border: 1px solid #d0d7de; border-radius: 6px; }
+  .gh-body-h { background: #f6f8fa; padding: 8px 14px; border-bottom: 1px solid #d0d7de; font-size: 13px; color: #59636e; }
+  .gh-md { padding: 4px 18px 16px; }
+  .gh-md h3 { font-size: 15px; border-bottom: 1px solid #d8dee4; padding-bottom: 4px; margin: 18px 0 8px; }
+  .gh-md table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .gh-md td, .gh-md th { border: 1px solid #d0d7de; padding: 5px 8px; text-align: left; vertical-align: top; }
+  .gh-md th { background: #f6f8fa; }
+  .gh-md .shot { display: inline-block; width: 190px; height: 110px; border: 1px solid #d0d7de; border-radius: 4px;
+    background: repeating-linear-gradient(45deg, #eef1f4, #eef1f4 8px, #f8f9fa 8px, #f8f9fa 16px); margin: 4px 8px 4px 0;
+    font-size: 11px; color: #59636e; padding: 6px; vertical-align: top; }
+  .gh-side { font-size: 12px; color: #59636e; }
+  .gh-side h4 { margin: 0 0 4px; font-size: 12px; color: #1f2328; }
+  .gh-side div { padding: 10px 0; border-bottom: 1px solid #d8dee4; }
+  .gh-checks { margin-top: 16px; border: 1px solid #d0d7de; border-radius: 6px; padding: 12px 14px; font-size: 13px; }
+  .gh-label { display: inline-block; border-radius: 10px; padding: 0 7px; font-size: 11px; font-weight: 600; margin: 2px 2px 0 0; }
+  .note-b { margin-top: 12px; font-size: 13px; background: #fff8e6; border: 1px solid #f0d58c; border-radius: 6px; padding: 10px 12px; }
+
+  /* ---------- local review page (C) ---------- */
+  .rv { display: grid; grid-template-columns: 300px 1fr 330px; gap: 0; background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden; min-height: 640px; }
+  .rv > div { padding: 16px; }
+  .rv-left { border-right: 1px solid var(--line); background: #fafaf8; }
+  .rv-right { border-left: 1px solid var(--line); background: #fafaf8; }
+  .rv h2 { font-size: 18px; margin: 0 0 4px; }
+  .rv h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 6px; }
+  .rv .crit { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; background: #fff; cursor: pointer; }
+  .rv .crit.sel { border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+  .rv .crit small { display: block; color: var(--muted); }
+  .rv-stage { border: 1px solid var(--line); border-radius: 8px; height: 330px; display: grid; place-items: center;
+    background: repeating-linear-gradient(45deg, #f1f1ee, #f1f1ee 10px, #fafaf8 10px, #fafaf8 20px); color: var(--muted); text-align: center; }
+  .rv-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .rv-tabs button, .btn { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+  .rv-tabs button.on { background: var(--fg); color: #fff; border-color: var(--fg); }
+  .rv-ev { margin-top: 12px; font-size: 13px; }
+  .rv-ev .rec { border-left: 3px solid var(--line); padding: 4px 10px; margin: 6px 0; }
+  .rv .file { display: flex; justify-content: space-between; gap: 6px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .rv .file small { color: var(--muted); display: block; }
+  .pill { display: inline-block; border-radius: 10px; padding: 1px 8px; font-size: 11px; background: #ecebe6; margin: 2px 2px 0 0; }
+  .decide { background: #fff4e5; border: 1px solid #f3c98b; border-radius: 8px; padding: 10px; font-size: 13px; }
+  .accept-bar { display: flex; gap: 8px; margin-top: 14px; }
+  .btn.primary { background: var(--ok); color: #fff; border-color: var(--ok); }
+
+  /* ---------- guided check (D) ---------- */
+  .steps { display: flex; gap: 4px; margin-bottom: 10px; }
+  .steps span { flex: 1; height: 4px; border-radius: 2px; background: #2a2f38; }
+  .steps span.done { background: #8fd694; } .steps span.cur { background: var(--term-acc); }
+  .guide { position: absolute; inset: 18px 22px; border: 1px solid #3a404b; border-radius: 6px; padding: 14px 18px; overflow: auto; }
+  .guide h2 { margin: 2px 0 10px; font-size: 15px; color: var(--term-fg); font-weight: 600; }
+  .guide .q { margin-top: 14px; padding: 8px 10px; background: #1f232b; border-radius: 4px; }
+
+  /* ---------- switcher ---------- */
+  .switcher { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 4px;
+    background: #111; color: #fff; border-radius: 999px; padding: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.35); z-index: 10;
+    font: 13px -apple-system, sans-serif; }
+  .switcher button { background: #2b2b2b; color: #fff; border: 0; border-radius: 999px; padding: 7px 12px; cursor: pointer; font: inherit; }
+  .switcher button:hover { background: #444; }
+  .switcher .lbl { padding: 0 12px; min-width: 250px; text-align: center; }
+  .switcher .src.on { background: #fff; color: #111; }
+  @media (max-width: 900px) {
+    .rv, .gh-grid, .herdr-body, .t-cols { grid-template-columns: 1fr; }
+    .herdr-side { display: none; } .switcher .lbl { min-width: 0; }
+    .popup, .guide { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="caption" id="caption"></p>
+  <div class="legend"><span class="a">written by the agent (PR body, `pr` skill)</span><span class="f">derived by the command center from facts (GitHub, git, Herdr)</span></div>
+  <div id="root"></div>
+</div>
+
+<div class="switcher" role="toolbar" aria-label="Prototype variant switcher">
+  <button id="prev" aria-label="Previous variant">←</button>
+  <span class="lbl" id="lbl"></span>
+  <button id="next" aria-label="Next variant">→</button>
+  <button id="src" class="src" title="Show sources (S)">S · sources</button>
+</div>
+
+<script>
+// ---------------- invented sample data ----------------
+const T = {
+  project: "acme-shop", issue: 118, title: "Export orders to CSV", track: "small",
+  labels: ["acceptance:human", "ready-for-agent"],
+  agent: { runtime: "codex", pane: "acme-shop · 118", status: "done", finished: "12 min ago" },
+  branch: "feat/118-orders-csv", worktree: "acme-shop/.worktrees/118-orders-csv",
+  pr: { n: 131, state: "Open", head: "a41c9e2", commits: 4, files: 7, add: 312, del: 18 },
+  ci: { passed: 3, total: 3, names: ["lint", "unit", "e2e"] },
+  review: { by: "fresh-context review (code-review)", serious: 0, minor: 2 },
+  app: { url: "http://118-orders-csv.acme-shop.localhost", cmd: "pnpm dev", listening: true },
+  // agent-written
+  result: "The Orders page gets an Export CSV button that streams every order matching the current filter.",
+  criteria: [
+    { id: "AC1", kind: "acceptance", text: "Export CSV downloads exactly the orders matching the current filter",
+      mark: "verified", ev: [
+        { type: "test", ref: "orders_export.spec.ts › respects filter", sha: "a41c9e2", obs: "failed before the change, passes after" },
+        { type: "screenshot", ref: "export-button.png", sha: "a41c9e2", obs: "button next to Filters, filter chip visible" } ] },
+    { id: "AC2", kind: "acceptance", text: "A 50,000-row export completes without a timeout",
+      mark: "stale", ev: [
+        { type: "command", ref: "pnpm bench:export --rows 50000", sha: "7f3d210", obs: "50,000 rows in 3.2 s" } ] },
+    { id: "AC3", kind: "acceptance", text: "The file opens in Excel with non-Latin customer names intact",
+      mark: "unverified", ev: [] },
+    { id: "PC1", kind: "preservation", text: "PDF export behaves as before",
+      mark: "verified", ev: [ { type: "ci", ref: "e2e › pdf-export (3 tests)", sha: "a41c9e2", obs: "green" } ] },
+    { id: "PC2", kind: "preservation", text: "Who may see orders does not change",
+      mark: "verified", ev: [ { type: "review", ref: "review report, finding list", sha: "a41c9e2", obs: "export reuses canViewOrders; no new permission" } ] },
+  ],
+  lookFirst: [
+    { file: "src/orders/export.ts", line: 42, why: "new streaming writer — the core of the change" },
+    { file: "src/auth/permissions.ts", line: 77, why: "touched: export reuses canViewOrders (risk to PC2)" },
+    { file: "src/orders/OrdersPage.tsx", line: 118, why: "button and how the filter is passed" },
+  ],
+  otherFiles: [
+    { file: "src/orders/csv.ts", add: 61, del: 0 }, { file: "src/orders/api.ts", add: 24, del: 6 },
+    { file: "tests/orders_export.spec.ts", add: 88, del: 0, test: true }, { file: "tests/bench/export.bench.ts", add: 40, del: 0, test: true },
+  ],
+  testChanges: "2 test files added, none weakened; CI config unchanged",
+  notDone: ["Excel check needs a person (AC3)", "Column order is fixed — configurable columns were out of scope"],
+  decisions: [ { q: "Include cancelled orders in the export?", chosen: "Excluded — the issue does not say; matches the on-screen default" } ],
+};
+const ICON = { verified: "✔", failed: "✘", stale: "◷", unverified: "○" };
+const count = m => T.criteria.filter(c => c.mark === m).length;
+const S = (src, html, tag = "span") => `<${tag} data-src="${src}">${html}</${tag}>`;
+
+// Stale is derived: evidence SHA ≠ PR head. Surface that rule in every variant.
+const staleNote = c => c.mark === "stale" ? ` (evidence on ${c.ev[0].sha}, head is ${T.pr.head})` : "";
+
+// ---------------- A · popup over the agent pane in Herdr ----------------
+function A() {
+  const crit = T.criteria.map(c => `<div class="t-row">
+      <span class="t-${c.mark === 'verified' ? 'ok' : c.mark === 'stale' ? 'stale' : c.mark === 'failed' ? 'bad' : 'dim'}">${ICON[c.mark]}</span>
+      ${S("agent", `<span>${c.id} ${c.text}</span>`)}
+      ${S("fact", `<span class="t-dim">${c.mark}${c.ev[0] ? " · " + c.ev[0].type : ""}${c.mark === "stale" ? " · " + c.ev[0].sha : ""}</span>`)}
+    </div>`).join("");
+  const look = T.lookFirst.map((f, i) => `<div>${S("agent", `<span class="t-key">${i + 1}</span><span class="t-link t-acc">${f.file}:${f.line}</span> <span class="t-dim">— ${f.why}</span>`)}</div>`).join("");
+  return `
+  <p class="caption"><b>A · Popup in Herdr.</b> The agent's pane turns “done”; you press one key on it and the card opens as a popup over the pane. Everything is a key: numbers open files at the line in your editor, other keys hand off to reviewr, GitHub or the browser.</p>
+  <div class="herdr"><div class="herdr-top"><span class="on">acme-shop</span><span>agent-workbench</span><span>blog</span></div>
+  <div class="herdr-body">
+    <div class="herdr-side">
+      <div class="ag sel"><span class="done">●</span> acme-shop · 118</div>
+      <div class="ag"><span class="work">●</span> acme-shop · 121</div>
+      <div class="ag"><span class="wait">●</span> blog · 12</div>
+      <div class="ag"><span class="t-dim">●</span> agent-workbench</div>
+      <br>done · working · waits for you · idle
+    </div>
+    <div class="herdr-main">› codex: done. PR #131 opened.<br>› tokens: repo acme-shop · branch ${T.branch}
+      <div class="popup term">
+        <h3>${S("fact", `#${T.issue} ${T.title}`)} <span class="t-dim">· ${S("fact", `PR #${T.pr.n} @ ${T.pr.head}`)} · ${S("fact", "acceptance:human")}</span></h3>
+        ${S("agent", T.result, "div")}
+        <div class="t-sec">${S("fact", `<span class="t-ok">CI ${T.ci.passed}/${T.ci.total}</span> · review: ${T.review.serious} serious, ${T.review.minor} minor · ${T.pr.files} files +${T.pr.add} −${T.pr.del} · ${T.testChanges}`)}</div>
+        <div class="t-sec t-cols">
+          <div><span class="t-dim">CRITERIA</span> ${S("fact", `<span class="t-ok">${count("verified")} ✔</span> <span class="t-stale">${count("stale")} ◷</span> <span class="t-dim">${count("unverified")} ○</span>`)}${crit}</div>
+          <div><span class="t-dim">LOOK HERE FIRST</span>${look}
+            <div class="t-sec"><span class="t-dim">NEEDS YOU</span>
+              ${T.decisions.map(d => S("agent", `<div><span class="t-warn">?</span> ${d.q}<br><span class="t-dim">  agent chose: ${d.chosen}</span></div>`)).join("")}
+              ${T.notDone.map(n => S("agent", `<div><span class="t-dim">–</span> ${n}</div>`)).join("")}
+            </div></div>
+        </div>
+        <div class="t-keys t-dim">
+          <span><span class="t-key">1-3</span>open file:line</span><span><span class="t-key">d</span>diff in reviewr</span>
+          <span><span class="t-key">p</span>PR on GitHub</span><span><span class="t-key">a</span>${S("fact", `app ${T.app.url.replace('http://','')}`)}</span>
+          <span><span class="t-key">s</span>screenshots (browser)</span><span><span class="t-key">e</span>evidence of criterion</span>
+          <span><span class="t-key">w</span>worktree shell</span><span><span class="t-key">esc</span>back to agent</span>
+        </div>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+// ---------------- B · the PR itself is the card ----------------
+function B() {
+  const rows = T.criteria.map(c => `<tr>
+    <td>${S("agent", `<b>${c.id}</b> ${c.text}`)}</td>
+    <td>${S("agent", `<span class="mark m-${c.mark === 'stale' ? 'verified' : c.mark}">${ICON[c.mark === 'stale' ? 'verified' : c.mark]} ${c.mark === 'stale' ? 'verified' : c.mark}</span>`)}</td>
+    <td>${c.ev.map(e => S("agent", `<code>${e.type}</code> ${e.ref} <code>${e.sha}</code><br><small>${e.obs}</small>`)).join("<br>") || S("agent", "—")}</td></tr>`).join("");
+  return `
+  <p class="caption"><b>B · The PR is the card.</b> The <code>pr</code> skill writes the whole card into the PR body; the command center adds nothing but a jump (<code>gh pr view --web</code>). Cheapest, shareable, lives where acceptance happens. Note: nothing recomputes staleness — AC2 still says “verified” though its evidence is on an older commit.</p>
+  <div class="gh">
+    <div class="gh-head"><h2>${S("fact", `Export orders to CSV <span>#${T.pr.n}</span>`)}</h2>
+      <div style="margin-top:8px;font-size:13px;color:#59636e"><span class="gh-state">Open</span>${S("fact", `codex-bot wants to merge ${T.pr.commits} commits into <code>main</code> from <code>${T.branch}</code>`)}</div></div>
+    <div class="gh-tabs"><span class="on">Conversation</span><span>Commits ${T.pr.commits}</span><span>Checks ${T.ci.total}</span><span>Files changed ${T.pr.files}</span></div>
+    <div class="gh-grid">
+      <div>
+        <div class="gh-body"><div class="gh-body-h">codex-bot commented · Closes #${T.issue}</div>
+          <div class="gh-md">
+            <h3>Result</h3>${S("agent", `<p>${T.result}</p>`)}
+            <h3>Needs you</h3>${S("agent", `<ul>${T.decisions.map(d => `<li><b>${d.q}</b> Agent chose: ${d.chosen}.</li>`).join("")}</ul>`)}
+            <h3>Criteria and evidence</h3><table><tr><th>Criterion</th><th>Status</th><th>Evidence (type, ref, SHA)</th></tr>${rows}</table>
+            <h3>Look here first</h3>${S("agent", `<ol>${T.lookFirst.map(f => `<li><a href="#">${f.file}#L${f.line}</a> — ${f.why}</li>`).join("")}</ol>`)}
+            <h3>Try it</h3>${S("agent", `<p><code>git switch ${T.branch} && ${T.app.cmd}</code> → ${T.app.url}</p>`)}
+            <h3>Screenshots</h3>${S("agent", `<span class="shot">export-button.png</span><span class="shot">filter-applied.png</span>`)}
+            <h3>Tests and CI</h3>${S("agent", `<p>${T.testChanges}.</p>`)}
+            <h3>Not done</h3>${S("agent", `<ul>${T.notDone.map(n => `<li>${n}</li>`).join("")}</ul>`)}
+          </div></div>
+        <div class="gh-checks">${S("fact", `<b style="color:#1f883d">✔ All checks have passed</b> — ${T.ci.names.join(", ")} · head <code>${T.pr.head}</code>`)}</div>
+        <div class="note-b">What you do: read top to bottom, click file links (they open on GitHub, not in your editor), switch to the branch yourself to run the app, merge here.</div>
+      </div>
+      <div class="gh-side">
+        <div><h4>Reviewers</h4>${S("fact", "review report: 0 serious, 2 minor")}</div>
+        <div><h4>Labels</h4>${S("fact", `<span class="gh-label" style="background:#d4f5dc">acceptance:human</span>`)}</div>
+        <div><h4>Development</h4>${S("fact", `Closes #${T.issue}`)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---------------- C · local review page in the browser ----------------
+let cSel = 0, cTab = "evidence";
+function C() {
+  const c = T.criteria[cSel];
+  const crit = T.criteria.map((x, i) => `<div class="crit ${i === cSel ? 'sel' : ''}" data-c="${i}">
+      ${S("fact", `<span class="mark m-${x.mark}">${ICON[x.mark]} ${x.mark}</span>`)} ${S("agent", `<b>${x.id}</b>`)}
+      ${S("agent", `<small>${x.text}</small>`)}${x.mark === "stale" ? S("fact", `<small class="m-stale">evidence on ${x.ev[0].sha}, head ${T.pr.head}</small>`) : ""}</div>`).join("");
+  const stage = cTab === "app"
+    ? `<div class="rv-stage">${S("fact", `<div><b>Live app</b><br>${T.app.url}<br><small>embedded from the worktree's dev server · listening</small></div>`)}</div>`
+    : cTab === "diff"
+    ? `<div class="rv-stage">${S("fact", `<div><b>Diff</b> of ${T.pr.files} files, ordered as “look here first”<br><small>(rendered from git; comments go back to the agent)</small></div>`)}</div>`
+    : `<div class="rv-stage">${c.ev.find(e => e.type === "screenshot")
+        ? S("agent", `<div><b>export-button.png</b><br><small>screenshot at ${T.pr.head}</small></div>`)
+        : `<div>${c.ev.length ? "No image for this criterion" : "<b>No evidence yet</b><br><small>unverified — you check it, or send it back</small>"}</div>`}</div>`;
+  return `
+  <p class="caption"><b>C · Local review page.</b> One key in Herdr (or <code>workbench open 118</code>) opens a page in the browser built from the PR and facts. Criteria on the left drive the middle: evidence, screenshots, the live app, the diff. Files on the right open in your editor at the line. Staleness is recomputed from the head SHA.</p>
+  <div class="rv">
+    <div class="rv-left">
+      <h2>${S("fact", `#${T.issue} ${T.title}`)}</h2>
+      ${S("fact", `<span class="pill">${T.project}</span><span class="pill">PR #${T.pr.n}</span><span class="pill">${T.pr.head}</span><span class="pill">acceptance:human</span>`)}
+      <p>${S("agent", T.result)}</p>
+      <h4>Criteria ${S("fact", `· ${count("verified")} verified · ${count("stale")} stale · ${count("unverified")} unverified`)}</h4>${crit}
+    </div>
+    <div>
+      <div class="rv-tabs">${["evidence", "app", "diff"].map(t => `<button data-t="${t}" class="${t === cTab ? 'on' : ''}">${t}</button>`).join("")}</div>
+      ${stage}
+      <div class="rv-ev"><b>${c.id}</b> ${c.text}
+        ${c.ev.map(e => `<div class="rec">${S("agent", `<code>${e.type}</code> ${e.ref} — ${e.obs}`)} ${S("fact", `<code class="${e.sha === T.pr.head ? 'm-verified' : 'm-stale'}">${e.sha}</code>`)}</div>`).join("") || `<div class="rec">No records.</div>`}
+      </div>
+    </div>
+    <div class="rv-right">
+      <div class="decide">${S("agent", `<b>Needs you:</b> ${T.decisions[0].q}<br><small>Agent chose: ${T.decisions[0].chosen}</small>`)}</div>
+      <h4>Look here first</h4>
+      ${T.lookFirst.map(f => `<div class="file">${S("agent", `<span><code>${f.file}:${f.line}</code><small>${f.why}</small></span>`)}<button class="btn">open</button></div>`).join("")}
+      <h4>Other changes ${S("fact", `· +${T.pr.add} −${T.pr.del}`)}</h4>
+      ${T.otherFiles.map(f => S("fact", `<div class="file"><code>${f.file}</code><small>${f.test ? "test · " : ""}+${f.add} −${f.del}</small></div>`)).join("")}
+      <h4>Checks</h4>${S("fact", `<div>CI ${T.ci.passed}/${T.ci.total} green · review 0 serious / 2 minor<br>${T.testChanges}</div>`)}
+      <h4>Where</h4>${S("fact", `<div class="mono" style="font-size:12px">${T.branch}<br>${T.worktree}<br>agent: ${T.agent.runtime}, ${T.agent.status} ${T.agent.finished}</div>`)}
+      <h4>Not done</h4>${S("agent", `<ul style="margin:0;padding-left:18px;font-size:13px">${T.notDone.map(n => `<li>${n}</li>`).join("")}</ul>`)}
+      <div class="accept-bar"><button class="btn primary">Merge (accept)</button><button class="btn">Send back to agent</button><button class="btn">PR ↗</button></div>
+    </div>
+  </div>`;
+}
+
+// ---------------- D · guided check, one step at a time ----------------
+let dStep = 0;
+const D_STEPS = [
+  { t: "1 / 5 · What was done and what needs you", body: () => `
+      ${S("agent", `<div>${T.result}</div>`)}
+      <div class="q">${S("agent", `<span class="t-warn">?</span> ${T.decisions[0].q}<br><span class="t-dim">agent chose: ${T.decisions[0].chosen}</span>`)}<br><br>
+      <span class="t-key">y</span>keep  <span class="t-key">n</span>change it (comment goes to the agent)</div>` },
+  { t: "2 / 5 · Is it proven?", body: () => `
+      ${T.criteria.map(c => `<div class="t-row"><span class="t-${c.mark === 'verified' ? 'ok' : c.mark === 'stale' ? 'stale' : 'dim'}">${ICON[c.mark]}</span>${S("agent", `<span>${c.id} ${c.text}</span>`)}${S("fact", `<span class="t-dim">${c.mark}${staleNote(c)}</span>`)}</div>`).join("")}
+      <div class="q">${S("fact", `Gaps: AC2 is stale — its evidence is from ${T.criteria[1].ev[0].sha}. AC3 has no evidence.`)}<br><br>
+      <span class="t-key">r</span>ask the agent to re-run AC2  <span class="t-key">e</span>show evidence  <span class="t-key">enter</span>next</div>` },
+  { t: "3 / 5 · Look at the code", body: () => `
+      ${T.lookFirst.map((f, i) => S("agent", `<div><span class="t-key">${i + 1}</span><span class="t-acc t-link">${f.file}:${f.line}</span> <span class="t-dim">— ${f.why}</span></div>`)).join("")}
+      <div class="t-sec t-dim">${S("fact", `+ ${T.otherFiles.length} other files · ${T.testChanges} · CI ${T.ci.passed}/${T.ci.total}`)}</div>
+      <div class="q"><span class="t-key">1-3</span>open in editor  <span class="t-key">d</span>full diff in reviewr  <span class="t-key">enter</span>next</div>` },
+  { t: "4 / 5 · Try it yourself", body: () => `
+      ${S("fact", `<div>App for this worktree: <span class="t-acc t-link">${T.app.url}</span> <span class="t-ok">listening</span></div>`)}
+      ${S("agent", `<div class="t-dim">Check AC3: export with a filter, open the file in Excel, look at customer “Łukasz Żółć”.</div>`)}
+      <div class="q"><span class="t-key">a</span>open app  <span class="t-key">s</span>screenshots  <span class="t-key">m</span>record my manual check for AC3  <span class="t-key">enter</span>next</div>` },
+  { t: "5 / 5 · Decide", body: () => `
+      ${S("fact", `<div>${count("verified")} verified · ${count("stale")} stale · ${count("unverified")} unverified · CI green · review clean</div>`)}
+      ${S("agent", `<div class="t-dim">Not done: ${T.notDone.join("; ")}</div>`)}
+      <div class="q"><span class="t-key">m</span>merge (accept)  <span class="t-key">b</span>send back with my notes  <span class="t-key">l</span>later</div>` },
+];
+function D() {
+  const s = D_STEPS[dStep];
+  return `
+  <p class="caption"><b>D · Guided check.</b> Instead of one screen with everything, the command center walks you through the check in a fixed order: what was done and what needs you → is it proven → code → try it → decide. Each step is one screen and a couple of keys. Click the steps bar or use Enter / Backspace.</p>
+  <div class="herdr"><div class="herdr-top"><span class="on">acme-shop</span><span>agent-workbench</span><span>blog</span></div>
+  <div class="herdr-body">
+    <div class="herdr-side"><div class="ag sel"><span class="done">●</span> acme-shop · 118</div><div class="ag"><span class="work">●</span> acme-shop · 121</div><div class="ag"><span class="wait">●</span> blog · 12</div></div>
+    <div class="herdr-main">› codex: done. PR #131 opened.
+      <div class="guide term">
+        <div class="steps">${D_STEPS.map((_, i) => `<span data-d="${i}" class="${i < dStep ? 'done' : i === dStep ? 'cur' : ''}"></span>`).join("")}</div>
+        <div class="t-dim">${S("fact", `#${T.issue} ${T.title} · PR #${T.pr.n} @ ${T.pr.head}`)}</div>
+        <h2>${s.t}</h2>${s.body()}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+// ---------------- switcher ----------------
+const V = { A: ["Popup in Herdr", A], B: ["The PR is the card", B], C: ["Local review page", C], D: ["Guided check", D] };
+const keys = Object.keys(V);
+const params = new URLSearchParams(location.search);
+let cur = keys.includes(params.get("variant")) ? params.get("variant") : "A";
+function render() {
+  document.getElementById("root").innerHTML = V[cur][1]();
+  document.getElementById("lbl").textContent = `${cur} — ${V[cur][0]}`;
+  document.getElementById("caption").innerHTML = `Prototype for <b>CC4 · Result card</b> — sample task <b>acme-shop #118</b>, invented data. Variant ${keys.indexOf(cur) + 1} of ${keys.length}.`;
+}
+function go(d) {
+  cur = keys[(keys.indexOf(cur) + d + keys.length) % keys.length];
+  params.set("variant", cur); history.replaceState(null, "", "?" + params.toString()); render();
+}
+document.getElementById("prev").onclick = () => go(-1);
+document.getElementById("next").onclick = () => go(1);
+const toggleSrc = () => { document.body.classList.toggle("show-src"); document.getElementById("src").classList.toggle("on"); };
+document.getElementById("src").onclick = toggleSrc;
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input, textarea, [contenteditable]")) return;
+  if (e.key === "ArrowLeft") go(-1);
+  else if (e.key === "ArrowRight") go(1);
+  else if (e.key.toLowerCase() === "s") toggleSrc();
+  else if (cur === "D" && e.key === "Enter") { dStep = Math.min(dStep + 1, D_STEPS.length - 1); render(); }
+  else if (cur === "D" && e.key === "Backspace") { dStep = Math.max(dStep - 1, 0); render(); }
+});
+document.getElementById("root").addEventListener("click", e => {
+  const c = e.target.closest("[data-c]"), t = e.target.closest("[data-t]"), d = e.target.closest("[data-d]");
+  if (c) { cSel = +c.dataset.c; render(); }
+  if (t) { cTab = t.dataset.t; render(); }
+  if (d) { dStep = +d.dataset.d; render(); }
+});
+render();
+</script>
+</body>
+</html>
