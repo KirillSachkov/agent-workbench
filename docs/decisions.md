@@ -166,6 +166,13 @@ Decisions from the harness requirements map, one ticket per decision.
   skills and conventions, and invests in making the work visible and understandable for the
   developer (the command center, result cards, clear labels). It does not build rigid wrappers,
   validators or restrictions around agents. Complements ADR 0004.
+- **No hooks for now** (D15, #20). The harness ships no hooks. Enforcement hooks are ruled out by
+  ADR 0004; observation is already covered — live sessions by Herdr and the runtimes' public
+  interfaces, results by GitHub and git (2026-09-27: the owner needs final artifacts, not live
+  watching). Hooks port poorly: formats and tool names differ, matchers are not portable, Kimi has
+  user-level hooks only, OpenCode uses JS plugins. A hook is added later only for a concrete command
+  center need that nothing else can serve, observation-only and fail-open. Projects may add their own.
+  Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §5.
 
 ## 2026-09-29 (open questions from the brief)
 
