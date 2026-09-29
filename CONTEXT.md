@@ -20,6 +20,16 @@ _Avoid_: deliverable, document
 The exact version of the work under review: the commit at the head of its pull request.
 _Avoid_: build, snapshot
 
+**Evidence**:
+The per-criterion proof that a candidate meets its acceptance and preservation criteria: each
+criterion is verified, failed or unverified, and every verified one cites evidence records.
+_Avoid_: proof, test results
+
+**Evidence record**:
+One trace of execution supporting a criterion — a CI run, a captured command output, a test, a
+screenshot, a recording, a review report or a human note — tied to a candidate.
+_Avoid_: attachment, log
+
 **Stale evidence**:
 Evidence produced on an earlier candidate than the current one. Kept, but it cannot support
 acceptance.

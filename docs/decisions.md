@@ -90,6 +90,19 @@ Decisions from the harness requirements map, one ticket per decision.
   `docs/research/2026-09-29-hoh-harness-design.md` §4.3, §9.1.3;
   `docs/research/2026-09-25-artifact-mechanics-classic.md` (check runs);
   `docs/research/2026-09-25-artifact-pipelines-academic.md` §7.2.
+- **Evidence is recorded per criterion, from execution** (C9, #14). Every acceptance and preservation
+  criterion gets a status: verified, failed or unverified (the default). A criterion with no record is
+  unverified, as checked by the CLI, not claimed by the agent. A verified status needs at least one
+  evidence record: type, reference, candidate SHA and a short observation. Record types: `ci` (check
+  run), `command` (command with its real output), `test` (which test; for new behaviour, failing
+  before and passing after), `screenshot`, `recording`, `review` (a non-author review report), `manual`
+  (a human's note). Command output is captured by a tool that runs the command, never retyped by the
+  agent. The schema is strict (JSON Schema): no tolerant parsing of "pass-like" words; the CLI checks
+  that links resolve, files exist and SHAs match the current head. These records are the data behind
+  the result card the owner opens; the card itself is ticket C12, now a prototype. Evidence:
+  `docs/research/2026-09-29-hoh-harness-design.md` §4.2, §9.2.2;
+  `docs/research/2026-09-27-agent-products-human-artifacts.md` §8;
+  `docs/research/2026-09-27-reviewing-agent-work-practices.md` §1 (Showboat), §2, §6.
 
 ## 2026-09-29 (open questions from the brief)
 
