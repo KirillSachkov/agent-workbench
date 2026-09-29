@@ -142,6 +142,18 @@ Decisions from the harness requirements map, one ticket per decision.
   contract" stands. The built-in default ships an example CI workflow that runs the project's checks,
   as a sample to adapt, not a requirement. Evidence:
   `docs/research/2026-09-29-harness-frameworks-compared.md` §11.3.2.
+- **Acceptance mode is a label on the task** (D13, #18). How a result is accepted depends on the task
+  and is set at intent approval as a tracker label: `acceptance:human` (the owner checks — interface,
+  new functionality, anything risky) or `acceptance:auto` (accepted when the project's CI is green and
+  a non-author review leaves no serious open findings; the agent may merge). No label means
+  `acceptance:human`. An agent reviewer's verdict never accepts work by itself; `acceptance:auto` is
+  the owner's decision made in advance. This extends Matt Pocock's model, where AFK work still ends in
+  a PR for a human ("AFK defers review to the end") and a "dark factory" is only named. Project- or
+  track-level rules and skipping the pipeline stay in D17; the overall label vocabulary is a new
+  ticket. Evidence: `docs/research/2026-09-27-reviewing-agent-work-practices.md` §1 (tiered review,
+  P×I×D); `docs/research/2026-09-25-artifact-pipelines-academic.md` §6.1;
+  `docs/research/2026-09-25-artifact-pipelines-industry.md` §1.2;
+  `docs/research/2026-09-29-mattpocock-skills-design.md` §2.5.
 
 ## 2026-09-29 (open questions from the brief)
 

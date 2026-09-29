@@ -87,6 +87,12 @@ _Avoid_: sign-off, spec review
 The owner's decision that a delivered result is accepted; by default the merge of its pull request.
 _Avoid_: approval, sign-off
 
+**Acceptance mode**:
+How a task's result is accepted, set at intent approval: by the owner (`human`, the default) or
+automatically when the project's CI is green and non-author review has no serious open findings
+(`auto`).
+_Avoid_: review level, auto-merge
+
 **Acceptance criteria**:
 Observable conditions, stated before the work, that show the work is done.
 _Avoid_: definition of done, exit criteria
