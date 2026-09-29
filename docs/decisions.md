@@ -294,6 +294,15 @@ Decisions from the harness requirements map, one ticket per decision.
   asks to be upgraded, to avoid corrupting derived files. Agents and the pipeline are never blocked
   (ADR 0004); the command center shows each project's harness version. Evidence:
   `docs/research/2026-09-29-harness-frameworks-compared.md` §11.3.4.
+- **The machine gets only the binary; user-level agent configs are left alone** (F26, #31). The
+  machine install is the `workbench` binary (CLI, TUI, the command center's web UI) and its own data,
+  such as the list of watched projects. The harness writes nothing into `~/.claude`, `~/.codex` or
+  `~/.config/opencode` — no user-level skills, hooks or instructions — so an agent behaves the same
+  for every teammate in a project; personal preferences stay the user's own (B6), as in Matt Pocock's
+  setup, which has no user-level mode. Workspace setup from #4 (Herdr plugins, key bindings, status
+  plugins) is a separate explicit command that shows what it will change and asks for confirmation.
+  Evidence: `docs/research/2026-09-29-mattpocock-skills-design.md` §2.7;
+  `docs/research/2026-09-29-cross-runtime-portability.md` §5.1, §10.4.
 
 ## 2026-09-29 (open questions from the brief)
 
