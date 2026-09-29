@@ -11,12 +11,13 @@ of extra weight, and many command centers have already shut down.
 
 ## Outcome
 
-1. **Harness and pipeline.** Tracks of work declared as artifact graphs, with mechanical checks and
-   owner checkpoints; a built-in default for software development that each project adapts or
+1. **Harness and pipeline.** Tracks of work declared as artifact graphs, with conventions and owner
+   checkpoints; a built-in default for software development that each project adapts or
    replaces in its own configuration. General and configurable, not tied to any particular project.
-   (Amended 2026-09-29 by decisions A3, B4 and B5 in `docs/decisions.md`; there are no profiles.)
-2. **Artifact contract.** Specification, plan, delivery report, evidence, handoff; checked by a
-   command, later by hooks and CI.
+   (Amended 2026-09-29 by decisions A3, B4, B5 and the conventions-over-checks principle in
+   `docs/decisions.md`; there are no profiles.)
+2. **Artifact contract.** Specification, plan, delivery report, evidence, handoff; a documented shape
+   with examples that skills follow and people judge, not enforced by our code (amended 2026-09-29).
 3. **Workspace.** Agent and Herdr setup: plugins for status, diff review and document review, key
    bindings, and our own plugin that ties them together.
 4. **Command center.** A data aggregation core (GitHub: issues, stages, PRs, checks, tracker sessions;
@@ -29,7 +30,9 @@ of extra weight, and many command centers have already shut down.
 - Tasks and stages live in the tracker; the command center shows them and keeps no statuses of its
   own.
 - A stage is derived from facts: an artifact, a PR, checks, an owner decision.
-- What is mandatory is checked by code; judgment stays with instructions and the human.
+- Skills, conventions and examples carry the pipeline; the harness's code collects facts and
+  installs, it does not enforce (amended 2026-09-29, replacing "what is mandatory is checked by
+  code").
 - Public interfaces of sources, not internal session files of agents.
 - Small existing tools where they are good; our own code where pipeline knowledge is needed.
 - As general and configurable as possible: no project-specific rules in this repository.

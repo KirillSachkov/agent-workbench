@@ -10,7 +10,8 @@ Decisions from the harness requirements map, one ticket per decision.
   own artifact contract and stage model and ships a default method. A stage counts when its artifact
   passes the contract, whatever produced it. No adapters to spec-kit, OpenSpec or BMAD are built or
   maintained. Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §11.2.6, §11.3;
-  ADR `docs/adr/0001-method-neutral-artifact-contract.md`.
+  ADR `docs/adr/0001-method-neutral-artifact-contract.md`. "Passes the contract" was amended by the
+  conventions-over-checks principle below: the contract is followed and judged, not checked by code.
 - **Matt Pocock's skills are a tracked fork** (A2, #7). The `mattpocock/skills` set (MIT) in the
   default method is our fork: we edit it as we need, record the upstream commit each skill was forked
   at, follow upstream changes and adopt useful ones selectively after review. Update mechanics belong
@@ -99,10 +100,34 @@ Decisions from the harness requirements map, one ticket per decision.
   (a human's note). Command output is captured by a tool that runs the command, never retyped by the
   agent. The schema is strict (JSON Schema): no tolerant parsing of "pass-like" words; the CLI checks
   that links resolve, files exist and SHAs match the current head. These records are the data behind
-  the result card the owner opens; the card itself is ticket C12, now a prototype. Evidence:
+  the result card the owner opens; the card itself is ticket C12, now a prototype. Amended by the
+  conventions-over-checks principle below: this is the documented shape agents follow; no schema
+  validation or capture tool is enforced by the harness. Evidence:
   `docs/research/2026-09-29-hoh-harness-design.md` §4.2, §9.2.2;
   `docs/research/2026-09-27-agent-products-human-artifacts.md` §8;
   `docs/research/2026-09-27-reviewing-agent-work-practices.md` §1 (Showboat), §2, §6.
+- **Conventions over checks: the harness's code enforces nothing** (principle raised while resolving
+  C10, #15; the owner chose it over a hybrid with a minimal blocking set). Like Matt Pocock's skills,
+  the pipeline rests on skills, conventions and worked examples. The harness's own code only collects
+  facts (for the command center and for agents' questions) and installs; it validates nothing and
+  blocks nothing. What still blocks is outside the harness: the project's own CI and the owner's merge.
+  Amends A1 and C9 (the artifact contract and evidence are documented shapes with examples, not a
+  schema checked by code), softens A3, B4, B7 and C8 into conventions, and replaces the brief's
+  principle "what is mandatory is checked by code". Accepted trade-off: the research finds that agents
+  over-report and prose-only rules decay; the owner prefers flexibility across models and runtimes
+  and the freedom to deviate. ADR `docs/adr/0004-conventions-over-checks.md`.
+- **Carry-over between sessions** (C10, #15). By default nothing is handed over: a new session reads
+  the artifacts itself — the ticket (which must be self-contained), the spec, the code, the PR and the
+  issue — and may ask the CLI for facts. A handoff is written only when a session stops with its work
+  unfinished (context exhausted, repair limit reached, switching agent or person): by the agent as a
+  convention of the completion step, or by the developer calling `handoff`. It is written with our
+  fork of Matt Pocock's `handoff` skill as an issue comment (goal, state, what is verified, next step,
+  done criterion, links instead of copies), not to a temp directory. Homes of facts: decisions in
+  repository files, delivered work and evidence in the PR, task state and handoffs in the issue;
+  nothing durable in CI artifacts or check output, which expire after 90 days. Evidence:
+  `docs/research/2026-09-29-mattpocock-skills-design.md` §2.4;
+  `docs/research/2026-09-27-artifact-review-surfaces.md` §6;
+  `docs/research/2026-09-27-reporting-tooling-github.md` §0.
 
 ## 2026-09-29 (open questions from the brief)
 

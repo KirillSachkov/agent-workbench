@@ -1,3 +1,7 @@
+---
+status: accepted, amended by ADR 0004
+---
+
 # The artifact contract is the core; other methods are not hosted
 
 agent-workbench defines its own artifact contract and stage model and ships a default method, but
@@ -19,3 +23,8 @@ Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §11.2.6, §
   write specs with another tool, against the brief's "as general and configurable as possible".
 - **Host of methods through adapters.** Rejected for the maintenance cost above; revisit only as a
   new effort, not by adding an adapter piecemeal.
+
+## Amendment (ADR 0004)
+
+The contract is a documented shape with examples that skills follow and people judge; the
+harness's code does not check it. The method-neutral part of this decision stands.

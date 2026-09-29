@@ -8,7 +8,8 @@ agent runtimes across projects.
 ### Harness and pipeline
 
 **Harness**:
-The installed instructions, skills, configuration and checks through which agents work on a project.
+The installed instructions, skills, conventions and configuration through which agents work on a
+project.
 _Avoid_: framework, toolkit
 
 **Artifact**:
@@ -26,7 +27,7 @@ criterion is verified, failed or unverified, and every verified one cites eviden
 _Avoid_: proof, test results
 
 **Evidence record**:
-One trace of execution supporting a criterion — a CI run, a captured command output, a test, a
+One trace of execution supporting a criterion — a CI run, a command with its real output, a test, a
 screenshot, a recording, a review report or a human note — tied to a candidate.
 _Avoid_: attachment, log
 
@@ -36,13 +37,14 @@ acceptance.
 _Avoid_: outdated proof
 
 **Artifact contract**:
-The rules an artifact must satisfy for its stage to count, checked by code. It is the core of the
-harness and does not depend on which method produced the artifact.
-_Avoid_: template, format
+The documented shape of each artifact — required sections and worked examples — that skills follow
+and that humans and reviewers judge. It is the core of the harness, is not enforced by the harness's
+code, and does not depend on which method produced the artifact.
+_Avoid_: template, schema
 
 **Method**:
 The way artifacts get produced: a chain of skills and instructions that agents follow. Replaceable;
-any method whose artifacts pass the artifact contract is acceptable.
+any method whose artifacts follow the artifact contract is acceptable.
 _Avoid_: process, workflow, methodology
 
 **Default method**:
@@ -68,7 +70,7 @@ _Avoid_: flow, lane, mode
 
 **Artifact graph**:
 The declared pipeline of a track: which artifacts and facts must exist, what each depends on and which
-checks it must pass. The harness computes each node's state from facts; it does not run steps.
+facts mark it done. The harness computes each node's state from facts; it does not run or gate steps.
 _Avoid_: workflow, state machine
 
 **Node state**:
@@ -94,6 +96,11 @@ One attempt by the agent to fix a failed check or review finding and rerun the c
 failures do not count.
 _Avoid_: retry, iteration
 
+**Convention**:
+An agreed way of working written into skills, instructions and examples, followed by agents and
+judged by people, not enforced by the harness's code.
+_Avoid_: rule, policy, gate
+
 **Preservation criteria**:
 Behaviour the work must not break, stated before the work.
 _Avoid_: constraints, non-goals
@@ -101,12 +108,12 @@ _Avoid_: constraints, non-goals
 ### Configuration
 
 **Built-in default**:
-The tracks, checks, skills and tracker settings the harness ships for software development, used
+The tracks, skills, conventions and tracker settings the harness ships for software development, used
 wherever a project does not configure otherwise.
 _Avoid_: preset, template
 
 **Project configuration**:
-The one committed file in a project's repository that holds what the harness's code must read —
-artifact graphs, check commands, enabled skills, tracker settings — and wins over the built-in
-default. Everything else is customised by editing the project's own harness files.
+The one committed file in a project's repository that holds what the harness's code must read to
+collect facts and install — artifact graphs, enabled skills, tracker settings — and wins over the
+built-in default. Everything else is customised by editing the project's own harness files.
 _Avoid_: profile, settings
