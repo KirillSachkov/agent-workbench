@@ -139,9 +139,9 @@ Decisions from the harness requirements map, one ticket per decision.
   harness block anything (follows ADR 0004). Two things block, and both belong to the project: its own
   CI, made required through branch protection, and the owner's merge. Projects may add their own
   hooks; hooks for observation are ticket D15, and the 2026-09-27 order "hooks after the artifact
-  contract" stands. The built-in default ships an example CI workflow that runs the project's checks,
-  as a sample to adapt, not a requirement. Evidence:
-  `docs/research/2026-09-29-harness-frameworks-compared.md` §11.3.2.
+  contract" stands. (The example CI workflow first agreed here was withdrawn in D16: CI stays
+  entirely with the project.) Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md`
+  §11.3.2.
 - **Acceptance mode is a label on the task** (D13, #18). How a result is accepted depends on the task
   and is set at intent approval as a tracker label: `acceptance:human` (the owner checks — interface,
   new functionality, anything risky) or `acceptance:auto` (accepted when the project's CI is green and
@@ -158,8 +158,8 @@ Decisions from the harness requirements map, one ticket per decision.
   code: grilling waits for confirmation, `tdd` confirms seams, `to-tickets` waits for approval of the
   breakdown, and whether an agent may merge follows the acceptance-mode label (D13) read by the `pr`
   skill. A project that wants platform-level protection against merging can use GitHub branch
-  protection with a required review; the example setup mentions it as an option, not in the built-in
-  default, since it would block `acceptance:auto`.
+  protection with a required review; the harness documentation may mention it as an option, not in
+  the built-in default, since it would block `acceptance:auto`.
 - **Product focus: a well-designed pipeline and developer convenience, not constraints on agents**
   (stated by the owner while resolving D14, #19). agent-workbench assembles the best practices of Matt
   Pocock's pipeline, Harness of Harness, and Anthropic's and OpenAI's guidance into a pipeline of
@@ -173,6 +173,12 @@ Decisions from the harness requirements map, one ticket per decision.
   user-level hooks only, OpenCode uses JS plugins. A hook is added later only for a concrete command
   center need that nothing else can serve, observation-only and fail-open. Projects may add their own.
   Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §5.
+- **No CI in the harness, no agent in CI** (D16, #21). The harness ships nothing for CI — no
+  workflow, no example, no AI-review job — because every repository has its own CI requirements.
+  Non-author review is done in the session by default (`code-review` with fresh-context subagents)
+  or by another agent; a project may add an AI reviewer to its own CI if it wants. Withdraws the
+  example CI workflow from D12. Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §8;
+  `docs/research/2026-09-27-agent-products-human-artifacts.md` §8.
 
 ## 2026-09-29 (open questions from the brief)
 
