@@ -252,6 +252,18 @@ Decisions from the harness requirements map, one ticket per decision.
   removes the hand-maintained parity bugs seen upstream (`writing-for-agents` invisible to Codex until
   1.2.2). Evidence: `docs/research/2026-09-29-cross-runtime-portability.md` §3.3;
   `docs/research/2026-09-29-mattpocock-skills-design.md` §3.
+- **One distribution channel: our binary writes the harness into the project** (F22, #27; the owner
+  asked for the usual practice). The most common way harnesses ship is their own CLI that writes files
+  into the project (spec-kit, OpenSpec, BMAD 6.12, GSD, Ruflo, Agent OS; 10 of 19 harnesses have an
+  installer, 5 package plugins). The `workbench` binary — which exists anyway for the command center
+  — installs, updates and syncs the harness in a repository; skills and harness files are committed,
+  so teammates get the pipeline through `git clone` without installing anything into their agents.
+  No plugin channel, to avoid the two-path trap (GSD, Ruflo, Matt Pocock's plugin vs skills.sh
+  drift). The layout stays compatible with `vercel-labs/skills` (`.agents/skills`, links, a lock) so
+  third-party skills can still be added with `npx skills add`. How the binary itself is installed on
+  a machine is #4. Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §9.1, §11.2.3;
+  `docs/research/2026-09-29-agent-instructions-in-repos.md` §2.3–2.4, §3.2;
+  `docs/research/2026-09-29-cross-runtime-portability.md` §4.2.
 
 ## 2026-09-29 (open questions from the brief)
 
