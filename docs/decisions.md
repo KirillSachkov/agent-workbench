@@ -25,6 +25,23 @@ Decisions from the harness requirements map, one ticket per decision.
   states degradation explicitly (to be decided in E17 and E20). Evidence:
   `docs/research/2026-09-29-cross-runtime-portability.md` §3.3;
   `docs/research/2026-09-29-mattpocock-skills-design.md` §2.2, §5.
+- **Default shape of agent work** (A3, #8). Two owner checkpoints by default — intent approval
+  before code and acceptance (the merge) after — with agents working on their own in between. In
+  between, machine checks block and review is done by someone other than the author (another agent or a
+  fresh-context subagent); AI review gives findings, not verdicts. Every agent session starts from an
+  artifact and ends with one; state lives in files, git and the tracker. Three tracks by task size:
+  small (the task states intent, preservation and acceptance criteria; one PR), medium (spec file,
+  then tickets), large (a wayfinder map, then medium). Evidence: `docs/research/2026-09-27-reviewing-agent-work-practices.md`
+  §2, §6; `docs/research/2026-09-25-artifact-pipelines-academic.md` §7;
+  `docs/research/2026-09-25-artifact-pipelines-industry.md` §8.
+- **The harness stays minimal; process is chosen per task** (A3, #8). TDD, the implementation skill
+  and other process choices are picked for the task, not mandated; the core is checks and facts,
+  because practices and models change fast.
+- **Owner checkpoints are defaults, not laws** (A3, #8). Some tasks may let an agent merge, and some
+  may skip the pipeline; how that is allowed and stays visible is a separate ticket. Two more owner
+  needs became tickets: a result package the owner can open in one step instead of hunting for PRs and
+  files, and batch execution of a ticket set by an orchestrator (which touches the brief's "launching
+  and orchestrating agents" exclusion).
 
 ## 2026-09-29 (open questions from the brief)
 

@@ -38,3 +38,27 @@ _Avoid_: vendor, source repo
 Who may start a skill: only the user by name (user-invoked), or also the model on its own
 (model-invoked). A user-invoked skill may call model-invoked skills, never another user-invoked one.
 _Avoid_: visibility, trigger mode
+
+### Work shape
+
+**Track**:
+The path a task takes through the pipeline, chosen once by its size: small (the task itself states
+the intent, one PR), medium (a spec, then tickets) or large (a map of decisions first).
+_Avoid_: flow, lane, mode
+
+**Intent approval**:
+The owner's approval, before any code, of what will be done, what must not break and how done will be
+recognised.
+_Avoid_: sign-off, spec review
+
+**Acceptance**:
+The owner's decision that a delivered result is accepted; by default the merge of its pull request.
+_Avoid_: approval, sign-off
+
+**Acceptance criteria**:
+Observable conditions, stated before the work, that show the work is done.
+_Avoid_: definition of done, exit criteria
+
+**Preservation criteria**:
+Behaviour the work must not break, stated before the work.
+_Avoid_: constraints, non-goals
