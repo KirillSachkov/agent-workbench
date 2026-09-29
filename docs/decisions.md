@@ -82,6 +82,14 @@ Decisions from the harness requirements map, one ticket per decision.
   `docs/research/2026-09-29-hoh-harness-design.md` §2.2, §7;
   `docs/research/2026-09-27-agent-products-human-artifacts.md` §8 (Stripe);
   `docs/research/2026-09-27-reviewing-agent-work-practices.md` §1, §6.
+- **Evidence is bound to the PR head commit** (C8, #13). The candidate is the commit SHA at the head
+  of the pull request; every evidence record carries the SHA it was produced on, as GitHub check runs
+  already do with `head_sha`. When the head moves, older records stay visible but are marked stale;
+  before acceptance every acceptance criterion needs evidence on the current head. Treated as cheap
+  hygiene: the value of binding is argued, not measured. Evidence:
+  `docs/research/2026-09-29-hoh-harness-design.md` §4.3, §9.1.3;
+  `docs/research/2026-09-25-artifact-mechanics-classic.md` (check runs);
+  `docs/research/2026-09-25-artifact-pipelines-academic.md` §7.2.
 
 ## 2026-09-29 (open questions from the brief)
 

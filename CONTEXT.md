@@ -16,6 +16,15 @@ A durable output of a stage that a human or a later stage relies on: a specifica
 report, evidence or handoff.
 _Avoid_: deliverable, document
 
+**Candidate**:
+The exact version of the work under review: the commit at the head of its pull request.
+_Avoid_: build, snapshot
+
+**Stale evidence**:
+Evidence produced on an earlier candidate than the current one. Kept, but it cannot support
+acceptance.
+_Avoid_: outdated proof
+
 **Artifact contract**:
 The rules an artifact must satisfy for its stage to count, checked by code. It is the core of the
 harness and does not depend on which method produced the artifact.
