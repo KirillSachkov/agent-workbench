@@ -11,9 +11,10 @@ of extra weight, and many command centers have already shut down.
 
 ## Outcome
 
-1. **Harness and pipeline.** Stages with an input, an artifact, a mechanical check, a judgment check,
-   a role and an exit condition. Profiles for different kinds of projects. General and configurable,
-   not tied to any particular project.
+1. **Harness and pipeline.** Tracks of work declared as artifact graphs, with mechanical checks and
+   owner checkpoints; a built-in default for software development that each project adapts or
+   replaces in its own configuration. General and configurable, not tied to any particular project.
+   (Amended 2026-09-29 by decisions A3, B4 and B5 in `docs/decisions.md`; there are no profiles.)
 2. **Artifact contract.** Specification, plan, delivery report, evidence, handoff; checked by a
    command, later by hooks and CI.
 3. **Workspace.** Agent and Herdr setup: plugins for status, diff review and document review, key
@@ -38,7 +39,7 @@ of extra weight, and many command centers have already shut down.
 - Product code of the projects where the harness is applied.
 - A task tracker of our own instead of GitHub.
 - Launching and orchestrating agents instead of Herdr and the runtimes themselves.
-- Project-specific profiles (for example Inside); consumers configure the harness in their own
+- Project-specific configuration (for example Inside); consumers configure the harness in their own
   repositories.
 
 ## Sources of ideas

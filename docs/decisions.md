@@ -49,6 +49,17 @@ Decisions from the harness requirements map, one ticket per decision.
   per task. No fixed loop with extension points (GSD) and no workflow engine with control flow
   (spec-kit). Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §1.3, §2.3–2.4,
   §6.3, §11.1.5; ADR `docs/adr/0003-pipeline-as-artifact-graph.md`.
+- **No profiles: a built-in default plus project configuration** (B5, #10). There is no profile
+  system (no inheritance, no shared profile repositories). The harness ships one built-in default for
+  software development; each project has one committed project configuration that adapts or replaces
+  any part of it — tracks (artifact graphs), checks, enabled skills, tracker settings — and the
+  resolved result is printable by a command. Coding standards and domain rules stay in the project's
+  own documents (`AGENTS.md`, `CONTEXT.md`, standards files) that skills read; no keyword-selected
+  policy packs. Harnesses for other kinds of work (for example content) live in their own
+  repositories. Reversible: profiles can be layered on later if copying configuration between
+  repositories becomes painful. Amends `docs/brief.md` outcome 1 ("Profiles for different kinds of
+  projects"). Evidence: `docs/research/2026-09-29-harness-frameworks-compared.md` §3.3, §8.3,
+  §11.1.7–8, §11.3.3; `docs/research/2026-09-29-hoh-harness-design.md` §5.
 
 ## 2026-09-29 (open questions from the brief)
 

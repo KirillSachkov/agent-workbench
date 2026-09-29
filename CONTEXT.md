@@ -73,3 +73,15 @@ _Avoid_: definition of done, exit criteria
 **Preservation criteria**:
 Behaviour the work must not break, stated before the work.
 _Avoid_: constraints, non-goals
+
+### Configuration
+
+**Built-in default**:
+The tracks, checks, skills and tracker settings the harness ships for software development, used
+wherever a project does not configure otherwise.
+_Avoid_: preset, template
+
+**Project configuration**:
+The one committed file in a project's repository that adapts or replaces any part of the built-in
+default, up to its own artifact graphs. It wins over the built-in default.
+_Avoid_: profile, settings
