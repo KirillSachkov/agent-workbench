@@ -1,0 +1,110 @@
+# Built-in default of the harness. A project's workbench.toml overlays it: tables merge key by key,
+# any other value (including a whole track's node list) is replaced.
+
+[skills]
+# Stable skills to install from the harness source; "*" installs all of them.
+enabled = ["*"]
+# Beta skills are opted in one by one.
+beta = []
+
+[links]
+# How Claude Code reaches .agents/skills: "directory" (one .claude/skills symlink) or "per-skill".
+claude = "directory"
+
+[acceptance]
+# Acceptance mode of a task without an acceptance label: "human" or "auto".
+default = "human"
+
+[repair]
+# Repair rounds an agent may spend on failed checks before it stops with a report.
+max_rounds = 2
+
+[tracker]
+kind = "github"
+
+[tracker.labels]
+needs-triage = "needs-triage"
+needs-info = "needs-info"
+ready-for-agent = "ready-for-agent"
+ready-for-human = "ready-for-human"
+wontfix = "wontfix"
+acceptance-human = "acceptance:human"
+acceptance-auto = "acceptance:auto"
+
+[artifacts]
+specs = "docs/specs"
+adr = "docs/adr"
+context = "CONTEXT.md"
+decisions = "docs/decisions.md"
+research = "docs/research"
+
+# Tracks are artifact graphs: each node names its artifact, where it lives, the nodes it depends on
+# and the facts that mark it done (any one of them is enough).
+
+[tracks.small]
+description = "The task itself states intent, preservation and acceptance criteria; one pull request."
+
+[[tracks.small.nodes]]
+id = "intent"
+artifact = "task"
+location = "tracker"
+after = []
+done_when = ["task-labelled:ready-for-agent"]
+
+[[tracks.small.nodes]]
+id = "delivery"
+artifact = "pull request with a result card"
+location = "pull-request"
+after = ["intent"]
+done_when = ["pull-request-open"]
+
+[[tracks.small.nodes]]
+id = "accepted"
+artifact = "merge"
+location = "pull-request"
+after = ["delivery"]
+done_when = ["pull-request-merged", "acceptance-auto-met"]
+
+[tracks.medium]
+description = "A spec approved through its pull request, then self-contained tickets."
+
+[[tracks.medium.nodes]]
+id = "spec"
+artifact = "spec"
+location = "artifacts.specs"
+after = []
+done_when = ["spec-pull-request-merged"]
+
+[[tracks.medium.nodes]]
+id = "tickets"
+artifact = "tickets with blocking edges"
+location = "tracker"
+after = ["spec"]
+done_when = ["tickets-created"]
+
+[[tracks.medium.nodes]]
+id = "delivery"
+artifact = "pull request with a result card"
+location = "pull-request"
+after = ["tickets"]
+per = "ticket"
+done_when = ["pull-request-open"]
+
+[[tracks.medium.nodes]]
+id = "accepted"
+artifact = "merge"
+location = "pull-request"
+after = ["delivery"]
+per = "ticket"
+done_when = ["pull-request-merged", "acceptance-auto-met"]
+
+[tracks.large]
+description = "A map of decision tickets first, then the medium track."
+then = "medium"
+
+[[tracks.large.nodes]]
+id = "map"
+artifact = "wayfinder map"
+location = "tracker"
+after = []
+done_when = ["map-closed"]

@@ -1,0 +1,20 @@
+# This repository is a harness source: `workbench init --from <this repo>@<ref>` installs the
+# stable skills in skills/ into a project; beta skills live in beta/ and are opted in one by one
+# in the project's workbench.toml.
+
+[harness]
+name = "agent-workbench"
+version = "0.1.0"
+# The oldest workbench binary that can install this version.
+min_workbench = "0.1.0"
+
+# Per forked skill, the upstream it was forked at:
+# [upstream.<skill>]
+# repository = "https://github.com/mattpocock/skills"
+# commit = "<sha>"
+
+# The rename/removal map, cumulative across releases: skills a project should rename or drop on
+# `workbench update`.
+[changes]
+renamed = {}
+removed = []

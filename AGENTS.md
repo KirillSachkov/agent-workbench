@@ -31,7 +31,8 @@ no slot yet.
 ```bash
 rustup toolchain install stable --component rustfmt,clippy   # setup
 cargo run -p workbench-cc -- overview                         # run the command center (see command-center/README.md)
-cargo test                                                    # test
+cargo run -p workbench -- --help                              # run the harness installer (init, sync, update, config)
+cargo test                                                    # test (black-box tests drive the built binaries)
 cargo fmt --all --check && cargo clippy --all-targets -- -D warnings   # lint
 cargo build --release                                         # build
 ```
@@ -49,6 +50,9 @@ Harness health, from a checkout of agent-harness: `python3 harness/bin/harness h
   docs.
 - `CONTEXT.md`, `docs/adr/` — domain glossary and ADRs, created lazily by `domain-modeling`.
 - `.harness/` — managed skills, registry and lock. Do not edit by hand.
+- `crates/workbench/` — the `workbench` binary: `init`, `sync`, `update`, `config`.
+- `harness.toml`, `skills/` — this repository as a harness source for `workbench init --from`;
+  the skills are a copy of the bootstrap set until #55 ships the default method.
 
 ## Pipeline
 
