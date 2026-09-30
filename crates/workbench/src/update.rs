@@ -157,10 +157,7 @@ pub fn run(project: &Path, to: Option<&str>) -> Result<()> {
     lock.save(project)?;
     let report = sync::derive(project, Some(&lock), &config)?;
 
-    outcome.print(&old_lock, &lock, &branch);
-    for (path, _) in &report.stale {
-        println!("- regenerated {path}");
-    }
+    outcome.print(&old_lock, &lock, &branch, &report);
     for warning in install.warnings.iter().chain(&report.warnings) {
         eprintln!("warning: {warning}");
     }
@@ -345,7 +342,7 @@ struct Outcome {
 }
 
 impl Outcome {
-    fn print(&self, old: &Lock, new: &Lock, branch: &str) {
+    fn print(&self, old: &Lock, new: &Lock, branch: &str, report: &sync::Report) {
         println!(
             "Updated {} {} → {} ({}@{}, {}) on branch {branch}.",
             new.harness.name,
@@ -380,6 +377,9 @@ impl Outcome {
         );
         for note in &self.notes {
             println!("- note: {note}");
+        }
+        for (path, _) in &report.stale {
+            println!("- regenerated {path}");
         }
         if self.conflicts.is_empty() {
             println!("Next: review the diff, commit and open a pull request.");

@@ -50,7 +50,12 @@ pub fn run(project: &Path, from: &str) -> Result<()> {
         }
     }
 
-    let install = release.install(&config);
+    let mut install = release.install(&config);
+    if install.skills.is_empty() {
+        install
+            .warnings
+            .push("the harness source installs no skills (its skills/ directory is empty)".into());
+    }
     let mut kept = Vec::new();
     let mut hashes = BTreeMap::new();
     for (path, blob) in &install.files {
