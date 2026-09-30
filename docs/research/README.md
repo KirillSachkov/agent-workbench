@@ -28,3 +28,4 @@ is marked "unconfirmed". The owner's local paths are anonymized.
 | [human-task-lists](2026-09-29-human-task-lists.md) | Human task lists beside agents' trackers; launching work from a task |
 | [herdr-plugins-built](2026-09-30-herdr-plugins-built.md) | How the leading Herdr plugins are built; what to borrow and what collides |
 | [neovim-agent-work-viewer](2026-09-30-neovim-agent-work-viewer.md) | Minimal Neovim as the viewer of agents' work inside Herdr |
+| [conductor-practices](2026-09-30-conductor-practices.md) | Coordinator/executor setups for coding agents: launch, watch, merge gates, lanes, limits, hand-back; CanvasTTY since September |
