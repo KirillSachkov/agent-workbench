@@ -16,7 +16,8 @@ tied to any particular consumer project. Goal and scope: `docs/brief.md`. Owner 
   Tailwind for the web dashboard; Markdown with frontmatter and JSON Schema for harness content and
   the artifact contract
 - Capabilities: `mattpocock-suite` (agent-harness 1.3.0)
-- Stage: seed — decisions and research are done, no product code yet
+- Stage: building. Shipped: the `workbench` CLI, the command center slice 1, the conductor v1;
+  the default method 0.1.0 is in review
 - Tracker: GitHub Issues of `KirillSachkov/agent-workbench`; see `docs/agents/issue-tracker.md`
 - Base branch: `main`
 - License: MIT
@@ -35,7 +36,10 @@ cargo run -p workbench -- --help                              # run the harness 
 cargo test                                                    # test (black-box tests drive the built binaries)
 cargo fmt --all --check && cargo clippy --all-targets -- -D warnings   # lint
 cargo build --release                                         # build
+scripts/smoke-tier1.sh --report docs/smoke/<date>-tier1.md    # tier-1 smoke check (before a release; spends tokens)
 ```
+
+Releasing the harness and the binary: `docs/releasing.md`.
 
 Harness health, from a checkout of agent-harness: `python3 harness/bin/harness health <this repo>`.
 
@@ -48,14 +52,16 @@ Harness health, from a checkout of agent-harness: `python3 harness/bin/harness h
   (`docs/research/README.md` is the index).
 - `docs/agents/` — configuration the pipeline skills read: issue tracker, triage labels, domain
   docs.
-- `CONTEXT.md`, `docs/adr/` — domain glossary and ADRs, created lazily by `domain-modeling`.
+- `GLOSSARY.md`, `docs/adr/` — domain glossary and ADRs, created lazily by `domain-modeling`.
 - `.harness/` — managed skills, registry and lock. Do not edit by hand.
 - `crates/workbench/` — the `workbench` binary: `init`, `sync`, `update`, `config`.
 - `harness.toml`, `skills/` — this repository as a harness source for `workbench init --from`:
   the default method (a tracked fork of `mattpocock/skills` with each skill's upstream commit in
   `harness.toml`, plus our own skills, among them the user-invoked `conduct` skill (#70) that
-  drives the command center's lane commands). Until this repository migrates onto it (#55),
-  agents here still run on the bootstrap copy in `.harness/`.
+  drives the command center's lane commands); `beta/` for opt-in skills; `CHANGELOG.md` and
+  `docs/releasing.md` for releases; `scripts/smoke-tier1.sh` and `docs/smoke/` for the tier-1
+  smoke check. Until this repository migrates onto it (#55), agents here still run on the
+  bootstrap copy in `.harness/`.
 - `docs/artifact-contract.md` — the documented shapes of tasks, specs, tickets, result cards and
   handoffs; read it before changing a skill that writes one or a tool that reads one.
 
@@ -66,16 +72,18 @@ completes the stage it was given and stops. The skill for each stage:
 
 | Stage | Skill | Artifact |
 |---|---|---|
-| Idea | `grill-with-docs` (or `wayfinder` for a large, foggy effort) | `CONTEXT.md`, ADRs, decision tickets |
+| Idea | `grill-with-docs` (or `wayfinder` for a large, foggy effort) | `GLOSSARY.md`, ADRs, decision tickets |
 | Spec | `to-spec` | GitHub issue with the spec |
 | Tickets | `to-tickets` | GitHub issues with blocking edges |
-| Implementation | `implement` (drives `tdd`, closes with `code-review`) | branch, PR, issue comment |
+| Implementation | `implement` (drives `tdd`, closes with `code-review` then `pr`, or `handoff`) | branch, PR with a result card, issue comment |
+| Where things stand | `coordinate` (read-only) or `conduct` (starts approved lanes) | control brief, lanes |
 | Incoming issues | `triage` | agent-ready issue |
 | Hard failure | `diagnosing-bugs` | regression test and fix |
 | Research | `research` | `docs/research/YYYY-MM-DD-<slug>.md` with a source for every claim |
 
-`ask-matt` explains the full flow. Once issue #2 ships the artifact contract, this repository
-switches its own specs to that contract (specs as files approved through a PR).
+`ask-matt` explains the full flow, the tracks and the acceptance modes. The shapes of the
+artifacts are in `docs/artifact-contract.md`. The bootstrap copy in `.harness/` predates these
+skills until the migration (#55).
 
 ## Boundaries
 
@@ -130,14 +138,15 @@ instruction chooses the checkout strategy.
 
 GitHub Issues of `KirillSachkov/agent-workbench` via `gh`. See `docs/agents/issue-tracker.md`.
 
-### Triage labels
+### Labels
 
-The five default roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`,
-`wontfix`. See `docs/agents/triage-labels.md`.
+The five triage roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`,
+`wontfix`) and the acceptance modes (`acceptance:human`, the default, and `acceptance:auto`). See
+`docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` and `docs/adr/` at the root, plus the owner's decision log. See
+Single-context: `GLOSSARY.md` and `docs/adr/` at the root, plus the owner's decision log. See
 `docs/agents/domain.md`.
 
 ## Known pitfalls

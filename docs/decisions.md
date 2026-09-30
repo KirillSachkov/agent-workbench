@@ -4,6 +4,26 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 ## 2026-09-30 (default method, #55)
 
+- **Install method: `cargo install` from the release tag** (the owner, 2026-09-30, #55 part 2).
+  `cargo install --locked --git https://github.com/KirillSachkov/agent-workbench --tag vX.Y.Z
+  workbench`; it needs a Rust toolchain, like the command center today. Prebuilt binaries and a
+  Homebrew tap can come later without changing the release tags. Closes the question F22 left
+  open.
+- **Release order** (the owner, 2026-09-30). The 0.1.0 content merges first; the tag `v0.1.0` is
+  set on `main` after the merge with the owner's approval; this repository then migrates onto its
+  own harness from `KirillSachkov/agent-workbench@v0.1.0` in a separate PR that closes #55. The
+  release process is `docs/releasing.md`.
+- **Later upstream changes adopted in 0.1.0** (the owner, 2026-09-30): the em-dash removal, the
+  `CONTEXT.md` → `GLOSSARY.md` rename (this repository's glossary moves too) and the removal of
+  `resolving-merge-conflicts`, recorded in the removal map. F24's mention of that skill for update
+  conflicts no longer holds: agents resolve them without a dedicated skill.
+- **OpenCode, measured by the tier-1 smoke check** (answers the open points of E17, E19 and E20).
+  The `deny` rule that `sync` writes for a user-invoked skill stops the model from loading it, and
+  the user still runs it by name as a slash command (`/<skill>` in the TUI, `opencode run --command
+  <skill>` headless); an `ask` rule would be auto-rejected in headless runs. A skill reachable
+  through both `.claude/skills` (the directory link) and `.agents/skills` is registered once.
+  Report: `docs/smoke/2026-09-30-tier1.md`.
+
 - **Fork base and adoption** (executor of #55, within ADR 0002). The bootstrap copy of the skills
   equals `mattpocock/skills` at `6a34259` byte for byte, so that commit is the recorded fork point
   of every forked skill. `pr` is adopted from upstream `e484a80`, where it is now promoted. The

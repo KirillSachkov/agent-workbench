@@ -64,7 +64,7 @@ When set to `yes`, PRs run through the same labels and states as issues, using t
 - **List external PRs for triage**: `gh pr list --state open --json number,title,body,labels,author,authorAssociation --jq '[.[] | select(.authorAssociation == "CONTRIBUTOR" or .authorAssociation == "FIRST_TIME_CONTRIBUTOR" or .authorAssociation == "NONE")]'`
 - **Comment / label / close**: `gh pr comment`, `gh pr edit --add-label` / `--remove-label`, `gh pr close`.
 
-GitHub shares one number space across issues and PRs, so a bare `#42` may be either — resolve with `gh pr view 42` and fall back to `gh issue view 42`.
+GitHub shares one number space across issues and PRs, so a bare `#42` may be either: resolve with `gh pr view 42` and fall back to `gh issue view 42`.
 
 ## When a skill says "publish to the issue tracker"
 
@@ -86,5 +86,5 @@ Used by `wayfinder`. The **map** is a single issue with **child** issues as tick
 - **Child ticket**: an issue linked to the map as a sub-issue (see Parent and child issues). Labels: `wayfinder:<type>` (`research`/`prototype`/`grilling`/`task`). Once claimed, the ticket is assigned to the driving dev.
 - **Blocking**: native dependencies, as in Blocking edges.
 - **Frontier query**: the map's open, unblocked, unclaimed children, in map order: `gh api --paginate repos/{owner}/{repo}/issues/<map>/sub_issues --jq '.[] | select(.state == "open" and .issue_dependencies_summary.blocked_by == 0 and (.assignees | length) == 0) | {number, title}'`. The first one wins.
-- **Claim**: `gh issue edit <n> --add-assignee @me` — the session's first write.
+- **Claim**: `gh issue edit <n> --add-assignee @me`, the session's first write.
 - **Resolve**: `gh issue comment <n> --body-file <file>` with the answer, then `gh issue close <n>`, then append a context pointer (gist + link) to the map's Decisions-so-far.

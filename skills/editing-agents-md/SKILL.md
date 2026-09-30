@@ -5,7 +5,7 @@ description: Decide whether an instruction belongs in AGENTS.md at all, and writ
 
 # Editing AGENTS.md
 
-`AGENTS.md` is the project's instructions for every agent, and it belongs to the project. The root file loads into every session, in every runtime, for every task — so a line added there is paid for by every task, whether or not the task touches its subject. The question is never "is this true?" but "is this worth loading into every session?"
+`AGENTS.md` is the project's instructions for every agent, and it belongs to the project. The root file loads into every session, in every runtime, for every task, so a line added there is paid for by every task, whether or not the task touches its subject. The question is never "is this true?" but "is this worth loading into every session?"
 
 ## What the harness owns, and what it doesn't
 
@@ -17,28 +17,28 @@ description: Decide whether an instruction belongs in AGENTS.md at all, and writ
 
 Work down this ladder and stop at the first rung that fits:
 
-1. **A check** — a linter rule, a type, a test, a CI step. When a matcher can see the violation, the check is the rule and a line of prose adds nothing.
-2. **A skill** — the instruction matters for one kind of task (writing a migration, releasing, reviewing a PR). A skill loads on demand and can be ten times longer.
-3. **A nested `AGENTS.md`** — the instruction applies to one directory. It loads only when an agent works there.
-4. **The root `AGENTS.md`** — none of the above can carry it, and it applies across the repository or getting it wrong is expensive and nothing else catches it.
+1. **A check**: a linter rule, a type, a test, a CI step. When a matcher can see the violation, the check is the rule and a line of prose adds nothing.
+2. **A skill**: the instruction matters for one kind of task (writing a migration, releasing, reviewing a PR). A skill loads on demand and can be ten times longer.
+3. **A nested `AGENTS.md`**: the instruction applies to one directory. It loads only when an agent works there.
+4. **The root `AGENTS.md`**: none of the above can carry it, and it applies across the repository or getting it wrong is expensive and nothing else catches it.
 
 The root file is the last resort, not the default.
 
 ## 2. Check the smells
 
-- **Lint leakage** — restating what a linter or CI already blocks. Keep at most the reason and name the check.
-- **Context bloat** — content that does not apply to most sessions: environment setup for one tool, product documentation, history. Move it to `docs/` and point at it. Aim for a root file under about 150 lines.
-- **Skill leakage** — task-specific steps in the always-loaded file. Move them into the skill for that task.
-- **Conflicting instructions** — two lines that disagree, often because one aged. Search the file and nested files for the subject before adding yours.
-- **Fossils** — text nobody has checked since it was generated. When you edit near a stale line, verify it and fix it in the same change.
-- **Blind references** — a link with no word on what it holds or when to read it. Every pointer says "read this when …".
+- **Lint leakage**: restating what a linter or CI already blocks. Keep at most the reason and name the check.
+- **Context bloat**: content that does not apply to most sessions: environment setup for one tool, product documentation, history. Move it to `docs/` and point at it. Aim for a root file under about 150 lines.
+- **Skill leakage**: task-specific steps in the always-loaded file. Move them into the skill for that task.
+- **Conflicting instructions**: two lines that disagree, often because one aged. Search the file and nested files for the subject before adding yours.
+- **Fossils**: text nobody has checked since it was generated. When you edit near a stale line, verify it and fix it in the same change.
+- **Blind references**: a link with no word on what it holds or when to read it. Every pointer says "read this when …".
 
 ## 3. Write it so it holds
 
 - State what must be true, specifically and in the imperative: "Every public function has a doc comment", "Use `uv pip`, never `pip`". A preference ("we like uv") changes nothing.
 - Name the trigger, so a reader can tell from a diff when the line applies.
 - Commands are exact and were run: copy them from a terminal where they worked.
-- Never add secrets, personal paths, or one person's preferences — those live in each person's user-level instructions.
+- Never add secrets, personal paths, or one person's preferences; those live in each person's user-level instructions.
 - Say each thing once. A rule stated in the root and in a nested file will drift apart.
 
 ## 4. Before you commit
@@ -49,4 +49,4 @@ The root file is the last resort, not the default.
 - Every path, link and skill name you added resolves.
 - The file got shorter, or you can say what the added lines buy every session.
 
-For the craft of writing anything agents read — skills, pointed-at docs — call the Skill tool with "writing-for-agents".
+For the craft of writing anything agents read (skills, pointed-at docs), call the Skill tool with "writing-for-agents".

@@ -4,7 +4,7 @@ description: Write a handoff as a comment on the task's issue so another session
 argument-hint: "What will the next session be used for?"
 ---
 
-Write a handoff so a fresh agent, or a person, can continue the work from the tracker alone. The handoff is a comment on the task's issue, posted with the "comment on an issue" operation in `docs/agents/issue-tracker.md` — not a file in a temporary directory, and not a message in this chat.
+Write a handoff so a fresh agent, or a person, can continue the work from the tracker alone. The handoff is a comment on the task's issue, posted with the "comment on an issue" operation in `docs/agents/issue-tracker.md`, not a file in a temporary directory, and not a message in this chat.
 
 Before writing, make the state reachable: commit the work in progress to the task's branch and push it, so every link in the handoff resolves for the next reader.
 
@@ -21,7 +21,7 @@ If the user passed arguments, treat them as a description of what the next sessi
 
 **State.** Where the work stands: the branch and its head commit, the pull request if one exists, what is built and what is not.
 
-**Verified.** What was checked and how — the command, test or review and its outcome — and on which commit. Anything not checked is not listed here.
+**Verified.** What was checked and how (the command, test or review and its outcome), and on which commit. Anything not checked is not listed here.
 
 **Next step.** The single next action, specific enough to start without asking.
 
