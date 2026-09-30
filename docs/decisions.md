@@ -35,8 +35,8 @@ Decisions taken while charting the command center map (#41) and resolving its ti
   the card a file at the line in nvim, the diff in the agent's worktree, the PR on GitHub, the app
   and screenshots in the regular browser → remarks on diff lines or the report go back to the same
   agent and stay in the PR → accept by merging from the card with confirmation or on GitHub → the
-  Overview offers to tidy up the worktree and branch. Before code the same flow runs on a spec with
-  annotate. Parts: Herdr is the workspace; our Herdr plugin provides the Overview and result-card
+  Overview offers to tidy up the worktree and branch. Before code the same flow runs on a spec (reviewed in
+  nvim and in the spec PR, CC7). Parts: Herdr is the workspace; our Herdr plugin provides the Overview and result-card
   popups, the sidebar tag, the tab-bar counter, open-at-line and tidy-up; files and changes are read
   in the terminal in nvim (LazyVim) set up minimally as a viewer (research CC16, #60); remarks go
   back through herdr-nvim (CC7); the regular browser shows the app and
