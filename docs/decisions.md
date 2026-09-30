@@ -6,6 +6,19 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **The first slice: "see and check"** (CC11, #52). Our Herdr plugin v0.1: the binding agent →
+  project, branch, PR, task; the sidebar tag and the "need you" counter; the Overview popup ("needs
+  you", "since you last looked", a per-project list agent → task → PR → CI); the result card popup
+  (the agent's PR body plus derived facts, with one key each to a "look first" file at the line in
+  nvim, the diff, the PR and the app). Plus one harness change: the forked `pr` skill writes the
+  card sections in a stable shape (`Result`, `Needs you`, `Look first` with `path:line — reason`,
+  `How to try`) as part of the artifact contract. Later slices: the pipeline tree, tidy-up, the
+  action menu with "start", pinned projects, the spec review flow, stale evidence, plain phrases for
+  every label, the personal inbox, our own UI. Judged after a week: task, PR and CI visible for
+  every live agent without lookup; results checked from the card rather than GitHub; at most three
+  key presses from notification to a file at the line. The map's destination is reached; the owner
+  starts `/to-spec` for this slice.
+
 - **Adopt or build** (CC7, #48). We build only our Herdr plugin: the Overview and result-card
   popups, the action menu and "start", the sidebar tag, the tab-bar counter, tidy-up, and the
   binding agent ↔ branch ↔ worktree ↔ task derived from Herdr, git and GitHub. Everything else is
