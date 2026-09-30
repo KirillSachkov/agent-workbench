@@ -6,6 +6,17 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **Implementation order and granularity** (2026-09-30, after the map). Three large steps, each
+  one or two PRs, without splitting into many small tickets: the command center slice 1 (#62) first,
+  because it helps in every repository at once; then the `workbench` CLI (#54); then the default
+  method content, smoke check, first release and migration of this repository (#55), whose `pr`
+  skill writes the result-card sections #62 reads. #2 is closed as superseded by #1's spec and #55;
+  #3 and #4 close when #62 ships. A spec the size of one PR is implemented straight from the spec,
+  without `/to-tickets`.
+- **The command center ships its own binary** (2026-09-30, amends F26). One Cargo workspace, two
+  binaries: `workbench` installs the harness; the command center's Herdr plugin has its own binary
+  and release tags, so it can be installed without the harness installer (ADR 0006).
+
 - **The first slice: "see and check"** (CC11, #52). Our Herdr plugin v0.1: the binding agent →
   project, branch, PR, task; the sidebar tag and the "need you" counter; the Overview popup ("needs
   you", "since you last looked", a per-project list agent → task → PR → CI); the result card popup
