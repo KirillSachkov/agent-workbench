@@ -32,7 +32,13 @@ adopted: no em-dashes in skill text, the domain glossary is `GLOSSARY.md` (was `
   - No skill names a runtime's slash syntax.
 - Renamed: `setup-matt-pocock-skills` → `setup-harness`, with fixed GitHub tracker templates,
   acceptance labels and a label script.
-- Removed: `resolving-merge-conflicts`.
+- Removed: `resolving-merge-conflicts`, as upstream did; agents resolve merge conflicts without a
+  dedicated skill. (A removal like this is a major change after 1.0.)
+
+**By hand on update.** Rename the project's glossary: `git mv CONTEXT.md GLOSSARY.md` (and
+`CONTEXT-MAP.md` to `GLOSSARY-MAP.md` in a multi-context repository); the skills read only the new
+names. Run the `setup-harness` skill again, or edit `docs/agents/*` from its templates, to pick up
+the fixed tracker operations and the acceptance labels.
 
 **Runtimes.** Tier 1: Claude Code, Codex and OpenCode, checked by
 [the tier-1 smoke check](docs/smoke/2026-09-30-tier1.md).

@@ -196,10 +196,11 @@ fn markdown_files(dir: &Path) -> Vec<PathBuf> {
     out
 }
 
-/// A plain YAML scalar cannot hold `: `, so a description with one must be quoted or folded, or
-/// runtimes that parse the frontmatter as YAML drop the skill.
+/// A plain YAML scalar cannot hold `: ` or ` #`, so such a value must be quoted or folded, or
+/// runtimes that parse the frontmatter as YAML drop the skill. This checks those two cases only,
+/// the ones prose tends to produce; it is not a YAML parser.
 #[test]
-fn skill_descriptions_are_valid_yaml_scalars() {
+fn frontmatter_values_with_a_colon_or_hash_are_quoted() {
     let skills = repository().join("skills");
     let mut broken = Vec::new();
     for name in skill_names(&skills) {
