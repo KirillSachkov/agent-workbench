@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use serde_json::{Value, json};
 use support::{Env, agent, pr};
 
-const CARD_BODY: &str = "## Result\nLogin works with passkeys.\n\n## Needs you\nPick the session timeout.\n\n## Look first\n- `src/auth.rs:42` — the token check\n- tests/login_test.rs:7 - the new test\n- ../etc/passwd:1 — must be ignored\n\n## How to try\nRun `rm -rf /` then open http://localhost:3000/login.\n\n## Criteria\n- [x] passkeys\n\nCloses #62\n";
+const CARD_BODY: &str = "## Result\nLogin works with passkeys.\n\n## Needs you\nPick the session timeout.\n\n## Look first\n- `src/auth.rs:42` — the token check\n- tests/login_test.rs:7 - the new test\n- ../etc/passwd:1 — must be ignored\n- -rf:1 — an option, not a file\nNote: not an item\n- src/auth.rs — no line\n\n## How to try\nRun `rm -rf /` then open http://localhost:3000/login.\n\n## Criteria\n- [x] passkeys\n\nCloses #62\n";
 
 /// An agent in a linked worktree whose PR is #81.
 fn with_pr(env: &Env, body: &str, files: Value) -> PathBuf {

@@ -21,9 +21,18 @@ fn scenario(env: &Env) {
     draft["isDraft"] = json!(true);
     let mut auto = pr(92, "auto-work", "success");
     auto["labels"] = json!([{"name": "acceptance:auto"}]);
+    let mut other_acceptance = pr(94, "other-acceptance", "success");
+    other_acceptance["labels"] = json!([{"name": "acceptance:review"}]);
     env.github(
         "o/app",
-        json!([login_pr, pr(90, "broken", "failure"), draft, auto]),
+        json!([
+            login_pr,
+            pr(90, "broken", "failure"),
+            draft,
+            auto,
+            pr(93, "no-ci", "none"),
+            other_acceptance
+        ]),
         json!([]),
         json!([]),
     );
@@ -149,7 +158,7 @@ fn needs_you_lists_waiting_agents_unseen_results_ready_prs_and_failed_ci() {
     assert_eq!(
         prs,
         vec![("pr_ready".to_string(), 81), ("ci_failed".to_string(), 90)],
-        "drafts and acceptance:auto PRs do not wait for the owner"
+        "drafts, PRs without green CI and PRs accepted otherwise do not wait for the owner"
     );
     assert_eq!(s["counter"], json!({"needs_you": 4, "text": "4 need you"}));
 }
@@ -378,4 +387,57 @@ fn github_facts_are_reused_between_refreshes() {
         after_first,
         "fresh facts are not fetched again"
     );
+}
+
+#[test]
+fn looking_at_one_project_keeps_the_baseline_of_the_others() {
+    let env = Env::new();
+    let app = env.repo("app", None);
+    let other = env.repo("other", None);
+    env.agents(json!([
+        agent("w1:p1", "s1", "working", &app),
+        agent("w1:p2", "s2", "working", &other)
+    ]));
+    env.run(&["overview", "--json", "--mark-seen"]).json();
+    env.run(&[
+        "overview",
+        "--json",
+        "--mark-seen",
+        "--this-project",
+        "--current",
+        app.to_str().unwrap(),
+    ])
+    .json();
+    env.agents(json!([
+        agent("w1:p1", "s1", "working", &app),
+        agent("w1:p2", "s2", "done", &other)
+    ]));
+    let s = env.run(&["overview", "--json"]).json();
+    assert_eq!(s["since_last_looked"][0]["kind"], "agent_finished");
+    assert_eq!(s["since_last_looked"][0]["pane_id"], "w1:p2");
+}
+
+#[test]
+fn only_an_open_pr_is_bound_and_only_feature_style_branches_give_a_task() {
+    let env = Env::new();
+    let repo = env.repo("app", Some("https://github.com/o/app.git"));
+    let done = env.worktree(&repo, "app-75", "feat/75-done");
+    let release = env.worktree(&repo, "app-rel", "release/2024");
+    env.agents(json!([
+        agent("w1:p1", "s1", "idle", &done),
+        agent("w1:p2", "s2", "idle", &release)
+    ]));
+    env.github(
+        "o/app",
+        json!([]),
+        json!([pr(75, "feat/75-done", "success")]),
+        json!([]),
+    );
+    let s = env.run(&["overview", "--json"]).json();
+    assert_eq!(agent_by_pane(&s, "w1:p1")["pr"], Value::Null);
+    assert_eq!(
+        agent_by_pane(&s, "w1:p1")["task"],
+        json!({"number": 75, "inferred": true})
+    );
+    assert_eq!(agent_by_pane(&s, "w1:p2")["task"], Value::Null);
 }

@@ -48,7 +48,7 @@ fn opens_a_look_first_file_at_its_line_in_a_split_in_the_worktree() {
     assert_eq!(
         plugin_open(&env),
         format!(
-            "plugin pane open --plugin agent-workbench.command-center --entrypoint exec --placement split --target-pane w1:p2 --direction right --cwd {} --env WB_EXEC=[\"nvim\",\"+42\",\"src/auth.rs\"] --focus",
+            "plugin pane open --plugin agent-workbench.command-center --entrypoint exec --placement split --target-pane w1:p2 --direction right --cwd {} --env WB_EXEC=[\"nvim\",\"+42\",\"--\",\"src/auth.rs\"] --focus",
             wt.display()
         )
     );

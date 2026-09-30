@@ -68,16 +68,32 @@ fn normalise_key(key: &str) -> String {
     key.trim().to_lowercase().replace(' ', "")
 }
 
-/// Every key the configuration binds, with what it is bound to.
+/// The keys a `[keys]` value binds: one string or a list of strings.
+fn keys_of(value: &Value) -> Vec<String> {
+    match value {
+        Value::String(key) => vec![normalise_key(key)],
+        Value::Array(list) => list
+            .iter()
+            .filter_map(Value::as_str)
+            .map(normalise_key)
+            .collect(),
+        _ => vec![],
+    }
+}
+
+/// Every key the configuration binds, with what it is bound to. Plugins cannot declare keys in
+/// their manifests, so other plugins' bindings are the `[[keys.command]]` entries.
 fn bound_keys(config: &Value) -> Vec<(String, String)> {
     let keys = config.get("keys");
     let mut bound = vec![];
     for (action, default) in HERDR_DEFAULTS {
         match keys.and_then(|k| k.get(*action)) {
-            Some(Value::String(custom)) => {
-                bound.push((normalise_key(custom), format!("Herdr's {action}")))
+            Some(custom) => {
+                for key in keys_of(custom) {
+                    bound.push((key, format!("Herdr's {action}")));
+                }
             }
-            _ => bound.push((
+            None => bound.push((
                 normalise_key(default),
                 format!("Herdr's {action} (default)"),
             )),
@@ -85,11 +101,10 @@ fn bound_keys(config: &Value) -> Vec<(String, String)> {
     }
     if let Some(Value::Table(table)) = keys {
         for (action, value) in table {
-            if let Value::String(key) = value
-                && action != "prefix"
-                && !HERDR_DEFAULTS.iter().any(|(a, _)| a == action)
-            {
-                bound.push((normalise_key(key), format!("Herdr's {action}")));
+            if action != "prefix" && !HERDR_DEFAULTS.iter().any(|(a, _)| a == action) {
+                for key in keys_of(value) {
+                    bound.push((key, format!("Herdr's {action}")));
+                }
             }
         }
         if let Some(Value::Array(commands)) = table.get("command") {
@@ -181,7 +196,7 @@ fn plan(original: &str, config: &Config) -> Result<Plan, String> {
         notes.push(format!(
             "[ui] tab_bar_right is yours; add this entry to it yourself: {status_entry}"
         ));
-    } else if ui.is_some() {
+    } else if base.lines().any(|line| line.trim() == "[ui]") {
         ui_block = Some(format!("tab_bar_right = [{status_entry}]\n"));
     } else {
         tail.push(format!("[ui]\ntab_bar_right = [{status_entry}]\n"));
@@ -189,7 +204,7 @@ fn plan(original: &str, config: &Config) -> Result<Plan, String> {
     let agents = ui
         .and_then(|u| u.get("sidebar"))
         .and_then(|s| s.get("agents"));
-    if agents.is_some_and(|a| a.get("rows").is_some() || a.get("row_gap").is_some()) {
+    if agents.is_some() {
         notes.push(format!("[ui.sidebar.agents] is yours; add \"$wb_tag\" to one of its rows to see the tag (token {}).", herdr::TAG_TOKEN));
     } else {
         tail.push(format!(

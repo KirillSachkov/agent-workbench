@@ -157,7 +157,12 @@ impl Default for Config {
             "xdg-open"
         };
         Config {
-            editor: vec!["nvim".into(), "+{line}".into(), "{path}".into()],
+            editor: vec![
+                "nvim".into(),
+                "+{line}".into(),
+                "--".into(),
+                "{path}".into(),
+            ],
             diff: vec!["nvim".into(), "-c".into(), "CodeDiff {base}...".into()],
             browser: vec![browser.into(), "{url}".into()],
             github_refresh_seconds: 60,

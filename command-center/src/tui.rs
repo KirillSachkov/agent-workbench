@@ -491,7 +491,6 @@ fn run_overview(
     config: &Config,
 ) -> Result<(), String> {
     let mut pending = Some(refresh(opts));
-    let mut marked = false;
     let mut selected = 0usize;
     let mut scroll = 0usize;
     let mut message = String::new();
@@ -501,13 +500,7 @@ fn run_overview(
         {
             pending = None;
             match fresh {
-                Ok(fresh) => {
-                    *snapshot = fresh;
-                    if !marked {
-                        let _ = model::mark_seen(snapshot);
-                        marked = true;
-                    }
-                }
+                Ok(fresh) => *snapshot = fresh,
                 Err(err) => message = err,
             }
         }
@@ -585,8 +578,8 @@ fn run_overview(
             _ => {}
         }
     };
-    if !marked {
-        let _ = model::mark_seen(snapshot);
-    }
+    // "Since you last looked" compares with the previous visit until the popup closes, so a
+    // refresh inside it does not empty the section.
+    let _ = model::mark_seen(snapshot);
     result
 }

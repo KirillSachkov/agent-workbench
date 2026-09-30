@@ -177,16 +177,14 @@ fn split_sections(body: &str) -> Vec<Section> {
 
 /// `path:line — reason` lines; a path must be relative and stay inside the worktree.
 fn look_first(text: &str) -> Vec<LookFirst> {
-    let re = Regex::new(
-        r"^\s*(?:[-*+]|\d+[.)])?\s*`?([^`\s:]+)(?::(\d+))?`?\s*(?:—|–|-{1,2}|:)\s*(.+)$",
-    )
-    .expect("valid regex");
+    let re = Regex::new(r"^\s*(?:[-*+]|\d+[.)])?\s*`?([^`\s:]+):(\d+)`?\s+(?:—|–|-{1,2})\s+(.+)$")
+        .expect("valid regex");
     text.lines()
         .filter_map(|line| {
             let c = re.captures(line)?;
             let path = c[1].to_string();
             safe_relative(&path).then(|| LookFirst {
-                line: c.get(2).and_then(|m| m.as_str().parse().ok()).unwrap_or(1),
+                line: c[2].parse().unwrap_or(1),
                 reason: c[3].trim().to_string(),
                 path,
             })
@@ -197,6 +195,7 @@ fn look_first(text: &str) -> Vec<LookFirst> {
 pub fn safe_relative(path: &str) -> bool {
     let p = Path::new(path);
     !path.is_empty()
+        && !path.starts_with('-')
         && p.is_relative()
         && p.components().all(|c| {
             matches!(

@@ -149,6 +149,11 @@ pub fn repo_facts(slug: &str, settings: &Settings) -> Loaded<RepoFacts> {
     load(slug, settings, || fetch_repo(slug, settings.timeout))
 }
 
+/// The last fetched facts, without going to GitHub.
+pub fn cached_repo_facts(slug: &str) -> Option<RepoFacts> {
+    read_cache::<RepoFacts>(slug).facts
+}
+
 fn fetch_repo(slug: &str, timeout: Duration) -> Result<RepoFacts, String> {
     let (owner, name) = slug.split_once('/').ok_or("bad repository")?;
     let open = gh(

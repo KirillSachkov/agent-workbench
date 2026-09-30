@@ -174,3 +174,17 @@ fn doctor_reports_each_check() {
     let good = env.run(&["doctor"]);
     assert!(good.ok, "{}", good.stdout);
 }
+
+#[test]
+fn configure_does_not_repeat_an_existing_sidebar_agents_table() {
+    let env = Env::new();
+    let own = "[keys]\nnew_tab = [\"prefix+i\", \"prefix+c\"]\n\n[ui.sidebar.agents]\n";
+    fs::write(env.path("herdr-config.toml"), own).unwrap();
+    let taken = env.run(&["configure", "--yes"]);
+    assert!(!taken.ok, "a key bound in a list counts as taken");
+    assert!(taken.stderr.contains("new_tab"), "{}", taken.stderr);
+    let run = env.run(&["configure", "--yes", "--overview-key", "prefix+m"]);
+    assert!(run.ok, "{}", run.stderr);
+    assert!(run.stdout.contains("add \"$wb_tag\""), "{}", run.stdout);
+    toml::from_str::<toml::Value>(&config(&env)).expect("valid TOML");
+}

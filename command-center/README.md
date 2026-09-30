@@ -57,8 +57,9 @@ Files and the diff open in a split beside the agent's pane, in its worktree.
 ## The result card in a PR
 
 The card reads these sections from the PR body by heading (any level): `Result`, `Needs you`,
-`Look first` and `How to try`. A `Look first` line is `path:line — reason` (a list item, the path
-may be in backticks); paths must be relative and inside the worktree. The first `http(s)` address
+`Look first` and `How to try`. A `Look first` line is `path:line — reason` (a list item; the path
+may be in backticks; `–` or `-` also separate); other lines are ignored, and paths must be
+relative and inside the worktree. The first `http(s)` address
 under `How to try` is the app. A body without these sections is shown whole. The forked `pr` skill
 writes this shape (#55); any other harness can follow it too.
 
@@ -88,7 +89,7 @@ card with its branch and the files changed since the merge base, committed or no
 Every field is optional:
 
 ```toml
-editor = ["nvim", "+{line}", "{path}"]        # argv; {path} and {line} are replaced
+editor = ["nvim", "+{line}", "--", "{path}"]  # argv; {path} and {line} are replaced
 diff = ["nvim", "-c", "CodeDiff {base}..."]   # {base} is the base branch, e.g. origin/main
 browser = ["open", "{url}"]                   # xdg-open on Linux
 github_refresh_seconds = 60                   # GitHub facts are reused this long

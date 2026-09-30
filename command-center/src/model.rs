@@ -147,7 +147,7 @@ pub struct Options {
 }
 
 pub fn task_from_branch(branch: &str) -> Option<u64> {
-    let re = Regex::new(r"^(?:[A-Za-z0-9._-]+/)?(\d+)(?:[-_].*)?$").expect("valid regex");
+    let re = Regex::new(r"^(?:[A-Za-z0-9._-]+/)?(\d+)[-_]").expect("valid regex");
     re.captures(branch).and_then(|c| c[1].parse().ok())
 }
 
@@ -301,10 +301,7 @@ fn view(b: &Bound, project: Option<&Project>, repo: Option<&RepoFacts>) -> Agent
     let branch = g.and_then(|g| g.branch.clone());
     let pr = branch.as_deref().and_then(|branch| {
         let repo = repo?;
-        repo.open_prs
-            .iter()
-            .find(|p| p.head_ref == branch)
-            .or_else(|| repo.merged_prs.iter().find(|p| p.head_ref == branch))
+        repo.open_prs.iter().find(|p| p.head_ref == branch)
     });
     let task = match pr.and_then(|p| p.closes.first()) {
         Some(n) => Some(Task {
@@ -430,8 +427,11 @@ fn needs_you(
             if pr.ci == "failure" {
                 items.push(pr_item(p, pr, "ci_failed", "CI failed"));
             } else if !pr.draft
-                && !pr.labels.iter().any(|l| l == "acceptance:auto")
-                && (pr.ci == "success" || pr.ci == "none")
+                && pr
+                    .labels
+                    .iter()
+                    .all(|l| !l.starts_with("acceptance:") || l == "acceptance:human")
+                && pr.ci == "success"
             {
                 items.push(pr_item(p, pr, "pr_ready", "Ready for your acceptance"));
             }
@@ -467,15 +467,10 @@ fn agent_item(a: &AgentView, kind: &str) -> Item {
 }
 
 fn pr_item(p: &Project, pr: &Pr, kind: &str, phrase: &str) -> Item {
-    let no_ci = if kind == "pr_ready" && pr.ci == "none" {
-        " (no CI)"
-    } else {
-        ""
-    };
     Item {
         kind: kind.into(),
         phrase: phrase.into(),
-        text: format!("{} · PR #{} {}{no_ci}", p.name, pr.number, pr.title),
+        text: format!("{} · PR #{} {}", p.name, pr.number, pr.title),
         project: Some(p.name.clone()),
         pane_id: None,
         pr: Some(pr.number),
@@ -506,20 +501,20 @@ pub fn mark_seen(snapshot: &Snapshot) -> Result<(), String> {
         saved_at: snapshot.generated_at,
         ..Seen::default()
     };
-    // Previously known repositories that are not visible now (filtered or unreachable) are kept.
+    // What is not visible now (another project while filtered, an unreachable repository) keeps
+    // its previous baseline.
     if let Some(prev) = load_seen() {
         seen = Seen {
             saved_at: seen.saved_at,
             ..prev
         };
-        seen.agents.clear();
     }
     for p in &snapshot.projects {
         for a in &p.agents {
             seen.agents.insert(a.key.clone(), a.status.clone());
         }
         let Some(slug) = &p.github else { continue };
-        let Some(repo) = cached_repo(slug) else {
+        let Some(repo) = github::cached_repo_facts(slug) else {
             continue;
         };
         seen.repos.insert(slug.clone());
@@ -542,15 +537,6 @@ pub fn mark_seen(snapshot: &Snapshot) -> Result<(), String> {
         serde_json::to_string_pretty(&seen).map_err(|e| e.to_string())?,
     )
     .map_err(|e| e.to_string())
-}
-
-fn cached_repo(slug: &str) -> Option<RepoFacts> {
-    let settings = Settings {
-        refresh_seconds: u64::MAX,
-        timeout: std::time::Duration::from_secs(1),
-        network: false,
-    };
-    github::repo_facts(slug, &settings).facts
 }
 
 fn since(
@@ -583,12 +569,10 @@ fn since(
             let key = format!("{slug}#{}", pr.number);
             match seen.prs.get(&key) {
                 None => items.push(pr_item(p, pr, "pr_opened", "PR opened")),
-                Some(before) if before != "failure" && pr.ci == "failure" => {
-                    items.push(pr_item(p, pr, "ci_failed", "CI failed"))
-                }
-                _ => {}
+                Some(before) if before == "failure" => continue,
+                Some(_) => {}
             }
-            if !seen.prs.contains_key(&key) && pr.ci == "failure" {
+            if pr.ci == "failure" {
                 items.push(pr_item(p, pr, "ci_failed", "CI failed"));
             }
         }
