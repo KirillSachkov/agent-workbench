@@ -6,6 +6,19 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **Labels stay as agents know them; the command center translates** (CC9, #50). The five triage
+  roles, `acceptance:human` / `acceptance:auto` and `wayfinder:*` keep their strings and the
+  mapping in `docs/agents/triage-labels.md`; the command center shows plain phrases built from
+  labels and facts ("Ready for an agent", "Waits for you", …) and never raw labels; GitHub label
+  descriptions are rewritten in plain language. No track labels (the track is derived: map → large,
+  spec → medium, otherwise small) and no stage labels (computed node states). Colours by meaning,
+  the same on GitHub and in the command center.
+- **The command center lives in this repository** (CC10, #51) as a Herdr plugin in its own
+  subdirectory (`herdr plugin install KirillSachkov/agent-workbench/<subdir>`), with its own release
+  tags, in Rust with prebuilt binaries. It reads only the documented conventions and imports nothing
+  from the harness's code (ADR 0006); the subdirectory can move out with its history if it becomes a
+  product of its own.
+
 - **The flow and the parts of the command center** (CC6, #47). One task runs: the agent finishes
   and Herdr notifies → one key opens the Overview popup → Enter opens the result card popup → from
   the card a file at the line in nvim, the diff in the agent's worktree, the PR on GitHub, the app
