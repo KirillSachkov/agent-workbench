@@ -6,6 +6,12 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **Roadmap in four stages with an owner check after each** (2026-09-30; roadmap #65). Stage 1
+  #62, stage 2 #54, stage 3 #55, stage 4 #64 (rollout to other projects and the slice 2 spec). Each
+  stage is one issue delivered in one or two PRs and ends with an owner check written in the issue;
+  no intermediate tickets. This repository's own CI (fmt, clippy, tests on every PR) comes with
+  stage 1; how `workbench` installs on a machine is decided in stage 3 before the first release; the
+  rollout plan is made after stage 3.
 - **Implementation order and granularity** (2026-09-30, after the map). Three large steps, each
   one or two PRs, without splitting into many small tickets: the command center slice 1 (#62) first,
   because it helps in every repository at once; then the `workbench` CLI (#54); then the default
