@@ -18,13 +18,31 @@ Create a new file under `.scratch/<feature-slug>/` (creating the directory if ne
 
 Read the file at the referenced path. The user will normally pass the path or the issue number directly.
 
+- **Claim**: add an `Assignee: <name>` line near the top of the ticket file and save it before any work.
+
+## Parent and child issues
+
+The feature directory is the parent: `spec.md` and the ticket files under `issues/` are its children. Progress is the share of ticket files whose `Status:` is done.
+
+## Pull requests
+
+The local tracker holds no pull requests. Use the code host's CLI for them (for example `gh pr create`), or, with no code host, report the result card in the ticket file under a `## Result` heading.
+
+## Ready work
+
+Ticket files whose `Status:` is the ready-for-agent label, with no `Assignee:` line and no unresolved file in `Blocked by`.
+
+## Blocking edges
+
+Used by `to-tickets`, `wayfinder`, `triage` and `coordinate`. A `Blocked by: NN, NN` line near the top of an issue file lists the files it waits for. A ticket is unblocked when every file it lists is resolved (`Status: resolved`, or closed for ordinary tickets).
+
 ## Wayfinding operations
 
-Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
+Used by `wayfinder`. The **map** is a file with one **child** file per ticket.
 
 - **Map**: `.scratch/<effort>/map.md` — the Notes / Decisions-so-far / Fog body.
 - **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
+- **Blocking**: as in Blocking edges.
 - **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
 - **Claim**: set `Status: claimed` and save before any work.
 - **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.

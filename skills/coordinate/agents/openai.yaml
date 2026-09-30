@@ -1,0 +1,3 @@
+interface:
+  display_name: "Coordinate"
+  short_description: "Control brief: stage, blockers, lanes, next step"

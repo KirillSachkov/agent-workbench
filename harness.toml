@@ -8,13 +8,117 @@ version = "0.1.0"
 # The oldest workbench binary that can install this version.
 min_workbench = "0.1.0"
 
-# Per forked skill, the upstream it was forked at:
-# [upstream.<skill>]
-# repository = "https://github.com/mattpocock/skills"
-# commit = "<sha>"
+# Per forked skill, the upstream commit it was forked at (ADR 0002). Most skills were forked from
+# mattpocock/skills at 6a34259 (2026-08-15); `pr` was adopted later, at e484a80 (2026-09-24), where
+# it lives as skills/engineering/pr. `setup-harness` is upstream's `setup-matt-pocock-skills`. Skills
+# without an entry are our own: conduct, coordinate, editing-agents-md.
+
+[upstream.ask-matt]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.code-review]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.codebase-design]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.diagnosing-bugs]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.domain-modeling]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.grill-me]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.grill-with-docs]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.grilling]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.handoff]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.implement]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.improve-codebase-architecture]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.pr]
+repository = "https://github.com/mattpocock/skills"
+commit = "e484a8095543718ced436b9b49a8160ed4554000"
+
+[upstream.prototype]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.research]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.resolving-merge-conflicts]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.setup-harness]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.tdd]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.teach]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.to-questionnaire]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.to-spec]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.to-tickets]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.triage]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.wait-what]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.wayfinder]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.wizard]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+
+[upstream.writing-for-agents]
+repository = "https://github.com/mattpocock/skills"
+commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
 
 # The rename/removal map, cumulative across releases: skills a project should rename or drop on
 # `workbench update`.
 [changes]
-renamed = {}
+renamed = { "setup-matt-pocock-skills" = "setup-harness" }
 removed = []

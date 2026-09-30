@@ -1,0 +1,3 @@
+interface:
+  display_name: "Editing AGENTS.md"
+  short_description: "Decide if a rule belongs in AGENTS.md and write it"

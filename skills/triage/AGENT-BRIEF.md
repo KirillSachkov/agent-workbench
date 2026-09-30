@@ -22,7 +22,7 @@ Describe **what** the system should do, not **how** to implement it. The agent w
 
 - **Good:** "The `SkillConfig` type should accept an optional `schedule` field of type `CronExpression`"
 - **Bad:** "Open src/types/skill.ts and add a schedule field on line 42"
-- **Good:** "When a user runs `/triage` with no arguments, they should see a summary of issues needing attention"
+- **Good:** "When a user runs `app report` with no arguments, they should see a summary of issues needing attention"
 - **Bad:** "Add a switch statement in the main handler function"
 
 ### Complete acceptance criteria
@@ -31,6 +31,10 @@ The agent needs to know when it's done. Every agent brief must have concrete, te
 
 - **Good:** "Running `gh issue list --label needs-triage` returns issues that have been through initial classification"
 - **Bad:** "Triage should work correctly"
+
+### Preservation criteria
+
+Say what must keep working: behaviour users rely on that the change could break. The brief is the task's intent on the small track — intent, preservation criteria and acceptance criteria together — and the `pr` skill reports on each of them.
 
 ### Explicit scope boundaries
 
@@ -61,6 +65,9 @@ Be specific about edge cases and error conditions.
 - [ ] Specific, testable criterion 1
 - [ ] Specific, testable criterion 2
 - [ ] Specific, testable criterion 3
+
+**Preservation criteria:**
+- Behaviour that must keep working after the change
 
 **Out of scope:**
 - Thing that should NOT be changed or addressed in this issue

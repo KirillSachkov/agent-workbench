@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Break a plan, spec, or conversation into a set of **tickets** — tracer-bullet vertical slices, each declaring the tickets that **block** it.
 
-The issue tracker and triage label vocabulary should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
+The issue tracker and triage label vocabulary should have been provided to you. If not, tell the user to run the `setup-harness` skill.
 
 ## Process
 
@@ -46,6 +46,7 @@ Present the proposed breakdown as a numbered list. For each ticket, show:
 - **Title**: short descriptive name
 - **Blocked by**: which other tickets (if any) must complete first
 - **What it delivers**: the end-to-end behaviour this ticket makes work
+- **Done when**: its acceptance criteria, and what it must not break
 
 Ask the user:
 
@@ -57,10 +58,10 @@ Iterate until the user approves the breakdown.
 
 ### 5. Publish the tickets to the configured tracker
 
-Publish the approved tickets. **How** depends on the tracker `/setup-matt-pocock-skills` configured — the tickets are the same either way, only the shape of the blocking edges changes:
+Publish the approved tickets. **How** depends on the tracker the `setup-harness` skill configured — the tickets are the same either way, only the shape of the blocking edges changes:
 
 - **Local files** → write one file per ticket under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in dependency order (blockers first). Each file's "Blocked by" lists the numbers/titles it depends on. Use the per-ticket file template below — one ticket per file, never a single combined file.
-- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Use the platform's native blocking / sub-issue relationship where it has one; otherwise set each ticket's "Blocked by" to the blocking issues. Apply the `ready-for-agent` triage label unless instructed otherwise — the tickets are agent-grabbable by construction.
+- **A real issue tracker (GitHub, Linear, …)** → publish one issue per ticket in dependency order (blockers first) so each ticket's blocking edges can reference real identifiers. Wire the edges with the **Blocking edges** operations in `docs/agents/issue-tracker.md`, and link each ticket to its parent spec with the **parent and child** operations where the tracker has them. Apply the `ready-for-agent` triage label unless instructed otherwise — the tickets are agent-grabbable by construction. Carry over the spec's acceptance-mode label (`acceptance:auto` or `acceptance:human`) when it has one; never add `acceptance:auto` on your own.
 
 Work the **frontier**: any ticket whose blockers are all done. For a purely linear chain that means top to bottom.
 
@@ -76,8 +77,12 @@ Do NOT close or modify any parent issue.
 
 **Status:** ready-for-agent
 
+**Acceptance criteria:**
+
 - [ ] Acceptance criterion 1
 - [ ] Acceptance criterion 2
+
+**Preservation criteria:** what must keep working, or "None beyond the existing tests".
 
 </local-ticket-template>
 
@@ -95,6 +100,10 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 
 - [ ] Criterion 1
 - [ ] Criterion 2
+
+## Preservation criteria
+
+- What must keep working, or "None beyond the existing tests".
 
 ## Blocked by
 
