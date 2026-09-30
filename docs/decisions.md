@@ -2,6 +2,25 @@
 
 Owner decisions, newest first. Each entry has a date, the decision and where it came from.
 
+## 2026-09-30 (default method, #55)
+
+- **Fork base and adoption** (executor of #55, within ADR 0002). The bootstrap copy of the skills
+  equals `mattpocock/skills` at `6a34259` byte for byte, so that commit is the recorded fork point
+  of every forked skill. `pr` is adopted from upstream `e484a80`, where it is now promoted. The
+  later upstream changes (the `CONTEXT.md` → `GLOSSARY.md` rename, the removal of
+  `resolving-merge-conflicts`, the em-dash replacement) are adopted in #55's second PR, not the
+  first (the owner, 2026-09-30). Upstream's fix for skills that tried to call a user-invoked
+  skill is applied in our own words, together with removing every slash-command invocation from
+  skill text.
+- **Names** (accepted by the owner, 2026-09-30). The read-only coordinator skill is `coordinate`.
+  The setup skill is renamed `setup-matt-pocock-skills` → `setup-harness` (recorded in the rename
+  map). The router keeps its name `ask-matt`. The skill for editing `AGENTS.md` is `editing-agents-md`, after
+  PostHog's.
+- **`handoff` becomes model-invoked**, so that `implement` can end with it when a session stops
+  unfinished (C10); a user-invoked skill cannot call another one.
+- **The artifact contract is a page**, `docs/artifact-contract.md`: the index of the documented
+  shapes, with the result-card headings the command center reads marked as read by tools.
+
 ## 2026-09-30 (conductor v1, #70)
 
 - **Lanes start without a turn limit** (confirmed by the owner in the coordination session on

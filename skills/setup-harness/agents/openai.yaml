@@ -1,0 +1,5 @@
+interface:
+  display_name: "Setup Harness"
+  short_description: "Configure the tracker, labels and docs"
+policy:
+  allow_implicit_invocation: false

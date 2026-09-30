@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.
 
-The issue tracker and triage label vocabulary should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
+The issue tracker and triage label vocabulary should have been provided to you. If not, tell the user to run the `setup-harness` skill.
 
 ## Process
 
@@ -16,7 +16,7 @@ The issue tracker and triage label vocabulary should have been provided to you. 
 
 Check with the user that these seams match their expectations.
 
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage.
+3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage. Do not add an acceptance-mode label: the owner sets `acceptance:auto` if they want it; without a label the project default applies.
 
 <spec-template>
 
@@ -39,6 +39,18 @@ A LONG, numbered list of user stories. Each user story should be in the format o
 </user-story-example>
 
 This list of user stories should be extremely extensive and cover all aspects of the feature.
+
+## Acceptance Criteria
+
+Observable conditions that show the whole spec is delivered, each checkable on its own.
+
+- [ ] Criterion 1
+
+## Preservation Criteria
+
+Behaviour the work must not break — existing features, interfaces, data, performance the users rely on.
+
+- Criterion 1
 
 ## Implementation Decisions
 

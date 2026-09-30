@@ -51,9 +51,13 @@ Harness health, from a checkout of agent-harness: `python3 harness/bin/harness h
 - `CONTEXT.md`, `docs/adr/` — domain glossary and ADRs, created lazily by `domain-modeling`.
 - `.harness/` — managed skills, registry and lock. Do not edit by hand.
 - `crates/workbench/` — the `workbench` binary: `init`, `sync`, `update`, `config`.
-- `harness.toml`, `skills/` — this repository as a harness source for `workbench init --from`;
-  the skills are a copy of the bootstrap set until #55 ships the default method, plus the
-  user-invoked `conduct` skill (#70) that drives the command center's lane commands.
+- `harness.toml`, `skills/` — this repository as a harness source for `workbench init --from`:
+  the default method (a tracked fork of `mattpocock/skills` with each skill's upstream commit in
+  `harness.toml`, plus our own skills, among them the user-invoked `conduct` skill (#70) that
+  drives the command center's lane commands). Until this repository migrates onto it (#55),
+  agents here still run on the bootstrap copy in `.harness/`.
+- `docs/artifact-contract.md` — the documented shapes of tasks, specs, tickets, result cards and
+  handoffs; read it before changing a skill that writes one or a tool that reads one.
 
 ## Pipeline
 

@@ -46,6 +46,48 @@ fn reads_the_documented_card_shape_from_the_pr_body() {
     assert_eq!(card["agent"]["task"]["number"], 62);
 }
 
+/// The harness's `pr` skill documents the card as a template; a PR body written from it is read
+/// as a result card. The command center reads the convention, not the harness's code (ADR 0006).
+#[test]
+fn a_body_written_from_the_pr_skill_template_is_a_result_card() {
+    let skill = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../skills/pr/SKILL.md"),
+    )
+    .unwrap();
+    let template = skill
+        .split("~~~markdown\n")
+        .nth(1)
+        .and_then(|rest| rest.split("\n~~~").next())
+        .expect("the pr skill carries its card template in a ~~~markdown block");
+
+    let env = Env::new();
+    with_pr(&env, template, json!([]));
+    let card = env.run(&["card", "--pane", "w1:p2", "--json"]).json();
+    assert_eq!(card["shape"], "result-card");
+    assert!(card["result"].as_str().unwrap().contains("what now works"));
+    assert!(card["needs_you"].is_string());
+    assert_eq!(
+        card["look_first"],
+        json!([{"path": "path/to/file.ext", "line": 42, "reason": "<why this place deserves the first look>"}])
+    );
+    assert!(card["how_to_try"].as_str().unwrap().contains("```sh"));
+    let others: Vec<&str> = card["other_sections"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["title"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        others,
+        [
+            "Criteria",
+            "Changes to tests and CI",
+            "Not done",
+            "What changed"
+        ]
+    );
+}
+
 #[test]
 fn shows_a_body_in_another_shape_whole() {
     let env = Env::new();
