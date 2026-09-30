@@ -6,6 +6,29 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **The flow and the parts of the command center** (CC6, #47). One task runs: the agent finishes
+  and Herdr notifies → one key opens the Overview popup → Enter opens the result card popup → from
+  the card a file at the line in nvim, the diff in the agent's worktree, the PR on GitHub, the app
+  and screenshots in the regular browser → remarks on diff lines or the report go back to the same
+  agent and stay in the PR → accept by merging from the card with confirmation or on GitHub → the
+  Overview offers to tidy up the worktree and branch. Before code the same flow runs on a spec with
+  annotate. Parts: Herdr is the workspace; our Herdr plugin provides the Overview and result-card
+  popups, the sidebar tag, the tab-bar counter, open-at-line and tidy-up; files and changes are read
+  in the terminal in nvim (LazyVim) set up minimally as a viewer (research CC16, #60); existing
+  plugins carry diff comments and document annotation (CC7); the regular browser shows the app and
+  screenshots; GitHub holds the PR and the merge; our own UI comes later.
+- **The result card is the PR body plus derived facts** (CC4, #45). The agent writes into the PR
+  through the forked `pr` skill: the result in one line, decisions needed, where to look first
+  with reasons, criteria with evidence, what is not done, how to try it, screenshots. The command
+  center derives CI, reviews, the head SHA and stale evidence, diff size, test changes, branch and
+  worktree, the agent's status and the app's address. It is shown as a scrollable Herdr popup with
+  few key hints (prototype A on `prototype/45-result-card`) and on GitHub as the PR.
+- **Human tasks of a project live in its tracker** (CC14, #58, partly). Issues with a human role
+  label and a view on them; no second tracker per project. The owner's personal tasks across
+  projects, the personal agent and the practices across all work are a separate private effort;
+  the command center owes it only an optional personal-inbox source and a one-key action that turns
+  a task into a project issue and starts work.
+
 - **The command center works without our harness** (CC8, #49; ADR
   `docs/adr/0006-harness-agnostic-command-center.md`). Harness and command center are two
   independent parts. The command center shows any folder where an agent runs and adds detail by
