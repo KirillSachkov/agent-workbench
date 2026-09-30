@@ -2,6 +2,14 @@
 
 Owner decisions, newest first. Each entry has a date, the decision and where it came from.
 
+## 2026-09-30 (workbench CLI, #54)
+
+- **Open points of PR #72 settled** (answer from the coordination session). The harness lock
+  hashes only the skill files the harness installs; derived and merged files are not hashed. An
+  existing `CLAUDE.md` without the `@AGENTS.md` line gets the one-line bridge added on top, the
+  rest of the file untouched (E18). Windows link handling stays best effort. The project files
+  are named `workbench.toml` and `workbench-lock.json`.
+
 ## 2026-09-29 (command center, wayfinder #41)
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
