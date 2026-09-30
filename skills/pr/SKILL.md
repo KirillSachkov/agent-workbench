@@ -130,6 +130,6 @@ Use the pull request operations in `docs/agents/issue-tracker.md` (or the code h
 ## 4. Follow the acceptance mode
 
 - **`acceptance:human`**, or no label and a `human` project default: stop at the open pull request. Do not merge.
-- **`acceptance:auto`**, or no label and an `auto` project default: merge only when the project's CI is green on the current head and the non-author review left no serious open findings. Then write "Nothing — merged under acceptance:auto." under `Needs you`. If either condition fails, stop at the open pull request and say which one failed under `Needs you`.
+- **`acceptance:auto`**, or no label and an `auto` project default: merge only when the project's CI is green on the current head and the non-author review left no serious open findings. A `code-review` run by fresh-context subagents counts as non-author review, as does a review by another agent or a person. Then write "Nothing — merged under acceptance:auto." under `Needs you`. If either condition fails, stop at the open pull request and say which one failed under `Needs you`.
 
-A reviewer's verdict never accepts work by itself, and an agent never changes the acceptance label.
+A reviewer's verdict never accepts work by itself, and an agent never sets, removes or changes an acceptance label on its own decision.

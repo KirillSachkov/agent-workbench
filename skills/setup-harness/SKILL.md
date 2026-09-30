@@ -57,7 +57,7 @@ Record the choice in `docs/agents/issue-tracker.md`, and set `[tracker] kind` in
 
 > Do you want to keep the default labels? (recommended: **yes**)
 
-The defaults are the five triage roles and two acceptance modes, each label string equal to its canonical name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`, `acceptance:human`, `acceptance:auto`. Only if the user says no — usually because the tracker already uses other names — collect the overrides, so skills apply existing labels instead of creating duplicates.
+The defaults are the five triage roles, each label string equal to its role name (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), and the two acceptance modes as `acceptance:human` and `acceptance:auto`. Only if the user says no — usually because the tracker already uses other names — collect the overrides, so skills apply existing labels instead of creating duplicates.
 
 **Section C — Domain docs.** Default to **single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. This fits almost every repo; write it without asking.
 

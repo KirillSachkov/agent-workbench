@@ -34,6 +34,28 @@ Create a GitLab issue.
 
 Run `glab issue view <number> --comments`.
 
+- **Claim**: `glab issue update <number> --assignee @me`
+
+## Parent and child issues
+
+- **Child**: put `Part of #<parent>` at the top of the child's description, and list the children as a task list in the parent's description. (On tiers with epics or child items, those may hold the link instead.)
+- **Progress**: count the parent's task-list items that are checked or whose issues are closed.
+
+## Pull requests
+
+GitLab calls them merge requests. Used by `pr`, `code-review` and `coordinate`.
+
+- **Open**: `glab mr create --target-branch <base> --title "<title>" --description "$(cat <file>)"`. Put `Closes #<issue>` in the description so the merge closes the task.
+- **Update the description**: `glab mr update <n> --description "$(cat <file>)"`
+- **Read**: `glab mr view <n> -F json`
+- **Pipeline on the head**: `glab ci status --branch <branch>`
+- **List open**: `glab mr list -F json`
+- **Merge** (only under `acceptance:auto`, see the `pr` skill): `glab mr merge <n>`
+
+## Ready work
+
+`glab issue list -F json --label "<ready-for-agent label>"`, then keep issues with no assignee and no open blocker (see Blocking edges).
+
 ## Blocking edges
 
 Used by `to-tickets`, `wayfinder`, `triage` and `coordinate`. A task is **blocked** while any issue it depends on is open; it is **unblocked** when every blocker is closed.

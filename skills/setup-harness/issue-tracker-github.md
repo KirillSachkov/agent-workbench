@@ -49,7 +49,7 @@ Used by `pr`, `code-review` and `coordinate`.
 - **Update the body**: `gh pr edit <n> --body-file <file>`
 - **Read**: `gh pr view <n> --json number,url,state,isDraft,headRefName,headRefOid,reviewDecision,statusCheckRollup,closingIssuesReferences,body`
 - **Checks on the head**: `gh pr checks <n>` (exits non-zero while a check fails or is pending)
-- **List open**: `gh pr list --state open --json number,title,headRefName,isDraft,reviewDecision,statusCheckRollup,closingIssuesReferences --jq '[.[] | {number, title, branch: .headRefName, draft: .isDraft, review: .reviewDecision, checks: ([.statusCheckRollup[]? | .conclusion // .state] | unique), closes: [.closingIssuesReferences[].number]}]'`
+- **List open**: `gh pr list --state open --json number,title,headRefName,isDraft,reviewDecision,statusCheckRollup,closingIssuesReferences --jq '[.[] | {number, title, branch: .headRefName, draft: .isDraft, review: .reviewDecision, checks: ([.statusCheckRollup[]? | if (.conclusion // "") == "" then (.status // .state) else .conclusion end] | unique), closes: [.closingIssuesReferences[].number]}]'`
 - **Diff**: `gh pr diff <n>`
 - **Comment**: `gh pr comment <n> --body-file <file>`
 - **Merge** (only under `acceptance:auto`, see the `pr` skill): `gh pr merge <n> --squash` (or the merge method the project uses)

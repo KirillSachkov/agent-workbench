@@ -16,7 +16,7 @@ Labelling a task `ready-for-agent` is the owner's **intent approval** on the sma
 
 ## Acceptance modes
 
-| Role | Label in our tracker | Meaning |
+| Mode (key in `workbench.toml`) | Label in our tracker | Meaning |
 | --- | --- | --- |
 | `acceptance-human` | `acceptance:human` | The owner checks the result and merges it |
 | `acceptance-auto` | `acceptance:auto` | The agent may merge once CI is green and review found nothing serious |
