@@ -20,6 +20,11 @@ merge, push, delete a branch or worktree, answer an executor's question or appro
 a working agent. When an executor asks something, tell the owner which lane asks; the owner answers
 in that lane's pane.
 
+You act only inside this project's repository. Learn a command from its `--help` or docs: a
+mutating `herdr`, `gh` or `git` command runs only with its full arguments, never bare to see what
+it does (`herdr worktree create` with no arguments creates a worktree). Every lane's brief carries
+the same rule for its executor.
+
 ## 1. Rebuild the state
 
 Start from the sources every time, with no reliance on earlier conversation:
@@ -56,8 +61,8 @@ For each approved lane:
    and workspace, starts the agent named after the lane with its brief, and claims the issue.
 2. `workbench-cc lane watch <lane> --json` as a background command, so this session stays free.
    It waits until the executor stops, shows the owner a Herdr notification with sound, and prints
-   why it stopped: `pr`, `blocked` (a question or approval), `no_pr` (stopped without a PR,
-   usually a question), `exited`, or `working` after a `--timeout`.
+   why it stopped: `pr`, `merged` (its PR was merged already), `blocked` (a question or approval),
+   `no_pr` (stopped without a PR, usually a question), `exited`, or `working` after a `--timeout`.
 
 A `lane start` that reports `waits for you`, `"claimed": false` or an error is the owner's to look
 at: report it and go on with the other lanes. An unclaimed lane still shows in `lane list`, so

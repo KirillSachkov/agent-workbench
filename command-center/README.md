@@ -143,8 +143,9 @@ worktree whose branch names its issue (`feat/70-…`), found again from Herdr, g
   start fails the workspace and worktree stay as they are.
 - `lane watch` waits through `herdr agent wait` until the agent stops (`idle`, `done` or `blocked`;
   an idle lane first gets `--start-timeout` to start working), checks the pane still holds the same
-  agent session, then shows `herdr notification show` with a sound: `done` when the lane has a PR,
-  `request` when it waits at a question or approval, stopped without a PR, or its agent is gone.
+  agent session and directory, then shows `herdr notification show` with a sound: `done` when the
+  lane has a PR (open, or merged already), `request` when it waits at a question or approval,
+  stopped without a PR, or its agent is gone.
 - `lane list` shows the running lanes with issue, agent, status and PR. The Overview's Work section
   shows the same agent and status beside each issue in flight.
 

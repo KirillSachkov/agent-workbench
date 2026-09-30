@@ -115,6 +115,11 @@ fn start_creates_a_worktree_workspace_starts_the_named_agent_and_claims_the_issu
     assert!(text.contains(&env.path("repos/app-70").display().to_string()));
     assert!(text.contains("Closes #70"), "{text}");
     assert!(text.contains("Do not merge"), "{text}");
+    assert!(text.contains("never bare"), "{text}");
+    assert!(
+        text.contains("only inside this lane's repository"),
+        "{text}"
+    );
 
     assert_eq!(out["lane"], "app-70");
     assert_eq!(out["issue"], 70);
@@ -584,4 +589,33 @@ fn watch_treats_a_pane_in_another_directory_as_gone() {
     pane_now(&env, a, "done");
     let out = env.run(&["lane", "watch", "app-70", "--json"]).json();
     assert_eq!(out["stop"], "exited");
+}
+
+#[test]
+fn watch_counts_a_pr_merged_before_the_stop_as_merged() {
+    let env = Env::new();
+    let a = lane(&env, "working");
+    pane_now(&env, a, "done");
+    let mut merged = pr(81, "feat/70-search", "none");
+    merged["state"] = json!("MERGED");
+    env.github(
+        "o/app",
+        json!([]),
+        json!([merged]),
+        json!([issue(
+            70,
+            "Search",
+            &["ready-for-agent"],
+            &["me"],
+            (0, 0),
+            0
+        )]),
+    );
+    let out = env.run(&["lane", "watch", "app-70", "--json"]).json();
+    assert_eq!(out["stop"], "merged");
+    assert_eq!(out["pr"]["number"], 81);
+    assert_eq!(out["pr"]["state"], "merged");
+    let shown = notification(&env);
+    assert!(shown.contains("PR #81 merged"), "{shown}");
+    assert!(shown.ends_with("--sound done"), "{shown}");
 }

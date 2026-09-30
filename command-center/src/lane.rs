@@ -136,7 +136,10 @@ fn brief(
            implementing an issue.\n\
          - Deliver one pull request to the base branch with `Closes #{n}` in its body, then stop.\n\
          - When a decision is the owner's, or the issue is ambiguous, ask here in this pane and wait.\n\
-         - Do not merge, and do not change the owner's configuration outside this repository.\n",
+         - Do not merge. Act only inside this lane's repository, never on other repositories or the\n  \
+           owner's configuration.\n\
+         - Learn a command from its `--help` or docs; a mutating `herdr`, `gh` or `git` command runs\n  \
+           only with its full arguments, never bare to see what it does.\n",
         n = issue.number,
         title = issue.title,
         url = issue.url,
@@ -305,7 +308,7 @@ pub struct Watched {
     pub pane_id: String,
     pub issue: Option<u64>,
     pub status: String,
-    /// `pr`, `blocked`, `no_pr`, `exited`, or `working` when the watch timed out.
+    /// `pr`, `merged`, `blocked`, `no_pr`, `exited`, or `working` when the watch timed out.
     pub stop: String,
     pub pr: Option<PrRef>,
     pub notified: bool,
@@ -393,6 +396,14 @@ pub fn watch(args: WatchArgs, config: &Config, opts: &Options) -> Result<Watched
     } else {
         watched.pr = lane_pr(&lane, config);
         match &watched.pr {
+            Some(pr) if pr.state == "merged" => {
+                watched.stop = "merged".into();
+                (
+                    format!("Lane {id}: PR #{} merged", pr.number),
+                    format!("{what} → PR #{} merged", pr.number),
+                    "done",
+                )
+            }
             Some(pr) => {
                 watched.stop = "pr".into();
                 (
@@ -416,7 +427,8 @@ pub fn watch(args: WatchArgs, config: &Config, opts: &Options) -> Result<Watched
     Ok(watched)
 }
 
-/// The lane's open PR, fetched fresh: a stop is when the owner looks.
+/// The lane's PR, fetched fresh (a stop is when the owner looks): the open one, else one already
+/// merged from the lane's branch.
 fn lane_pr(lane: &AgentView, config: &Config) -> Option<PrRef> {
     let slug = lane.github.as_deref()?;
     let branch = lane.branch.as_deref()?;
@@ -428,6 +440,7 @@ fn lane_pr(lane: &AgentView, config: &Config) -> Option<PrRef> {
     let repo = github::repo_facts(slug, &settings).facts?;
     repo.open_prs
         .iter()
+        .chain(&repo.merged_prs)
         .find(|p| p.head_ref == branch)
         .map(PrRef::from)
 }

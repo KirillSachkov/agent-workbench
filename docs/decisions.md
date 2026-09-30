@@ -4,10 +4,10 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 ## 2026-09-30 (conductor v1, #70)
 
-- **Lanes start without a turn limit** (the owner's answer to the #70 executor). Claude Code's
-  `--max-turns` and `--max-budget-usd` work only in print mode (`-p`), and lanes start interactive
-  executors so the owner can answer them in their pane; Codex and OpenCode have no interactive
-  equivalent either. So v1 starts every runtime without a turn limit, documents it, and makes each
+- **Lanes start without a turn limit** (confirmed by the owner in the coordination session on
+  2026-09-30). Claude Code's `--max-turns` and `--max-budget-usd` work only in print mode (`-p`),
+  and lanes start interactive executors so the owner can answer them in their pane; Codex and
+  OpenCode have no interactive equivalent either. So v1 starts every runtime without a turn limit, documents it, and makes each
   runtime's launch arguments configurable (`[lanes.args]`) so a limit can be added when a runtime
   offers one. The guard in v1 is `lane watch` with the owner's notification. Amends the "turn
   limit where supported" point of the conductor decision below.
