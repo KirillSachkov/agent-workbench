@@ -1,0 +1,3 @@
+interface:
+  display_name: "PR"
+  short_description: "Open a PR whose body is a result card"
