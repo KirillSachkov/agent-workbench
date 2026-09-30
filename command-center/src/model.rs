@@ -83,6 +83,24 @@ impl AgentView {
     pub fn lane_id(&self) -> String {
         self.name.clone().unwrap_or_else(|| self.pane_id.clone())
     }
+
+    pub fn task_number(&self) -> Option<u64> {
+        self.task.as_ref().map(|t| t.number)
+    }
+}
+
+/// The lanes among `agents`: one per worktree, the named agent (the one a lane started) first,
+/// so a reviewer or the owner in the same worktree does not count as a second lane.
+pub fn lanes(agents: &[AgentView]) -> Vec<&AgentView> {
+    let mut lanes: Vec<&AgentView> = vec![];
+    for a in agents.iter().filter(|a| a.is_lane()) {
+        match lanes.iter_mut().find(|l| l.worktree == a.worktree) {
+            Some(l) if l.name.is_none() && a.name.is_some() => *l = a,
+            Some(_) => {}
+            None => lanes.push(a),
+        }
+    }
+    lanes
 }
 
 /// The lane working on an item: its agent and what the agent is doing.
@@ -403,9 +421,9 @@ fn work(repo: &RepoFacts, agents: &[AgentView]) -> Work {
             labels: issue.labels.iter().map(|l| words::label(l)).collect(),
             assignees: issue.assignees.clone(),
             pr,
-            lane: agents
-                .iter()
-                .find(|a| a.is_lane() && a.task.as_ref().map(|t| t.number) == Some(issue.number))
+            lane: lanes(agents)
+                .into_iter()
+                .find(|a| a.task_number() == Some(issue.number))
                 .map(|a| LaneRef {
                     lane: a.lane_id(),
                     pane_id: a.pane_id.clone(),

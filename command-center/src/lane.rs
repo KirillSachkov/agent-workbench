@@ -91,7 +91,7 @@ fn plural(n: usize, word: &str) -> String {
 
 /// Agents working on an issue in a linked worktree of the project at `root`: its running lanes.
 fn running_lanes(root: &Path) -> Result<Vec<(u64, herdr::Agent, PathBuf)>, String> {
-    let mut lanes = vec![];
+    let mut lanes: Vec<(u64, herdr::Agent, PathBuf)> = vec![];
     for agent in herdr::agents()? {
         let cwd = canonical(Path::new(agent.cwd.as_deref().unwrap_or("/")));
         let Some(facts) = git::facts(&cwd) else {
@@ -100,8 +100,14 @@ fn running_lanes(root: &Path) -> Result<Vec<(u64, herdr::Agent, PathBuf)>, Strin
         if facts.project_root != root || !facts.linked {
             continue;
         }
-        if let Some(task) = facts.branch.as_deref().and_then(task_from_branch) {
-            lanes.push((task, agent, facts.worktree));
+        let Some(task) = facts.branch.as_deref().and_then(task_from_branch) else {
+            continue;
+        };
+        // One lane per worktree: a second session in it (a reviewer, the owner) is not a lane.
+        match lanes.iter_mut().find(|(_, _, wt)| *wt == facts.worktree) {
+            Some(lane) if lane.1.name.is_none() && agent.name.is_some() => lane.1 = agent,
+            Some(_) => {}
+            None => lanes.push((task, agent, facts.worktree)),
         }
     }
     Ok(lanes)
@@ -196,7 +202,7 @@ pub fn start(args: StartArgs, config: &Config) -> Result<Started, String> {
         return Err(format!(
             "issue #{} already has a lane: {} in {}",
             args.issue,
-            agent.name.clone().unwrap_or_else(|| agent.pane_id.clone()),
+            agent.name.as_deref().unwrap_or(&agent.pane_id),
             worktree.display()
         ));
     }
@@ -308,15 +314,20 @@ pub struct Watched {
 fn find_lane(arg: &str, opts: &Options) -> Result<AgentView, String> {
     let snapshot = model::build(opts)?;
     let issue: Option<u64> = arg.trim_start_matches('#').parse().ok();
-    snapshot
+    let agents: Vec<AgentView> = snapshot
         .projects
         .into_iter()
         .flat_map(|p| p.agents)
-        .find(|a| {
-            a.name.as_deref() == Some(arg)
-                || a.pane_id == arg
-                || (a.is_lane() && issue.is_some() && a.task.as_ref().map(|t| t.number) == issue)
+        .collect();
+    agents
+        .iter()
+        .find(|a| a.name.as_deref() == Some(arg) || a.pane_id == arg)
+        .or_else(|| {
+            model::lanes(&agents)
+                .into_iter()
+                .find(|a| issue.is_some() && a.task_number() == issue)
         })
+        .cloned()
         .ok_or_else(|| format!("no lane {arg} (see `workbench-cc lane list`)"))
 }
 
@@ -339,9 +350,10 @@ pub fn watch(args: WatchArgs, config: &Config, opts: &Options) -> Result<Watched
     }
 
     // Read the pane again and make sure it still holds the lane's agent before calling anyone.
-    let now = herdr::pane(&pane)
-        .ok()
-        .filter(|p| lane.session.is_none() || p.session() == lane.session);
+    let now = herdr::pane(&pane).ok().filter(|p| {
+        let cwd = canonical(Path::new(p.cwd.as_deref().unwrap_or("/")));
+        p.session() == lane.session && cwd.display().to_string() == lane.cwd
+    });
     let status = now
         .as_ref()
         .map(|p| p.agent_status.clone())
@@ -464,12 +476,10 @@ pub fn list(config: &Config, opts: &Options) -> Result<LaneList, String> {
                     .map(|i| (i.number, i.title.clone()))
             })
             .collect();
-        let lanes: Vec<LaneView> = p
-            .agents
-            .iter()
-            .filter(|a| a.is_lane())
+        let lanes: Vec<LaneView> = model::lanes(&p.agents)
+            .into_iter()
             .map(|a| {
-                let issue = a.task.as_ref().map(|t| t.number).unwrap_or(0);
+                let issue = a.task_number().unwrap_or(0);
                 LaneView {
                     lane: a.lane_id(),
                     issue,

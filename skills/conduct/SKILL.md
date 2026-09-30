@@ -26,9 +26,9 @@ Start from the sources every time, with no reliance on earlier conversation:
 
 - `workbench-cc lane list --this-project --json` — running lanes, their agent, status and PR, and the
   parallel limit (`max`).
-- The tracker through `gh`: open issues labelled `ready-for-agent` without assignees and without
-  open blockers, sub-issue progress of each spec or map, issues in flight (assigned), open PRs with
-  CI and review state, and PRs merged since the last lanes started.
+- The tracker through `gh`: open issues labelled `ready-for-agent`, without assignees, without a
+  lane in `lane list` and without open blockers; sub-issue progress of each spec or map; issues in
+  flight (assigned); open PRs with CI and review state; PRs merged since the last lanes started.
 
 Done when you can name every running lane, every spec's progress and every issue ready now.
 
@@ -45,6 +45,8 @@ Ask for the go-ahead in one question: the owner answers "yes", or edits the list
 after that answer; silence is not a yes. Exceeding `max` needs the owner to say so explicitly, and
 then you pass `--over-limit`.
 
+Done when the owner has answered: the approved lanes, each with its issue and agent kind, or none.
+
 ## 3. Start and watch each approved lane
 
 For each approved lane:
@@ -57,14 +59,19 @@ For each approved lane:
    why it stopped: `pr`, `blocked` (a question or approval), `no_pr` (stopped without a PR,
    usually a question), `exited`, or `working` after a `--timeout`.
 
-A `lane start` that reports `waits for you` or an error is the owner's to look at: report it and go
-on with the other lanes. It leaves any workspace it made in place.
+A `lane start` that reports `waits for you`, `"claimed": false` or an error is the owner's to look
+at: report it and go on with the other lanes. An unclaimed lane still shows in `lane list`, so
+step 1 never proposes its issue again. `lane start` leaves any workspace it made in place.
+
+Done when every approved lane has either a running watch or a reported problem.
 
 ## 4. When a watch returns
 
 Tell the owner in one line which lane stopped, why, and where to look (the PR, or the lane's pane).
 When the owner has answered in the lane and the executor works again, start a new
 `lane watch` for it. A lane is finished when its PR is merged or the owner closes it.
+
+Done when the owner knows about the stop and every lane still running has a watch.
 
 ## 5. After merges, and on "what now?"
 

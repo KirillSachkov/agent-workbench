@@ -215,6 +215,11 @@ pub fn version() -> Result<String, String> {
         .to_string())
 }
 
+/// How long our calls that create a workspace or start an agent may take.
+const START_TIMEOUT: Duration = Duration::from_secs(60);
+/// How long Herdr waits for a started agent to become ready for input.
+const AGENT_READY_TIMEOUT: Duration = Duration::from_secs(30);
+
 /// A worktree Herdr created and opened as a workspace.
 pub struct Worktree {
     pub workspace_id: String,
@@ -257,10 +262,9 @@ pub enum Started {
     Waiting,
 }
 
-const START_TIMEOUT: Duration = Duration::from_secs(60);
-
 /// Starts a supported agent in an existing shell pane under a unique name.
 pub fn start_agent(name: &str, kind: &str, pane: &str, args: &[String]) -> Result<Started, String> {
+    let ready_ms = AGENT_READY_TIMEOUT.as_millis().to_string();
     let mut argv = vec![
         "agent",
         "start",
@@ -270,7 +274,7 @@ pub fn start_agent(name: &str, kind: &str, pane: &str, args: &[String]) -> Resul
         "--pane",
         pane,
         "--timeout",
-        "30000",
+        &ready_ms,
     ];
     if !args.is_empty() {
         argv.push("--");

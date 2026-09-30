@@ -524,3 +524,64 @@ fn work_in_flight_shows_the_lane_agent_and_status() {
     assert_eq!(login["lane"]["agent"], "codex");
     assert_eq!(login["lane"]["status"], "done");
 }
+
+#[test]
+fn a_second_session_in_a_lane_worktree_is_not_a_second_lane() {
+    let env = Env::new();
+    let repo = ready_to_start(&env);
+    let wt = env.worktree(&repo, "app-61", "feat/61-one");
+    let mut executor = agent("w1:p1", "s1", "working", &wt);
+    executor["name"] = json!("app-61");
+    let reviewer = agent("w1:p2", "s2", "idle", &wt);
+    env.agents(json!([reviewer, executor]));
+    env.github(
+        "o/app",
+        json!([]),
+        json!([]),
+        json!([issue(61, "One", &[], &["me"], (0, 0), 0)]),
+    );
+
+    let out = env.run(&["lane", "list", "--json"]).json();
+    let lanes = out["projects"][0]["lanes"].as_array().unwrap();
+    assert_eq!(lanes.len(), 1, "{lanes:?}");
+    assert_eq!(lanes[0]["lane"], "app-61", "the named executor is the lane");
+
+    // One lane of two allowed: the start goes ahead.
+    start(&env, &repo, &[]).json();
+}
+
+#[test]
+fn watch_that_times_out_while_working_calls_nobody() {
+    let env = Env::new();
+    let a = lane(&env, "working");
+    pane_now(&env, a, "working");
+    env.rule(
+        "herdr",
+        "agent wait *",
+        r#"{"error": {"code": "timeout"}}"#,
+        1,
+    );
+    let out = env
+        .run(&["lane", "watch", "app-70", "--timeout", "1", "--json"])
+        .json();
+    assert_eq!(out["stop"], "working");
+    assert_eq!(out["notified"], false);
+    assert!(env.calls("herdr").contains(
+        &"agent wait w1:p2 --until idle --until done --until blocked --timeout 1000".to_string()
+    ));
+    assert!(
+        !env.calls("herdr")
+            .iter()
+            .any(|c| c.starts_with("notification"))
+    );
+}
+
+#[test]
+fn watch_treats_a_pane_in_another_directory_as_gone() {
+    let env = Env::new();
+    let mut a = lane(&env, "working");
+    a["cwd"] = json!(env.path("repos/app").display().to_string());
+    pane_now(&env, a, "done");
+    let out = env.run(&["lane", "watch", "app-70", "--json"]).json();
+    assert_eq!(out["stop"], "exited");
+}
