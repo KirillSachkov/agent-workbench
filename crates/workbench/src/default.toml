@@ -34,7 +34,7 @@ acceptance-auto = "acceptance:auto"
 [artifacts]
 specs = "docs/specs"
 adr = "docs/adr"
-context = "CONTEXT.md"
+glossary = "GLOSSARY.md"
 decisions = "docs/decisions.md"
 research = "docs/research"
 

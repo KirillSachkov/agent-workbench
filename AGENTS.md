@@ -48,7 +48,7 @@ Harness health, from a checkout of agent-harness: `python3 harness/bin/harness h
   (`docs/research/README.md` is the index).
 - `docs/agents/` — configuration the pipeline skills read: issue tracker, triage labels, domain
   docs.
-- `CONTEXT.md`, `docs/adr/` — domain glossary and ADRs, created lazily by `domain-modeling`.
+- `GLOSSARY.md`, `docs/adr/` — domain glossary and ADRs, created lazily by `domain-modeling`.
 - `.harness/` — managed skills, registry and lock. Do not edit by hand.
 - `crates/workbench/` — the `workbench` binary: `init`, `sync`, `update`, `config`.
 - `harness.toml`, `skills/` — this repository as a harness source for `workbench init --from`:
@@ -66,7 +66,7 @@ completes the stage it was given and stops. The skill for each stage:
 
 | Stage | Skill | Artifact |
 |---|---|---|
-| Idea | `grill-with-docs` (or `wayfinder` for a large, foggy effort) | `CONTEXT.md`, ADRs, decision tickets |
+| Idea | `grill-with-docs` (or `wayfinder` for a large, foggy effort) | `GLOSSARY.md`, ADRs, decision tickets |
 | Spec | `to-spec` | GitHub issue with the spec |
 | Tickets | `to-tickets` | GitHub issues with blocking edges |
 | Implementation | `implement` (drives `tdd`, closes with `code-review`) | branch, PR, issue comment |
@@ -137,7 +137,7 @@ The five default roles: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` and `docs/adr/` at the root, plus the owner's decision log. See
+Single-context: `GLOSSARY.md` and `docs/adr/` at the root, plus the owner's decision log. See
 `docs/agents/domain.md`.
 
 ## Known pitfalls

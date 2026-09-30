@@ -10,8 +10,11 @@ min_workbench = "0.1.0"
 
 # Per forked skill, the upstream commit it was forked at (ADR 0002). Most skills were forked from
 # mattpocock/skills at 6a34259 (2026-08-15); `pr` was adopted later, at e484a80 (2026-09-24), where
-# it lives as skills/engineering/pr. `setup-harness` is upstream's `setup-matt-pocock-skills`. Skills
-# without an entry are our own: conduct, coordinate, editing-agents-md.
+# it lives as skills/engineering/pr. Adopted from later upstream commits on top of the fork point
+# (0.1.0): the em-dash removal (3216582, d6cd26f, c6dafdd), the GLOSSARY.md rename (d80fa0f) and
+# the removal of resolving-merge-conflicts (daa01d8). `setup-harness` is upstream's
+# `setup-matt-pocock-skills`. Skills without an entry are our own: conduct, coordinate,
+# editing-agents-md.
 
 [upstream.ask-matt]
 repository = "https://github.com/mattpocock/skills"
@@ -69,10 +72,6 @@ commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
 repository = "https://github.com/mattpocock/skills"
 commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
 
-[upstream.resolving-merge-conflicts]
-repository = "https://github.com/mattpocock/skills"
-commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
-
 [upstream.setup-harness]
 repository = "https://github.com/mattpocock/skills"
 commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
@@ -121,4 +120,4 @@ commit = "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
 # `workbench update`.
 [changes]
 renamed = { "setup-matt-pocock-skills" = "setup-harness" }
-removed = []
+removed = ["resolving-merge-conflicts"]

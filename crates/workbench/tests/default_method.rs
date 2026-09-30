@@ -195,3 +195,30 @@ fn markdown_files(dir: &Path) -> Vec<PathBuf> {
     }
     out
 }
+
+/// A plain YAML scalar cannot hold `: `, so a description with one must be quoted or folded, or
+/// runtimes that parse the frontmatter as YAML drop the skill.
+#[test]
+fn skill_descriptions_are_valid_yaml_scalars() {
+    let skills = repository().join("skills");
+    let mut broken = Vec::new();
+    for name in skill_names(&skills) {
+        let text = read(skills.join(&name).join("SKILL.md"));
+        let front = text.split("\n---").next().unwrap();
+        for line in front.lines().filter(|l| !l.starts_with(' ')) {
+            let Some((_, value)) = line.split_once(": ") else {
+                continue;
+            };
+            let quoted = value.starts_with('"') || value.starts_with('\'');
+            let block = matches!(value.trim(), ">" | ">-" | "|" | "|-");
+            if !quoted && !block && (value.contains(": ") || value.contains(" #")) {
+                broken.push(format!("{name}: {line}"));
+            }
+        }
+    }
+    assert!(
+        broken.is_empty(),
+        "unquoted frontmatter values that YAML rejects:\n{}",
+        broken.join("\n")
+    );
+}

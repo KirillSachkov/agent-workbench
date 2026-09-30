@@ -9,13 +9,13 @@ metadata:
     url: "https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md"
 ---
 
-The PR body is a **result card**: the report the owner checks in one step, on GitHub and in the command center. Write it from the primary sources — the task or spec (read it again, body and comments), the diff, and the output of what you ran — not from memory of the session.
+The PR body is a **result card**: the report the owner checks in one step, on GitHub and in the command center. Write it from the primary sources (the task or spec, read again with body and comments; the diff; and the output of what you ran), not from memory of the session.
 
 The command center reads four sections by their headings: `Result`, `Needs you`, `Look first` and `How to try`. Keep these headings exactly as written. The shape is documented as a convention in the artifact contract; nothing checks it, so an honest card matters more than a full one.
 
 ## 1. Gather the facts
 
-- The task: its acceptance criteria and preservation criteria (what must not break), its labels, and the acceptance mode (`acceptance:auto`, `acceptance:human`, or none — which means the project default in `workbench.toml`, `human` unless changed).
+- The task: its acceptance criteria and preservation criteria (what must not break), its labels, and the acceptance mode (`acceptance:auto`, `acceptance:human`, or none, which means the project default in `workbench.toml`, `human` unless changed).
 - The candidate: push the branch, then take the head commit with `git rev-parse HEAD`. Every evidence record names the commit it was produced on.
 - The diff against the base: `git diff <base>...HEAD --stat`, and which of the changed files are tests or CI configuration.
 - The review: the findings `code-review` reported, and what you did about each.
@@ -29,11 +29,11 @@ The command center reads four sections by their headings: `Result`, `Needs you`,
 
 ## Needs you
 
-<decisions or actions only the owner can take, one per line; or "Nothing — ready to merge." / "Nothing — merged under acceptance:auto.">
+<decisions or actions only the owner can take, one per line; or "Nothing: ready to merge." / "Nothing: merged under acceptance:auto.">
 
 ## Look first
 
-- `path/to/file.ext:42` — <why this place deserves the first look>
+- `path/to/file.ext:42` - <why this place deserves the first look>
 
 ## How to try
 
@@ -45,14 +45,14 @@ The command center reads four sections by their headings: `Result`, `Needs you`,
 
 ## Criteria
 
-- **verified** — <acceptance criterion, as the task states it>
-  - `test` @ `<sha>` — `<test name>`: failed before the change, passes now.
-- **unverified** — <criterion> — <why it has no evidence yet>
+- **verified**: <acceptance criterion, as the task states it>
+  - `test` @ `<sha>`: `<test name>`: failed before the change, passes now.
+- **unverified**: <criterion> (<why it has no evidence yet>)
 
 Preservation:
 
-- **verified** — <what must not break>
-  - `ci` @ `<sha>` — <check name>: green, <link>
+- **verified**: <what must not break>
+  - `ci` @ `<sha>`: <check name>: green, <link>
 
 ## Changes to tests and CI
 
@@ -64,7 +64,7 @@ Preservation:
 
 ## What changed
 
-<optional: the smallest visual that makes the change clear — see VISUALS.md>
+<optional: the smallest visual that makes the change clear; see VISUALS.md>
 
 Closes #<issue>
 ~~~
@@ -79,7 +79,7 @@ Decisions the owner must take and actions only a person can do (a secret to add,
 
 ### Look first
 
-One line per place, `path:line — reason`: the riskiest change, the core of the logic, anything surprising. Paths are relative to the repository root and point inside it. Three to five lines is typical; order them by importance.
+One line per place, `path:line - reason`: the riskiest change, the core of the logic, anything surprising. Paths are relative to the repository root and point inside it. Three to five lines is typical; order them by importance.
 
 ### How to try
 
@@ -89,11 +89,11 @@ A command the owner can paste to see the change working, and the address of the 
 
 Every acceptance and preservation criterion of the task gets exactly one status:
 
-- **verified** — at least one evidence record supports it on the current head.
-- **failed** — evidence shows it does not hold.
-- **unverified** — no evidence. This is the default; never upgrade it by assertion.
+- **verified**: at least one evidence record supports it on the current head.
+- **failed**: evidence shows it does not hold.
+- **unverified**: no evidence. This is the default; never upgrade it by assertion.
 
-An evidence record is `` `<type>` @ `<short sha>` — <reference>: <observation> ``. The types:
+An evidence record is `` `<type>` @ `<short sha>`: <reference>: <observation> ``. The types:
 
 | Type | Reference | Observation |
 |---|---|---|
@@ -119,9 +119,9 @@ Parts of the task that are not delivered, known gaps, follow-up issues. Silence 
 
 ### What changed
 
-Optional. Pick the smallest visual that makes the change clear — pseudocode, a call tree, a file tree, a diff sketch, Mermaid. See [VISUALS.md](VISUALS.md).
+Optional. Pick the smallest visual that makes the change clear: pseudocode, a call tree, a file tree, a diff sketch, Mermaid. See [VISUALS.md](VISUALS.md).
 
-Skip preambles and keep prose brief. Use the project's domain vocabulary from `CONTEXT.md`.
+Skip preambles and keep prose brief. Use the project's domain vocabulary from `GLOSSARY.md`.
 
 ## 3. Open or update the pull request
 
@@ -130,6 +130,6 @@ Use the pull request operations in `docs/agents/issue-tracker.md` (or the code h
 ## 4. Follow the acceptance mode
 
 - **`acceptance:human`**, or no label and a `human` project default: stop at the open pull request. Do not merge.
-- **`acceptance:auto`**, or no label and an `auto` project default: merge only when the project's CI is green on the current head and the non-author review left no serious open findings. A `code-review` run by fresh-context subagents counts as non-author review, as does a review by another agent or a person. Then write "Nothing — merged under acceptance:auto." under `Needs you`. If either condition fails, stop at the open pull request and say which one failed under `Needs you`.
+- **`acceptance:auto`**, or no label and an `auto` project default: merge only when the project's CI is green on the current head and the non-author review left no serious open findings. A `code-review` run by fresh-context subagents counts as non-author review, as does a review by another agent or a person. Then write "Nothing: merged under acceptance:auto." under `Needs you`. If either condition fails, stop at the open pull request and say which one failed under `Needs you`.
 
 A reviewer's verdict never accepts work by itself, and an agent never sets, removes or changes an acceptance label on its own decision.
