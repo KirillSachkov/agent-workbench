@@ -1,0 +1,30 @@
+Command center — all projects
+Needs you (4)
+  Done, not seen yet  app · claude · task in w1:p2
+  Waits for you  app · claude · task in w1:p3
+  Ready for your acceptance  app · PR #81 PR for feat/62-login
+  CI failed  app · PR #90 PR for broken
+
+Since you last looked
+  nothing new
+
+app  o/app
+› claude  main  Working
+  claude  feat/62-login  #62 → PR #81 → CI passed  Done, not seen yet
+  claude  feat/70-search  #70 (from branch)  Waits for you
+  Spec #60 Spec: sign-in — 1 of 4 done
+  Ready now #63 Session timeout
+  In flight #62 Passkey login (alice) → PR #81 CI passed
+
+Folders without git
+  claude  Idle  <tmp>/notes
+
+
+
+
+
+
+
+
+
+↑↓ select · enter card · f go to agent · o PR · p this project · r refresh · q close
