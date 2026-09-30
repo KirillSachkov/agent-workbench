@@ -6,6 +6,21 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **A light conductor; A4 amended** (#67 → spec #70). A user-invoked `conduct` skill for a
+  coordination session in Herdr plus `lane start` / `lane watch` / `lane list` commands in the
+  command center's binary: it proposes lanes of ready work, starts each approved lane in its own
+  worktree and Herdr workspace with the chosen agent, watches it and calls the owner with a Herdr
+  notification. The owner approves every start. It never merges, pushes, deletes branches or
+  worktrees, answers an executor's question or approval, or types into a working agent. At most
+  2–3 parallel lanes by default, shared surfaces not in parallel, executors with a turn limit where
+  supported. Lanes show in the Work section; a canvas view later, CanvasTTY as a reference. A4 now
+  reads: no orchestration platform of our own; a light conductor that starts executors with the
+  owner's approval, watches them and calls the owner is part of the command center. Research:
+  `docs/research/2026-09-30-conductor-practices.md`.
+- **This repository becomes a harness source in #54** (2026-09-30, the owner's answer to the #54
+  executor): `harness.toml` and `skills/` arrive with the CLI so its owner check runs literally; #55
+  fills and refines that layout.
+
 - **Coordination of the work itself** (2026-09-30). The owner loses track across many tickets and
   specs and wants a coordinator. Decided now: #62 and #54 run in parallel (their only overlap is
   the workspace root and CI; #55 still waits for #54); the command center slice 1 gains a Work
