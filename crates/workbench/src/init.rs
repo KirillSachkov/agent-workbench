@@ -85,9 +85,12 @@ pub fn run(project: &Path, from: &str) -> Result<()> {
             notes.push(format!("created the {} bridge", agents_md::CLAUDE_FILE));
         }
         Some(bytes) if !agents_md::has_bridge(&String::from_utf8_lossy(&bytes)) => {
+            // The bridge goes on top; the rest of the file stays byte for byte.
+            let mut bridged = format!("{}\n", agents_md::BRIDGE).into_bytes();
+            bridged.extend_from_slice(&bytes);
+            files::write(&claude_path, &bridged)?;
             notes.push(format!(
-                "{} exists without an `@AGENTS.md` line; left as is — add that line so Claude \
-                 Code reads AGENTS.md",
+                "added the `@AGENTS.md` bridge on top of the existing {}",
                 agents_md::CLAUDE_FILE
             ));
         }

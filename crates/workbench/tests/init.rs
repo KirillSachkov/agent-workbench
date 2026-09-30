@@ -125,7 +125,11 @@ fn init_keeps_existing_agents_md_and_claude_md_apart_from_the_block() {
     let agents = read(project.join("AGENTS.md"));
     assert!(agents.starts_with(own_agents), "{agents}");
     assert!(agents.contains(BEGIN));
-    assert_eq!(read(project.join("CLAUDE.md")), own_claude);
+    // The one-line bridge is added on top; the rest of CLAUDE.md is kept byte for byte.
+    assert_eq!(
+        read(project.join("CLAUDE.md")),
+        format!("@AGENTS.md\n\n{own_claude}")
+    );
 
     // Refreshing replaces only the block: text after it stays too.
     let edited = agents.replace(END, &format!("{END}\n\nMore of my own text.")) + "Tail.\n";
@@ -218,4 +222,19 @@ fn nothing_is_written_into_user_level_agent_configuration() {
     env.ok(&project, &["update", "--to", "v2.0.0"]);
     env.ok(&project, &["config"]);
     assert_eq!(files_under(&env.home()), Vec::<String>::new());
+}
+
+#[test]
+fn init_keeps_a_claude_md_that_already_has_the_bridge_and_never_duplicates_it() {
+    let env = Env::new();
+    let own_claude = "# Claude notes\n\n@AGENTS.md\n\nMore notes.\n";
+    let project = env.project("bridged", &[("CLAUDE.md", own_claude)]);
+    env.ok(&project, &["init", "--from", &from_v1(&env)]);
+    env.ok(&project, &["init", "--from", &from_v1(&env)]);
+    assert_eq!(read(project.join("CLAUDE.md")), own_claude);
+
+    let project = env.project("bridge-added-once", &[("CLAUDE.md", "Notes.\n")]);
+    env.ok(&project, &["init", "--from", &from_v1(&env)]);
+    env.ok(&project, &["init", "--from", &from_v1(&env)]);
+    assert_eq!(read(project.join("CLAUDE.md")), "@AGENTS.md\n\nNotes.\n");
 }
