@@ -1,0 +1,13 @@
+# Project configuration of the harness. It holds only what workbench's code reads; everything
+# else is customised by editing the project's own files. Values here win over the built-in
+# default; `workbench config` prints the resolved configuration.
+
+# [skills]
+# enabled = ["*"]     # stable skills to install; "*" installs all
+# beta = []           # beta skills, opted in one by one
+
+# [acceptance]
+# default = "human"   # or "auto"
+
+# [repair]
+# max_rounds = 2

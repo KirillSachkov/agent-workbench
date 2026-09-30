@@ -1,0 +1,283 @@
+{
+  "version": 1,
+  "source": {
+    "repository": "https://github.com/KirillSachkov/agent-workbench",
+    "ref": "v0.1.0",
+    "commit": "755e1f28dd6aa344d10c51bdde1837447b510aab"
+  },
+  "harness": {
+    "name": "agent-workbench",
+    "version": "0.1.0"
+  },
+  "min_workbench_version": "0.1.0",
+  "skills": {
+    "ask-matt": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "code-review": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "codebase-design": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "conduct": {
+      "channel": "stable"
+    },
+    "coordinate": {
+      "channel": "stable"
+    },
+    "diagnosing-bugs": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "domain-modeling": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "editing-agents-md": {
+      "channel": "stable"
+    },
+    "grill-me": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "grill-with-docs": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "grilling": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "handoff": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "implement": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "improve-codebase-architecture": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "pr": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "e484a8095543718ced436b9b49a8160ed4554000"
+      }
+    },
+    "prototype": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "research": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "setup-harness": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "tdd": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "teach": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "to-questionnaire": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "to-spec": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "to-tickets": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "triage": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "wait-what": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "wayfinder": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "wizard": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    },
+    "writing-for-agents": {
+      "channel": "stable",
+      "upstream": {
+        "repository": "https://github.com/mattpocock/skills",
+        "commit": "6a34259e99bc5fed4f8fe5da61c273dad14edf67"
+      }
+    }
+  },
+  "files": {
+    ".agents/skills/ask-matt/PHASE-BOUNDARIES.md": "8ddd79087c191764df658f4a29aa3ee7002475ba7e7567923505cc0ec5e00480",
+    ".agents/skills/ask-matt/SKILL.md": "ed65c886062027e5e83ec2ca4b205c5972966596cdf0365236ed5d7ea8b3b096",
+    ".agents/skills/ask-matt/agents/openai.yaml": "bdffbc5a0a99ed1b6ef3253d251d755fd18162b9845972e380007f844b09b05c",
+    ".agents/skills/code-review/SKILL.md": "9ea543d92b129d6b84e40f8d9f412922635db51e8538587e5c695c236c1ee833",
+    ".agents/skills/code-review/agents/openai.yaml": "8229ca854e11dc8e6aef2131ee03f31fb1561cf905fab9ccc325180cf3331352",
+    ".agents/skills/codebase-design/DEEPENING.md": "f3dd099ce99289bd213914d8ee3e2429b78309c3957ca4583f7659551b1d53c1",
+    ".agents/skills/codebase-design/DESIGN-IT-TWICE.md": "52b52e75655a27aea59c6966b410bac82448968ad46ef1ebb9f07c274e3ae010",
+    ".agents/skills/codebase-design/SKILL.md": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+    ".agents/skills/codebase-design/agents/openai.yaml": "edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f",
+    ".agents/skills/conduct/SKILL.md": "2e06a77737697fd2fc596b693b56be739e78e2d17f976961f99458f18962a023",
+    ".agents/skills/coordinate/SKILL.md": "b44f9563d809682dccadf385c1b22ff52589be6778158ca0a8b39e8fbe2e20a7",
+    ".agents/skills/coordinate/agents/openai.yaml": "7026f4335cb60e837080bffcaebf57484ac15b8bbc112433c6eff5cfad91d87e",
+    ".agents/skills/diagnosing-bugs/SKILL.md": "9168404abda0967a5d32977e3498cd95fda6807018852f3de736a78357c82b40",
+    ".agents/skills/diagnosing-bugs/agents/openai.yaml": "3e430dbe4334a87597488c060cb3dc3786bb00c9182877d6f5ec41f62490e90b",
+    ".agents/skills/diagnosing-bugs/scripts/hitl-loop.template.sh": "35103539fc36873eea36074769ad454f9379d6fc8b2dc0e26ce987fd3bfe5503",
+    ".agents/skills/domain-modeling/ADR-FORMAT.md": "944c92aa790e8fbdc9199640b170979abb8a34ba8d0fe18c2a01a63bce140ca0",
+    ".agents/skills/domain-modeling/GLOSSARY-FORMAT.md": "21dcc40cdec8e151a829b98ab1517c1867bc444e3665134a98c6983411996801",
+    ".agents/skills/domain-modeling/SKILL.md": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3",
+    ".agents/skills/domain-modeling/agents/openai.yaml": "f6bf2aa996c6e6f53fdd0708e18a0d16a56aed8322cca59fedbe3c0d2c75f06b",
+    ".agents/skills/editing-agents-md/SKILL.md": "13b33071955769c31ddfdbb0876af9bcfa7da33561f1803f8819614119ef1976",
+    ".agents/skills/editing-agents-md/agents/openai.yaml": "aa004b69fc1833791e4655046b914718f430192d350af74f4166c96d9d6db0de",
+    ".agents/skills/grill-me/SKILL.md": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
+    ".agents/skills/grill-me/agents/openai.yaml": "c061e39c3e0f9d865fb1b97556d485704af2a8a58f4b8221a8917a5c2074a32b",
+    ".agents/skills/grill-with-docs/SKILL.md": "7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe",
+    ".agents/skills/grill-with-docs/agents/openai.yaml": "94cd0ab161fb468a836349f5ed482ba58ce8e709a05c57ce533d739dbd35cca9",
+    ".agents/skills/grilling/SKILL.md": "d2498125dd20a0d3a27f03e0ebcc8e681cf42be468e2d3e3c9e8f5dadcae8d47",
+    ".agents/skills/grilling/agents/openai.yaml": "1411d7df7d99b7e621a1ff8283c8133cc2464be63d064e52d8ce169c6800ee9b",
+    ".agents/skills/handoff/SKILL.md": "ade818f63320349a02e43c9d0c84fd731e78c4ab511e82fa5b968b77367f9527",
+    ".agents/skills/handoff/agents/openai.yaml": "c6d158774a46b21972790fd88de96966e0c9dace8ff7e93b9e528afde15006da",
+    ".agents/skills/implement/SKILL.md": "56ad553e68ab4cf75bc5e0a15cf5d51ba03678dea6b1155a370f21e06bd23569",
+    ".agents/skills/implement/agents/openai.yaml": "8970a8596ade0c28ab427f41a4ea242d6bdf6186c59ebf55e1238dbecaab79dc",
+    ".agents/skills/improve-codebase-architecture/HTML-REPORT.md": "deb066baae18bfb513f42895e3a805e3937720cb7966b4f41923055f69abc6b4",
+    ".agents/skills/improve-codebase-architecture/SKILL.md": "9de16acc317fdced1f0d218548b02d07c5315a572625f6b8888a3235d38fdeb1",
+    ".agents/skills/improve-codebase-architecture/agents/openai.yaml": "c8cb20f68ebf0edb4e497bc11ae5fcaa196004e661cd189015b04f4109ced7f1",
+    ".agents/skills/pr/CREDITS.md": "e73282b386bad91b4830fa32dcd9434b2c69dedc56932f585622233b14d7933b",
+    ".agents/skills/pr/SKILL.md": "35697a361dd8dff41da4bede3a6134a588103bfe5d03cdc38214ee74d54db5b2",
+    ".agents/skills/pr/VISUALS.md": "a360735819fbda0a6c9d5104c58f733412278b06263a3cb865450a3438091fe2",
+    ".agents/skills/pr/agents/openai.yaml": "74ae739713f83e23f6082a39c621946dcfc701896a66b43aed008577a6325bb5",
+    ".agents/skills/prototype/LOGIC.md": "f61c7d249e786a79ef289018901c348271e1798dd0b0bc5607b5c6f4d4a01ab9",
+    ".agents/skills/prototype/SKILL.md": "714de632d116bb73f65cdb5a882db15b9369a6713b9a47c0fad827848f0bfbe3",
+    ".agents/skills/prototype/UI.md": "723211e878acbc7b6ff09755263f3295cde724ba902ff0064da41eed51d45ad3",
+    ".agents/skills/prototype/agents/openai.yaml": "5af65e43ab41a350436697b81e27b7f848d36782043b73c322bb2c9fa9cc55dc",
+    ".agents/skills/research/SKILL.md": "985569f15739c713d6784887c3d186d4ef9ac85bec5ad9c068d25bf0739928e4",
+    ".agents/skills/research/agents/openai.yaml": "9b4c470d63221c1f68f22df70b83e2f12401b317babe0d1b7b5f24a974474d0d",
+    ".agents/skills/setup-harness/SKILL.md": "19f91ca3e236ab5e97c729879e6fe750dde8f375d1befbafd79f213c84a19864",
+    ".agents/skills/setup-harness/agents/openai.yaml": "4e6b995adb17c32dac454d17f48f9fe72ddb7aa08a7dda15d17c7a18d513a1fb",
+    ".agents/skills/setup-harness/domain.md": "5a1c1ab4df011876bc5e68c4300967018f5941fbaccaeafda2c0be4060618177",
+    ".agents/skills/setup-harness/issue-tracker-github.md": "b67a79accf982137016af656370bcb235af63d93e1b172754aeda43d2c15806f",
+    ".agents/skills/setup-harness/issue-tracker-gitlab.md": "ef9357320019fa55ca4c5d543e1f958add4d5300a20ed8ceea7c4252c2bc43bb",
+    ".agents/skills/setup-harness/issue-tracker-local.md": "b4d48aee23e3c1975c8683c64eae265d6d0507efa0f87c665eae35551591a665",
+    ".agents/skills/setup-harness/labels-github.sh": "1882ded419e9564ae5d9c774eccad335cef66cfc43d244c799fe7ed1762186cc",
+    ".agents/skills/setup-harness/triage-labels.md": "03b88113fe1ebad7a2bb296e6312822894bacd62588d6777cc59e6e83086dee8",
+    ".agents/skills/tdd/SKILL.md": "93ea419b76e9caaf26153b828e984f7c3fb136f4caa67b14af95f32ea965a1cc",
+    ".agents/skills/tdd/agents/openai.yaml": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b",
+    ".agents/skills/tdd/mocking.md": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef",
+    ".agents/skills/tdd/tests.md": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a",
+    ".agents/skills/teach/GLOSSARY-FORMAT.md": "9b99859ec28437668130d8f2ce5a342938970f8a1ed4fd38c3eab4f4b5fff210",
+    ".agents/skills/teach/LEARNING-RECORD-FORMAT.md": "701fa34b6748aa89e6c960ffb815257f481a7d77fb2900f9028f7edf3fdd6052",
+    ".agents/skills/teach/MISSION-FORMAT.md": "8cacbb3c0644d3ae0ea4965564797099401a6930a23f7cf462918576587f2418",
+    ".agents/skills/teach/RESOURCES-FORMAT.md": "e9cacf34026e11a8d1c8f9de88abe5bcbf654f4ebdb25cae8c0de0d5f48f44ec",
+    ".agents/skills/teach/SKILL.md": "a32df9dcdfc0c4fdc1c98e1ed3940c5f56b84c1aa90ff60346f32b8b53915b43",
+    ".agents/skills/teach/agents/openai.yaml": "5856f3ae8aec742f1499c640aecdd5f1d6af5fa210a7c6ec794de8263a6f733f",
+    ".agents/skills/to-questionnaire/SKILL.md": "106d302663983d36c0cc1bab3c8f5ec52a01535d3b52ba4805f6aa114b45d801",
+    ".agents/skills/to-questionnaire/agents/openai.yaml": "9e8a06c38c8842eea8d4922cb9d1ead8e3ace647bab259b943c994a1b4742bc2",
+    ".agents/skills/to-spec/SKILL.md": "47af42639d49209bfdfd6ef5ef382b45360c79700444e4fff29b472aeb5bfa71",
+    ".agents/skills/to-spec/agents/openai.yaml": "1c5b4d1e3d8e52287ef19cc2742fdbbfae1914ac75d33af3e4c8174f08cc55bb",
+    ".agents/skills/to-tickets/SKILL.md": "3ba8eaa5407ce5386ecb9f9a99f12339fa81fe9b2086bb5b07c9e32cd269e38e",
+    ".agents/skills/to-tickets/agents/openai.yaml": "21bc6215fffcd7614e9f772bb1760e87cc5fc7dcc707e7d282bc9414267a6090",
+    ".agents/skills/triage/AGENT-BRIEF.md": "9f69ac1ad7a6bf5bfe6684f8ae277940862d98182b5774253d5ed3ccd899d42b",
+    ".agents/skills/triage/OUT-OF-SCOPE.md": "1fbf9b432130c6380aa65813b55553cfda150309b27c595e183f8e335b8a190d",
+    ".agents/skills/triage/SKILL.md": "be118d163004b4fb8056b7fb80c3e287777f94d1f73e470de7297eb185b907db",
+    ".agents/skills/triage/agents/openai.yaml": "2e683717720cf456d165d0bb1a68bb600d0b6a8ccb61841c172e50d26f95351c",
+    ".agents/skills/wait-what/SKILL.md": "d961bb37defd975c539427edb8f450cdbccdcdd552e213c1ece46676a7970905",
+    ".agents/skills/wait-what/agents/openai.yaml": "b41faadf741d51e4ea184148b2d1854d93f947aaf754c7844f70a00f04194999",
+    ".agents/skills/wayfinder/SKILL.md": "28758f6fa1ecd7e8f5053f240962462da2456d5a757d11e96bee17da3e68c810",
+    ".agents/skills/wayfinder/agents/openai.yaml": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073",
+    ".agents/skills/wizard/SKILL.md": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
+    ".agents/skills/wizard/agents/openai.yaml": "98f44d682d58e262f160dc59a8befc365e0aa65820dd0261864af26aa8e59d83",
+    ".agents/skills/wizard/template.sh": "d81cc6f695560e77d674a7319e20da9fc61f281030f1dc3ad8f6f04b0ae17d33",
+    ".agents/skills/writing-for-agents/SKILL-MECHANICS.md": "c768e6307c7c10728c401c213f2c4ba71c542127eeb7ad2956aabd15a0fa0059",
+    ".agents/skills/writing-for-agents/SKILL.md": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+    ".agents/skills/writing-for-agents/agents/openai.yaml": "eacb24b2a618cfb81dacb0416f4fdd75ddf3a8060f8ddb99aae1b1e301907e4b"
+  }
+}
