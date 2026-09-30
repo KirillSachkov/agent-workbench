@@ -2,6 +2,138 @@
 
 Owner decisions, newest first. Each entry has a date, the decision and where it came from.
 
+## 2026-09-29 (command center, wayfinder #41)
+
+Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
+
+- **The first slice: "see and check"** (CC11, #52). Our Herdr plugin v0.1: the binding agent →
+  project, branch, PR, task; the sidebar tag and the "need you" counter; the Overview popup ("needs
+  you", "since you last looked", a per-project list agent → task → PR → CI); the result card popup
+  (the agent's PR body plus derived facts, with one key each to a "look first" file at the line in
+  nvim, the diff, the PR and the app). Plus one harness change: the forked `pr` skill writes the
+  card sections in a stable shape (`Result`, `Needs you`, `Look first` with `path:line — reason`,
+  `How to try`) as part of the artifact contract. Later slices: the pipeline tree, tidy-up, the
+  action menu with "start", pinned projects, the spec review flow, stale evidence, plain phrases for
+  every label, the personal inbox, our own UI. Judged after a week: task, PR and CI visible for
+  every live agent without lookup; results checked from the card rather than GitHub; at most three
+  key presses from notification to a file at the line. The map's destination is reached; the owner
+  starts `/to-spec` for this slice.
+
+- **Adopt or build** (CC7, #48). We build only our Herdr plugin: the Overview and result-card
+  popups, the action menu and "start", the sidebar tag, the tab-bar counter, tidy-up, and the
+  binding agent ↔ branch ↔ worktree ↔ task derived from Herdr, git and GitHub. Everything else is
+  adopted: Herdr for agents and notifications; nvim (the owner's LazyVim with codediff.nvim,
+  render-markdown, snacks.image) for files and diffs; herdr-nvim for line remarks on code and
+  documents back to the agent; `gh` for PRs and merge; the regular browser for the app and
+  screenshots. Not used: herdr-radar (competes for the single agent view), annotate (document
+  review moves to nvim and the spec PR; amends CC6), the owner's agent-context plugin and Hunk. The
+  workspace setup installs only our plugin, pinned; the nvim configuration stays the owner's own and
+  the command center only opens `nvim +N path` in the agent's worktree.
+
+- **Labels stay as agents know them; the command center translates** (CC9, #50). The five triage
+  roles, `acceptance:human` / `acceptance:auto` and `wayfinder:*` keep their strings and the
+  mapping in `docs/agents/triage-labels.md`; the command center shows plain phrases built from
+  labels and facts ("Ready for an agent", "Waits for you", …) and never raw labels; GitHub label
+  descriptions are rewritten in plain language. No track labels (the track is derived: map → large,
+  spec → medium, otherwise small) and no stage labels (computed node states). Colours by meaning,
+  the same on GitHub and in the command center.
+- **The command center lives in this repository** (CC10, #51) as a Herdr plugin in its own
+  subdirectory (`herdr plugin install KirillSachkov/agent-workbench/<subdir>`), with its own release
+  tags, in Rust with prebuilt binaries. It reads only the documented conventions and imports nothing
+  from the harness's code (ADR 0006); the subdirectory can move out with its history if it becomes a
+  product of its own.
+
+- **The flow and the parts of the command center** (CC6, #47). One task runs: the agent finishes
+  and Herdr notifies → one key opens the Overview popup → Enter opens the result card popup → from
+  the card a file at the line in nvim, the diff in the agent's worktree, the PR on GitHub, the app
+  and screenshots in the regular browser → remarks on diff lines or the report go back to the same
+  agent and stay in the PR → accept by merging from the card with confirmation or on GitHub → the
+  Overview offers to tidy up the worktree and branch. Before code the same flow runs on a spec (reviewed in
+  nvim and in the spec PR, CC7). Parts: Herdr is the workspace; our Herdr plugin provides the Overview and result-card
+  popups, the sidebar tag, the tab-bar counter, open-at-line and tidy-up; files and changes are read
+  in the terminal in nvim (LazyVim) set up minimally as a viewer (research CC16, #60); remarks go
+  back through herdr-nvim (CC7); the regular browser shows the app and
+  screenshots; GitHub holds the PR and the merge; our own UI comes later.
+- **The result card is the PR body plus derived facts** (CC4, #45). The agent writes into the PR
+  through the forked `pr` skill: the result in one line, decisions needed, where to look first
+  with reasons, criteria with evidence, what is not done, how to try it, screenshots. The command
+  center derives CI, reviews, the head SHA and stale evidence, diff size, test changes, branch and
+  worktree, the agent's status and the app's address. It is shown as a scrollable Herdr popup with
+  few key hints (prototype A on `prototype/45-result-card`) and on GitHub as the PR.
+- **Starting work from a task** (CC14, #58). One key on an item in the Overview opens an action
+  menu; "start" opens a new Herdr tab with the agent the owner picks in a picker (Claude Code,
+  Codex, another runtime), started in the project's directory with a first prompt such as "Work on
+  issue #n" passed as a launch argument. The command center creates no branch or worktree: the
+  harness's skills do that.
+- **Human tasks of a project live in its tracker** (CC14, #58). Issues with a human role
+  label and a view on them; no second tracker per project. The owner's personal tasks across
+  projects, the personal agent and the practices across all work are a separate private effort;
+  the command center owes it only an optional personal-inbox source and a one-key action that turns
+  a task into a project issue and starts work.
+
+- **The command center works without our harness** (CC8, #49; ADR
+  `docs/adr/0006-harness-agnostic-command-center.md`). Harness and command center are two
+  independent parts. The command center shows any folder where an agent runs and adds detail by
+  level from the facts it finds: a folder with an agent (status, waits for you, notifications), a git
+  repository (branch, worktrees, diff, orphaned worktrees, clean-up), a GitHub repository (PR, CI,
+  reviews, linked issue by `Closes #n` or branch name, labels), and a harness that follows the
+  documented conventions (stages, criteria and evidence, the spec → tickets tree). No support or
+  adapter is required; another harness reaches the top level by following the conventions.
+- **Overview in Herdr** (CC5, #46). A project is a git repository with its worktrees, found from
+  where agents run plus optional pinned projects in local configuration; all projects at once with a
+  filter. The sidebar stays minimal (status icon and a short tag), the tab bar shows a "need you"
+  counter, and details live in a full-screen Overview popup opened with one key, with sections:
+  since you last looked, needs you, the pipeline tree per project, tidy up, and the owner's task and
+  project lists (CC14). herdr-projects is a source of ideas, not the base (its own orchestrator and
+  task store conflict with A4 and G28).
+
+- **Jobs of the command center** (CC12, #56). Fifteen jobs, all in scope, in four groups the first
+  slice will order: attention (who waits for me now, what happened while I was away, notifications),
+  checking and feedback (check a finished result, send remarks back to the same agent and keep them
+  in the PR, review a spec or plan before code), map of work (which agent works where — agent, task,
+  branch, worktree, PR — and orphaned worktrees; the pipeline state of a project; clean-up after
+  merge), memory and spend (past results and artifacts, notes, tokens and provider limits). Starting
+  work, jumps and notifications mostly exist in Herdr already and are adopted, not rebuilt. The graph
+  of relations (spec → tickets → branches) belongs to the later own UI; for now a simple tree with
+  states. The result card is a terminal view (a scrollable popup with few key hints, prototype A on
+  the `prototype/45-result-card` branch) plus the full report in the PR; a local review page and a
+  guided step-by-step check were rejected.
+- **Layers and their order** (CC12, #56). Herdr is the workspace where agents work and is improved
+  first and as far as possible; GitHub organises the harness and the workflows across projects;
+  artifacts and files are organised so they are easy to read and to leave feedback on. Our own UI
+  comes last: a web dashboard for observation, with quick jumps into Herdr, copyable commands and
+  perhaps tasks and notes, canvas-like. This keeps the 2026-09-29 "TUI and web on one core" as a
+  direction but moves the web part to the end.
+- **Two trackers per project** (raised in CC12, #56; decided in CC14, #58). Besides the agents'
+  tracker that follows the harness pipeline (G28 unchanged), the owner wants a tracker for human tasks
+  per project, possibly one personal board across projects, and a one-click start of agent work from
+  a human task. Research is CC13 (#57).
+- **Destination of the map** (#41). The map ends when the owner can start `/to-spec` for the first
+  slice of the command center: its jobs, its form and how the parts combine (Herdr plugin, own TUI,
+  web, canvas), the harness seam, the home repository and the first useful slice are decided. Later
+  layers such as a canvas overview stay a sketched direction, not a design.
+- **Two jobs on par** (#41). The command center serves two jobs equally: checking an agent's result
+  fast (report and artifacts, PR or commit, changed files at the right lines, branches and worktrees,
+  the running app, screenshots) and an overview across projects (agents, tasks, how they relate).
+  Launching and switching agents stays with Herdr and its plugins.
+- **One effort for the command center and the workspace** (#41). The map covers both former outcome
+  issues #3 (command center) and #4 (workspace: Herdr plugins, key bindings, setup); both stay open
+  as outcome issues. C12 (result package) and G30 (label vocabulary) return as tickets of the map.
+  The setup command itself is implementation; the map decides what it sets up.
+- **The command center is single-user** (#41). One user on one machine: no team or multi-user
+  features (shared boards, access control, a server for colleagues). It may rely on the owner's stack
+  (Herdr, GitHub, macOS, their editor), but personal data such as the list of projects and paths
+  lives in local configuration, never in code, since the repository is public. It stays adaptable to
+  any harness. For the command center this replaces the 2026-09-29 requirement "must work for a
+  team"; the harness itself stays team-ready. Team visibility stays in GitHub (PRs, issues, the
+  result card in the PR).
+- **The term is "command center"** (#41). One name for the whole layer around the harness — the
+  owner's workspace in Herdr and the overview. "Shell", "dashboard" and "workspace" (a Herdr term)
+  are avoided as names for it.
+- **Out of scope of the map** (#41): team and multi-user features, mobile and remote access to
+  sessions, trackers other than GitHub in the command center (G28 left this to #3), launching and
+  orchestrating agents of our own, reading agents' internal session files.
+
 ## 2026-09-29 (harness requirements, wayfinder #5)
 
 Decisions from the harness requirements map, one ticket per decision.

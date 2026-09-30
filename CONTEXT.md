@@ -116,6 +116,35 @@ _Avoid_: rule, policy, gate
 Behaviour the work must not break, stated before the work.
 _Avoid_: constraints, non-goals
 
+### Command center
+
+**Command center**:
+The owner's single-user layer around the harness for checking agents' results and seeing what
+happens across projects. It shows facts from their sources and keeps no state of its own.
+_Avoid_: shell, dashboard, workspace (a Herdr term), cockpit
+
+**Project**:
+A git repository the command center shows, together with its worktrees: found from where agents
+run, or pinned by the owner. A folder without git where an agent runs is a loose folder, not a
+project.
+_Avoid_: workspace, repo list entry
+
+**Detail level**:
+How much the command center can show about a project, given the facts it finds: a folder with an
+agent, a git repository, a GitHub repository, or a repository whose harness follows the documented
+conventions. A project needs no support to appear; it shows at the highest level its facts allow.
+_Avoid_: support level, integration, tier
+
+**Overview**:
+The command center's view across all projects: what changed since the owner last looked, what
+needs the owner, each project's pipeline tree and what can be tidied up.
+_Avoid_: dashboard, board
+
+**Result card**:
+The report of one agent's finished result that the owner checks in one step: written into the pull
+request, and shown in the terminal together with facts derived from GitHub, git and Herdr.
+_Avoid_: summary, result package
+
 ### Configuration
 
 **Harness source**:
