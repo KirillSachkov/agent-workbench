@@ -27,7 +27,10 @@ fn call(args: &[&str]) -> Output {
 }
 
 fn result(args: &[&str]) -> Result<Value, String> {
-    let out = call(args);
+    result_of(args, call(args))
+}
+
+fn result_of(args: &[&str], out: Output) -> Result<Value, String> {
     if !out.ok {
         return Err(format!("herdr {}: {}", args.join(" "), out.error_line()));
     }
@@ -45,6 +48,9 @@ pub struct Session {
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct Agent {
     pub pane_id: String,
+    /// The live agent name, when one was given (`agent start <name>`, `agent rename`).
+    #[serde(default)]
+    pub name: Option<String>,
     #[serde(default)]
     pub terminal_id: String,
     #[serde(default)]
@@ -207,4 +213,113 @@ pub fn version() -> Result<String, String> {
         .last()
         .unwrap_or("")
         .to_string())
+}
+
+/// How long our calls that create a workspace or start an agent may take.
+const START_TIMEOUT: Duration = Duration::from_secs(60);
+/// How long Herdr waits for a started agent to become ready for input.
+const AGENT_READY_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// A worktree Herdr created and opened as a workspace.
+pub struct Worktree {
+    pub workspace_id: String,
+    pub pane_id: String,
+    pub path: String,
+}
+
+/// Creates a git worktree on a new branch and opens it as a workspace, without taking focus.
+pub fn create_worktree(
+    repo: &str,
+    branch: &str,
+    base: Option<&str>,
+    label: &str,
+) -> Result<Worktree, String> {
+    let mut args = vec!["worktree", "create", "--cwd", repo, "--branch", branch];
+    if let Some(base) = base {
+        args.extend(["--base", base]);
+    }
+    args.extend(["--label", label, "--no-focus"]);
+    let value = result_of(&args, run(&bin(), &args, None, Some(START_TIMEOUT)))?;
+    let text = |pointer: &str| {
+        value
+            .pointer(pointer)
+            .and_then(Value::as_str)
+            .map(str::to_string)
+            .ok_or_else(|| format!("herdr worktree create: no {pointer} in its answer"))
+    };
+    Ok(Worktree {
+        workspace_id: text("/workspace/workspace_id")?,
+        pane_id: text("/root_pane/pane_id")?,
+        path: text("/worktree/path")?,
+    })
+}
+
+/// How `agent start` ended.
+pub enum Started {
+    /// Herdr sees the agent ready for input.
+    Ready,
+    /// The agent is up but stopped at a question or approval during startup (`agent_not_ready`).
+    Waiting,
+}
+
+/// Starts a supported agent in an existing shell pane under a unique name.
+pub fn start_agent(name: &str, kind: &str, pane: &str, args: &[String]) -> Result<Started, String> {
+    let ready_ms = AGENT_READY_TIMEOUT.as_millis().to_string();
+    let mut argv = vec![
+        "agent",
+        "start",
+        name,
+        "--kind",
+        kind,
+        "--pane",
+        pane,
+        "--timeout",
+        &ready_ms,
+    ];
+    if !args.is_empty() {
+        argv.push("--");
+        argv.extend(args.iter().map(String::as_str));
+    }
+    let out = run(&bin(), &argv, None, Some(START_TIMEOUT));
+    if out.ok {
+        Ok(Started::Ready)
+    } else if out.stderr.contains("agent_not_ready") || out.stdout.contains("agent_not_ready") {
+        Ok(Started::Waiting)
+    } else {
+        Err(format!("herdr agent start: {}", out.error_line()))
+    }
+}
+
+/// Blocks until the agent in `pane` reaches one of `until`; false on a timeout or a failure.
+pub fn wait_agent(pane: &str, until: &[&str], timeout: Option<Duration>) -> bool {
+    let ms;
+    let mut args = vec!["agent", "wait", pane];
+    for status in until {
+        args.extend(["--until", status]);
+    }
+    if let Some(limit) = timeout {
+        ms = limit.as_millis().to_string();
+        args.extend(["--timeout", ms.as_str()]);
+    }
+    // Herdr enforces the timeout; ours only guards against a hung CLI.
+    let guard = timeout.map(|t| t + Duration::from_secs(30));
+    run(&bin(), &args, None, guard).ok
+}
+
+/// A toast inside Herdr with a sound: `done` for a result, `request` when the owner is needed.
+pub fn notify(title: &str, body: &str, sound: &str) -> Result<(), String> {
+    let out = call(&[
+        "notification",
+        "show",
+        title,
+        "--body",
+        body,
+        "--sound",
+        sound,
+    ]);
+    if out.ok {
+        Ok(())
+    } else {
+        Err(format!("herdr notification show: {}", out.error_line()))
+    }
 }

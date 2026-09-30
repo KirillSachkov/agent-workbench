@@ -71,7 +71,7 @@ _Avoid_: support level, compatibility
 The path a task takes through the pipeline, chosen once by its size: small (the task itself states
 the intent, one PR), medium (a spec, then tickets) or large (a map of decisions first). Each track is
 an artifact graph.
-_Avoid_: flow, lane, mode
+_Avoid_: flow, mode
 
 **Artifact graph**:
 The declared pipeline of a track: which artifacts and facts must exist, what each depends on and which
@@ -144,6 +144,20 @@ _Avoid_: dashboard, board
 The report of one agent's finished result that the owner checks in one step: written into the pull
 request, and shown in the terminal together with facts derived from GitHub, git and Herdr.
 _Avoid_: summary, result package
+
+**Executor**:
+An agent session that implements one issue and delivers one pull request.
+_Avoid_: worker, thread
+
+**Lane**:
+One executor working on one issue in its own worktree and Herdr workspace, on a branch that names
+the issue. Derived from Herdr, git and GitHub, never stored.
+_Avoid_: thread, job, track
+
+**Conductor**:
+The owner's coordination session that proposes lanes, starts the ones the owner approves, watches
+them and calls the owner. It never merges, answers for the owner or types into a working agent.
+_Avoid_: orchestrator, lead, coordinator agent
 
 ### Configuration
 

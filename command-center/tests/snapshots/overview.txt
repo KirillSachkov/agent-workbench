@@ -14,7 +14,7 @@ app  o/app
   claude  feat/70-search  #70 (from branch)  Waits for you
   Spec #60 Spec: sign-in — 1 of 4 done
   Ready now #63 Session timeout
-  In flight #62 Passkey login (alice) → PR #81 CI passed
+  In flight #62 Passkey login (alice) → PR #81 CI passed · claude Done, not seen yet
 
 Folders without git
   claude  Idle  <tmp>/notes
