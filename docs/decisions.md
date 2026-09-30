@@ -6,6 +6,16 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **Coordination of the work itself** (2026-09-30). The owner loses track across many tickets and
+  specs and wants a coordinator. Decided now: #62 and #54 run in parallel (their only overlap is
+  the workspace root and CI; #55 still waits for #54); the command center slice 1 gains a Work
+  section (progress of each spec or map, work ready now, work in flight — #62); the default method
+  gains a read-only coordinator skill that returns lanes, blockers, progress and the next step and
+  launches nothing (#55). Opened as a design track: a conductor inside Herdr that starts executor
+  sessions in their own tabs and worktrees, watches them and calls the owner (#67, revisits A4).
+  Until then the owner's coordination session uses the `orchestrate-project` skill and starts
+  executors through Herdr by hand.
+
 - **Roadmap in four stages with an owner check after each** (2026-09-30; roadmap #65). Stage 1
   #62, stage 2 #54, stage 3 #55, stage 4 #64 (rollout to other projects and the slice 2 spec). Each
   stage is one issue delivered in one or two PRs and ends with an owner check written in the issue;
