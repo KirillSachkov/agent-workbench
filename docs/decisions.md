@@ -2,6 +2,15 @@
 
 Owner decisions, newest first. Each entry has a date, the decision and where it came from.
 
+## 2026-09-30 (workbench CLI, #54)
+
+- **This repository becomes a harness source with the CLI** (asked while implementing #54). So
+  that the owner check can run `workbench init --from <this repo>@<ref>` literally, the CLI's PR
+  adds `harness.toml` and a `skills/` directory holding a copy of the bootstrap skills from
+  `.harness/skills`. The bootstrap install stays in place; #55 replaces the copied skills with the
+  default method, records their upstream commits and migrates this repository onto its own
+  harness.
+
 ## 2026-09-29 (command center, wayfinder #41)
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.

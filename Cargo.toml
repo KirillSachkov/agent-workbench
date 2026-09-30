@@ -1,3 +1,8 @@
 [workspace]
 resolver = "3"
-members = ["command-center"]
+members = ["command-center", "crates/workbench"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/KirillSachkov/agent-workbench"
