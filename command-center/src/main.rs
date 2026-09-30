@@ -7,6 +7,7 @@ mod env;
 mod git;
 mod github;
 mod herdr;
+mod lane;
 mod model;
 mod run;
 mod setup;
@@ -119,6 +120,58 @@ enum Command {
     Unconfigure,
     /// Check Herdr, gh, git and the editor.
     Doctor,
+    /// Lanes: one executor per issue in its own worktree and Herdr workspace.
+    Lane {
+        #[command(subcommand)]
+        what: Lane,
+    },
+}
+
+#[derive(Subcommand)]
+enum Lane {
+    /// Start an approved lane: a worktree and workspace, the named agent with its brief, the claim.
+    Start {
+        /// The issue the lane works on.
+        issue: u64,
+        /// The agent kind Herdr starts (claude, codex, opencode, …).
+        #[arg(long)]
+        agent: String,
+        /// The repository; defaults to the current directory.
+        #[arg(long)]
+        repo: Option<PathBuf>,
+        /// The branch; defaults to `[lanes] branch` in the configuration.
+        #[arg(long)]
+        branch: Option<String>,
+        /// A file with extra instructions for the executor, appended to its brief.
+        #[arg(long)]
+        brief: Option<PathBuf>,
+        /// Start even when the project already runs `[lanes] max` lanes (the owner said so).
+        #[arg(long)]
+        over_limit: bool,
+        #[arg(long)]
+        json: bool,
+    },
+    /// Wait until the lane's agent stops, call the owner with a Herdr notification, report why.
+    Watch {
+        /// The lane: its agent name, its pane or its issue number.
+        lane: String,
+        /// Stop watching after this many seconds while the agent still works.
+        #[arg(long, value_name = "SECONDS")]
+        timeout: Option<u64>,
+        /// How long an idle lane gets to start working.
+        #[arg(long, value_name = "SECONDS", default_value_t = 120)]
+        start_timeout: u64,
+        #[arg(long)]
+        json: bool,
+    },
+    /// Running lanes with their issue, agent, status and PR.
+    List {
+        /// Only the current project.
+        #[arg(long)]
+        this_project: bool,
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -348,6 +401,80 @@ fn main_inner() -> Result<ExitCode, String> {
             setup::configure(&config, yes)?;
         }
         Command::Unconfigure => setup::unconfigure()?,
+        Command::Lane { what } => {
+            let config = config()?;
+            match what {
+                Lane::Start {
+                    issue,
+                    agent,
+                    repo,
+                    branch,
+                    brief,
+                    over_limit,
+                    json,
+                } => {
+                    let started = lane::start(
+                        lane::StartArgs {
+                            issue,
+                            agent,
+                            repo,
+                            branch,
+                            brief,
+                            over_limit,
+                        },
+                        &config,
+                    )?;
+                    if json {
+                        print_json(&started)?;
+                    } else {
+                        println!(
+                            "lane {} {}: #{} in {} ({}), workspace {}{}",
+                            started.lane,
+                            started.status,
+                            started.issue,
+                            started.worktree,
+                            started.branch,
+                            started.workspace_id,
+                            match &started.claim_error {
+                                Some(err) => format!("; not claimed: {err}"),
+                                None => String::new(),
+                            }
+                        );
+                    }
+                }
+                Lane::Watch {
+                    lane: which,
+                    timeout,
+                    start_timeout,
+                    json,
+                } => {
+                    let opts = options(&config, true, None, false);
+                    let watched = lane::watch(
+                        lane::WatchArgs {
+                            lane: which,
+                            timeout,
+                            start_timeout,
+                        },
+                        &config,
+                        &opts,
+                    )?;
+                    if json {
+                        print_json(&watched)?;
+                    } else {
+                        println!("lane {} {}: {}", watched.lane, watched.stop, watched.status);
+                    }
+                }
+                Lane::List { this_project, json } => {
+                    let opts = options(&config, true, None, this_project);
+                    let list = lane::list(&config, &opts)?;
+                    if json {
+                        print_json(&list)?;
+                    } else {
+                        lane::print_list(&list);
+                    }
+                }
+            }
+        }
         Command::Doctor => {
             if !setup::doctor(config()) {
                 return Ok(ExitCode::FAILURE);

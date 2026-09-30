@@ -164,7 +164,7 @@ pub fn overview_lines(
                     .as_ref()
                     .map(|pr| format!(" → PR #{} {}", pr.number, pr.ci_phrase))
                     .unwrap_or_default();
-                lines.push(Line::from(vec![
+                let mut spans = vec![
                     Span::styled("  In flight ", Style::default().fg(Color::Yellow)),
                     Span::raw(format!(
                         "#{} {} ({}){pr}",
@@ -172,7 +172,15 @@ pub fn overview_lines(
                         item.title,
                         item.assignees.join(", ")
                     )),
-                ]));
+                ];
+                if let Some(lane) = &item.lane {
+                    spans.push(Span::raw(format!(" · {} ", lane.agent)));
+                    spans.push(Span::styled(
+                        lane.status_phrase.clone(),
+                        tone(&lane.status_phrase),
+                    ));
+                }
+                lines.push(Line::from(spans));
             }
         }
     }

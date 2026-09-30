@@ -356,3 +356,58 @@ fn ci_rollup(checks: &Value) -> String {
         "success".into()
     }
 }
+
+/// One issue as `lane start` needs it: open, unclaimed, with a title for the branch.
+pub struct IssueView {
+    pub number: u64,
+    pub title: String,
+    pub url: String,
+    /// `OPEN` or `CLOSED`.
+    pub state: String,
+    pub assignees: Vec<String>,
+}
+
+pub fn issue(slug: &str, number: u64, timeout: Duration) -> Result<IssueView, String> {
+    let v = gh(
+        &[
+            "issue",
+            "view",
+            &number.to_string(),
+            "--repo",
+            slug,
+            "--json",
+            "number,title,url,state,assignees",
+        ],
+        timeout,
+    )?;
+    Ok(IssueView {
+        number: v["number"].as_u64().unwrap_or(number),
+        title: text(&v["title"]),
+        url: text(&v["url"]),
+        state: text(&v["state"]),
+        assignees: names(&v["assignees"], "login"),
+    })
+}
+
+/// Assigns the issue to the signed-in user: the tracker's sign that the work is in flight.
+pub fn claim(slug: &str, number: u64, timeout: Duration) -> Result<(), String> {
+    let out = run(
+        "gh",
+        &[
+            "issue",
+            "edit",
+            &number.to_string(),
+            "--repo",
+            slug,
+            "--add-assignee",
+            "@me",
+        ],
+        None,
+        Some(timeout),
+    );
+    if out.ok {
+        Ok(())
+    } else {
+        Err(format!("gh issue edit: {}", out.error_line()))
+    }
+}

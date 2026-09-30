@@ -52,7 +52,8 @@ Harness health, from a checkout of agent-harness: `python3 harness/bin/harness h
 - `.harness/` — managed skills, registry and lock. Do not edit by hand.
 - `crates/workbench/` — the `workbench` binary: `init`, `sync`, `update`, `config`.
 - `harness.toml`, `skills/` — this repository as a harness source for `workbench init --from`;
-  the skills are a copy of the bootstrap set until #55 ships the default method.
+  the skills are a copy of the bootstrap set until #55 ships the default method, plus the
+  user-invoked `conduct` skill (#70) that drives the command center's lane commands.
 
 ## Pipeline
 

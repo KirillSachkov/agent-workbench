@@ -131,6 +131,45 @@ pub struct Config {
     pub github_refresh_seconds: u64,
     pub github_timeout_seconds: u64,
     pub keys: Keys,
+    pub lanes: Lanes,
+}
+
+/// How `lane start` starts executors.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct Lanes {
+    /// Lanes that may run at once in one project; `lane start --over-limit` overrides it.
+    pub max: usize,
+    /// The branch of a new lane; `{issue}` and `{slug}` (from the issue title) are replaced.
+    pub branch: String,
+    /// Per agent kind, the arguments it starts with; `{prompt}` is the one-line first prompt.
+    /// Merged over the built-in templates, so setting one runtime keeps the others.
+    pub args: std::collections::BTreeMap<String, Vec<String>>,
+}
+
+impl Default for Lanes {
+    fn default() -> Self {
+        Lanes {
+            max: 2,
+            branch: "feat/{issue}-{slug}".into(),
+            args: Default::default(),
+        }
+    }
+}
+
+impl Lanes {
+    /// The launch arguments for `kind`: configured, else built in for the runtimes we know.
+    pub fn args_for(&self, kind: &str) -> Option<Vec<String>> {
+        if let Some(args) = self.args.get(kind) {
+            return Some(args.clone());
+        }
+        let builtin: &[&str] = match kind {
+            "claude" | "codex" => &["{prompt}"],
+            "opencode" => &["--prompt", "{prompt}"],
+            _ => return None,
+        };
+        Some(builtin.iter().map(|s| s.to_string()).collect())
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -168,6 +207,7 @@ impl Default for Config {
             github_refresh_seconds: 60,
             github_timeout_seconds: 20,
             keys: Keys::default(),
+            lanes: Lanes::default(),
         }
     }
 }

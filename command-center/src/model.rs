@@ -32,7 +32,7 @@ pub struct PrRef {
 }
 
 impl PrRef {
-    fn from(pr: &Pr) -> Self {
+    pub fn from(pr: &Pr) -> Self {
         PrRef {
             number: pr.number,
             title: pr.title.clone(),
@@ -51,6 +51,8 @@ pub struct AgentView {
     /// Session plus canonical cwd; never the pane id alone.
     pub key: String,
     pub pane_id: String,
+    /// The live Herdr agent name, when it has one (a lane's agent is named after the lane).
+    pub name: Option<String>,
     pub session: Option<String>,
     pub agent: String,
     pub status: String,
@@ -71,6 +73,28 @@ pub struct AgentView {
     pub tag: Option<String>,
 }
 
+impl AgentView {
+    /// A lane is an agent working on a task in a linked worktree of its project.
+    pub fn is_lane(&self) -> bool {
+        self.linked_worktree && self.task.is_some()
+    }
+
+    /// How a lane is addressed: the agent's name, else its pane.
+    pub fn lane_id(&self) -> String {
+        self.name.clone().unwrap_or_else(|| self.pane_id.clone())
+    }
+}
+
+/// The lane working on an item: its agent and what the agent is doing.
+#[derive(Debug, Clone, Serialize)]
+pub struct LaneRef {
+    pub lane: String,
+    pub pane_id: String,
+    pub agent: String,
+    pub status: String,
+    pub status_phrase: String,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Spec {
     pub number: u64,
@@ -89,6 +113,7 @@ pub struct WorkItem {
     pub labels: Vec<String>,
     pub assignees: Vec<String>,
     pub pr: Option<PrRef>,
+    pub lane: Option<LaneRef>,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -236,7 +261,7 @@ pub fn build(opts: &Options) -> Result<Snapshot, String> {
             stale: loaded.is_some_and(|l| l.stale),
             github_error: loaded.and_then(|l| l.error.clone()),
             agents: vec![],
-            work: repo.map(work),
+            work: None,
         };
         for b in bound
             .iter()
@@ -244,6 +269,7 @@ pub fn build(opts: &Options) -> Result<Snapshot, String> {
         {
             project.agents.push(view(b, Some(&project), repo));
         }
+        project.work = repo.map(|r| work(r, &project.agents));
         projects.push(project);
     }
     for b in bound.iter().filter(|b| b.git.is_none()) {
@@ -326,6 +352,7 @@ fn view(b: &Bound, project: Option<&Project>, repo: Option<&RepoFacts>) -> Agent
     AgentView {
         key,
         pane_id: b.agent.pane_id.clone(),
+        name: b.agent.name.clone(),
         session,
         agent: b.agent.name(),
         status: b.agent.agent_status.clone(),
@@ -355,7 +382,7 @@ fn view(b: &Bound, project: Option<&Project>, repo: Option<&RepoFacts>) -> Agent
     }
 }
 
-fn work(repo: &RepoFacts) -> Work {
+fn work(repo: &RepoFacts, agents: &[AgentView]) -> Work {
     let mut w = Work::default();
     for issue in &repo.issues {
         if issue.sub_total > 0 {
@@ -376,6 +403,16 @@ fn work(repo: &RepoFacts) -> Work {
             labels: issue.labels.iter().map(|l| words::label(l)).collect(),
             assignees: issue.assignees.clone(),
             pr,
+            lane: agents
+                .iter()
+                .find(|a| a.is_lane() && a.task.as_ref().map(|t| t.number) == Some(issue.number))
+                .map(|a| LaneRef {
+                    lane: a.lane_id(),
+                    pane_id: a.pane_id.clone(),
+                    agent: a.agent.clone(),
+                    status: a.status.clone(),
+                    status_phrase: a.status_phrase.clone(),
+                }),
         };
         if !issue.assignees.is_empty() {
             let pr = repo

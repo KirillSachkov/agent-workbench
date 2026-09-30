@@ -72,8 +72,9 @@ card with its branch and the files changed since the merge base, committed or no
 ## What it reads and what it never does
 
 - Herdr through its CLI (`agent list`, `pane get`, `pane report-metadata`, `plugin pane open`,
-  `agent focus`), git in the agent's working directory, GitHub through `gh` (read only). Never
-  agents' internal session files.
+  `agent focus`; for lanes also `worktree create`, `agent start`, `agent wait` and
+  `notification show`), git in the agent's working directory, GitHub through `gh` (read only,
+  except the one claim `lane start` makes). Never agents' internal session files.
 - It never types into an agent's prompt and never runs commands found in PR text: PR bodies are
   parsed into fixed fields, the app address is opened in the browser only, and files open through
   an argv array without a shell.
@@ -98,6 +99,12 @@ github_timeout_seconds = 20
 [keys]
 overview = "prefix+i"
 card = "prefix+u"
+
+[lanes]
+max = 2                              # lanes running at once per project
+branch = "feat/{issue}-{slug}"       # {slug} comes from the issue title
+[lanes.args]                         # per agent kind; {prompt} is the one-line first prompt
+claude = ["{prompt}"]                # built in: claude, codex ["{prompt}"], opencode ["--prompt", "{prompt}"]
 ```
 
 ## Commands
@@ -112,7 +119,43 @@ workbench-cc focus --pane ID
 workbench-cc refresh [--force]      # sidebar tags; run on Herdr start and on agent events
 workbench-cc tab-status             # the tab-bar counter
 workbench-cc configure | unconfigure | doctor
+workbench-cc lane start <issue> --agent <kind> [--brief FILE] [--branch B] [--over-limit] [--json]
+workbench-cc lane watch <lane> [--timeout S] [--start-timeout S] [--json]
+workbench-cc lane list [--this-project] [--json]
 ```
+
+## Lanes
+
+A lane is one executor agent working on one issue in its own worktree and Herdr workspace. The
+`conduct` skill (in this repository's `skills/`) proposes lanes, and after the owner's go-ahead runs
+these commands; they can also be run by hand. There is no lane store: a lane is an agent in a linked
+worktree whose branch names its issue (`feat/70-…`), found again from Herdr, git and GitHub.
+
+- `lane start` checks the issue is open and unclaimed, that it has no lane yet and that the project
+  runs fewer than `[lanes] max` lanes (`--over-limit` when the owner says so). It then calls
+  `herdr worktree create` on the project (branch from `[lanes] branch`, base `origin/HEAD` or
+  `origin/main`), writes the executor's brief into the state directory (`lanes/<owner>__<repo>-<issue>.md`),
+  starts the agent in the workspace's root pane with `herdr agent start <repo>-<issue>` and the
+  one-line prompt "Read and follow the lane instructions in <brief>", and claims the issue with
+  `gh issue edit --add-assignee @me`. Herdr rejects agent arguments it cannot encode safely, so the
+  instructions live in the file, not in the argument. An agent that stops at a question during
+  startup (a folder trust prompt) is reported as `waits for you` and left for the owner. When the
+  start fails the workspace and worktree stay as they are.
+- `lane watch` waits through `herdr agent wait` until the agent stops (`idle`, `done` or `blocked`;
+  an idle lane first gets `--start-timeout` to start working), checks the pane still holds the same
+  agent session, then shows `herdr notification show` with a sound: `done` when the lane has a PR,
+  `request` when it waits at a question or approval, stopped without a PR, or its agent is gone.
+- `lane list` shows the running lanes with issue, agent, status and PR. The Overview's Work section
+  shows the same agent and status beside each issue in flight.
+
+**Turn limits.** Executors start interactive, so the owner can answer them in their pane. Claude
+Code's `--max-turns` and `--max-budget-usd` work only in print mode (`-p`), and Codex and OpenCode
+have no interactive equivalent, so lanes start without a turn limit (decision 2026-09-30). The
+watch and the owner's notification are the guard; a runtime flag can be added per kind under
+`[lanes.args]` once one exists.
+
+Lanes never merge, push, delete a branch or worktree, answer an agent's question or approval, or
+type into a working agent.
 
 ## Development
 
