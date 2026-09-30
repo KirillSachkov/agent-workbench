@@ -6,6 +6,22 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **The command center works without our harness** (CC8, #49; ADR
+  `docs/adr/0006-harness-agnostic-command-center.md`). Harness and command center are two
+  independent parts. The command center shows any folder where an agent runs and adds detail by
+  level from the facts it finds: a folder with an agent (status, waits for you, notifications), a git
+  repository (branch, worktrees, diff, orphaned worktrees, clean-up), a GitHub repository (PR, CI,
+  reviews, linked issue by `Closes #n` or branch name, labels), and a harness that follows the
+  documented conventions (stages, criteria and evidence, the spec → tickets tree). No support or
+  adapter is required; another harness reaches the top level by following the conventions.
+- **Overview in Herdr** (CC5, #46). A project is a git repository with its worktrees, found from
+  where agents run plus optional pinned projects in local configuration; all projects at once with a
+  filter. The sidebar stays minimal (status icon and a short tag), the tab bar shows a "need you"
+  counter, and details live in a full-screen Overview popup opened with one key, with sections:
+  since you last looked, needs you, the pipeline tree per project, tidy up, and the owner's task and
+  project lists (CC14). herdr-projects is a source of ideas, not the base (its own orchestrator and
+  task store conflict with A4 and G28).
+
 - **Jobs of the command center** (CC12, #56). Fifteen jobs, all in scope, in four groups the first
   slice will order: attention (who waits for me now, what happened while I was away, notifications),
   checking and feedback (check a finished result, send remarks back to the same agent and keep them
