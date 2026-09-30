@@ -36,7 +36,12 @@ Decisions taken while charting the command center map (#41) and resolving its ti
   center derives CI, reviews, the head SHA and stale evidence, diff size, test changes, branch and
   worktree, the agent's status and the app's address. It is shown as a scrollable Herdr popup with
   few key hints (prototype A on `prototype/45-result-card`) and on GitHub as the PR.
-- **Human tasks of a project live in its tracker** (CC14, #58, partly). Issues with a human role
+- **Starting work from a task** (CC14, #58). One key on an item in the Overview opens an action
+  menu; "start" opens a new Herdr tab with the agent the owner picks in a picker (Claude Code,
+  Codex, another runtime), started in the project's directory with a first prompt such as "Work on
+  issue #n" passed as a launch argument. The command center creates no branch or worktree: the
+  harness's skills do that.
+- **Human tasks of a project live in its tracker** (CC14, #58). Issues with a human role
   label and a view on them; no second tracker per project. The owner's personal tasks across
   projects, the personal agent and the practices across all work are a separate private effort;
   the command center owes it only an optional personal-inbox source and a one-key action that turns
