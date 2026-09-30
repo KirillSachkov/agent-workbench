@@ -25,20 +25,22 @@ tied to any particular consumer project. Goal and scope: `docs/brief.md`. Owner 
 
 ## Commands
 
-No code exists yet. Fill these slots when the Rust workspace and the web app land.
+The Rust code is one Cargo workspace at the root; each binary is a member crate. The web app has
+no slot yet.
 
 ```bash
-N/A      # setup
-N/A      # run
-N/A      # test   (planned: cargo test; web: pnpm test)
-N/A      # lint   (planned: cargo fmt --check && cargo clippy -- -D warnings)
-N/A      # build  (planned: cargo build --release, web built into the binary)
+rustup toolchain install stable --component rustfmt,clippy   # setup
+cargo run -p workbench-cc -- overview                         # run the command center (see command-center/README.md)
+cargo test                                                    # test
+cargo fmt --all --check && cargo clippy --all-targets -- -D warnings   # lint
+cargo build --release                                         # build
 ```
 
 Harness health, from a checkout of agent-harness: `python3 harness/bin/harness health <this repo>`.
 
 ## Repository map
 
+- `command-center/` — the command center: a Herdr plugin and its `workbench-cc` binary.
 - `docs/brief.md` — why, outcome, principles, scope.
 - `docs/decisions.md` — the owner's dated decisions, newest first.
 - `docs/research/` — dated research notes; read the ones relevant to the task

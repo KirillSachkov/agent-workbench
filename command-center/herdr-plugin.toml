@@ -1,0 +1,69 @@
+id = "agent-workbench.command-center"
+name = "Agent Workbench command center"
+version = "0.1.0"
+min_herdr_version = "0.9.1"
+description = "See and check agents' work: every agent bound to its project, branch, PR and task; an Overview of what needs you; a result card per agent."
+platforms = ["macos", "linux"]
+
+# Slice 1 builds from source and needs a Rust toolchain; release binaries come with the first release.
+[[build]]
+command = ["cargo", "install", "--path", ".", "--root", ".", "--force"]
+
+# Tags die with a Herdr server, so they are reported again when it starts.
+[[startup]]
+command = ["bin/workbench-cc", "refresh", "--force"]
+
+[[actions]]
+id = "overview"
+title = "Command center: overview"
+contexts = ["global", "workspace"]
+command = ["bin/workbench-cc", "popup", "overview"]
+
+[[actions]]
+id = "card"
+title = "Command center: result card of this agent"
+contexts = ["global", "workspace"]
+command = ["bin/workbench-cc", "popup", "card"]
+
+[[actions]]
+id = "refresh"
+title = "Command center: refresh sidebar tags"
+contexts = ["global", "workspace"]
+command = ["bin/workbench-cc", "refresh"]
+
+# Events only wake a refresh; every refresh rebuilds from Herdr, git and GitHub.
+[[events]]
+on = "pane.agent_status_changed"
+command = ["bin/workbench-cc", "refresh"]
+
+[[events]]
+on = "pane.agent_detected"
+command = ["bin/workbench-cc", "refresh"]
+
+[[events]]
+on = "worktree.created"
+command = ["bin/workbench-cc", "refresh"]
+
+[[panes]]
+id = "overview"
+title = "Command center"
+placement = "popup"
+width = "90%"
+height = "90%"
+command = ["bin/workbench-cc", "overview"]
+
+[[panes]]
+id = "card"
+title = "Result card"
+placement = "popup"
+width = "80%"
+height = "85%"
+command = ["bin/workbench-cc", "card"]
+
+# A file at a line or the diff, opened as a split beside the agent's pane; the command arrives as a
+# JSON argv array in WB_EXEC and never goes through a shell.
+[[panes]]
+id = "exec"
+title = "Command center: editor"
+placement = "split"
+command = ["bin/workbench-cc", "exec"]

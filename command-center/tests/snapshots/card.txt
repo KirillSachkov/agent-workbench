@@ -1,0 +1,24 @@
+Result card
+claude app · feat/62-login  Done, not seen yet
+PR #81 PR for feat/62-login
+Task #62
+CI passed · no review · head 0123456 · 2 files +10 −2 · tests changed
+<tmp>/repos/app-62
+
+Result
+  Login works with passkeys.
+
+Needs you
+  Pick the session timeout.
+
+Look first
+  1 src/auth.rs:42 — the token check
+
+How to try
+  Open http://localhost:3000/login.
+
+
+
+
+
+1-9 file · d diff · o PR · a app · f go to agent · ↑↓ scroll · q back
