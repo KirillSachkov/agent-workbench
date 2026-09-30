@@ -15,10 +15,9 @@ use tempfile::TempDir;
 use crate::config::Config;
 use crate::files::{self, Blob};
 use crate::guard;
-use crate::init::short;
 use crate::lock::{self, Lock};
 use crate::skills;
-use crate::source::{Checkout, Release};
+use crate::source::{self, Checkout, Release, short};
 use crate::sync;
 
 pub fn run(project: &Path, to: Option<&str>) -> Result<()> {
@@ -33,7 +32,7 @@ pub fn run(project: &Path, to: Option<&str>) -> Result<()> {
         .context("workbench update needs the project to be a git repository")?;
     let config = Config::load(project)?;
 
-    let checkout = Checkout::clone(&old_lock.source.repository)?;
+    let checkout = Checkout::clone(project, &old_lock.source.repository)?;
     let reference = match to {
         Some(reference) => reference.to_owned(),
         None => next_ref(&checkout, &old_lock)?,
@@ -68,6 +67,14 @@ pub fn run(project: &Path, to: Option<&str>) -> Result<()> {
             old_lock.harness.name, old_lock.harness.version, old_lock.source.repository, reference
         );
         return Ok(());
+    }
+
+    let status = source::git(project, &["status", "--porcelain"])?;
+    if !status.is_empty() {
+        bail!(
+            "the working tree has uncommitted changes; commit or stash them first so the update \
+             branch holds only the harness update (nothing was written)"
+        );
     }
 
     let branch = branch_name(&reference, &commit, &old_lock);
@@ -191,7 +198,7 @@ fn branch_name(reference: &str, commit: &str, lock: &Lock) -> String {
         })
         .collect();
     if reference == lock.source.reference {
-        format!("workbench/update-{safe}-{}", &commit[..commit.len().min(7)])
+        format!("workbench/update-{safe}-{}", short(commit))
     } else {
         format!("workbench/update-{safe}")
     }
@@ -228,7 +235,8 @@ fn base_files(
         let to_dir = project.join(skills::DIR).join(to);
         if to_dir.exists() {
             outcome.notes.push(format!(
-                "skill `{from}` is renamed to `{to}`, but {}/{to} already exists; left `{from}` in place",
+                "skill `{from}` is renamed to `{to}`, but {}/{to} already exists; both are kept, \
+                 merge `{from}` into `{to}` by hand",
                 skills::DIR
             ));
             continue;
@@ -311,19 +319,7 @@ fn merge(ours: &[u8], base: &[u8], theirs: &[u8], labels: &Labels) -> Result<Mer
 }
 
 fn project_git(project: &Path, args: &[&str]) -> Result<()> {
-    let output = Command::new("git")
-        .args(args)
-        .current_dir(project)
-        .output()
-        .context("run git")?;
-    if !output.status.success() {
-        bail!(
-            "git {} failed: {}",
-            args.join(" "),
-            String::from_utf8_lossy(&output.stderr).trim()
-        );
-    }
-    Ok(())
+    source::git(project, args).map(drop)
 }
 
 #[derive(Default)]

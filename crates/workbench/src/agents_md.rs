@@ -8,6 +8,7 @@ pub const FILE: &str = "AGENTS.md";
 pub const CLAUDE_FILE: &str = "CLAUDE.md";
 pub const BRIDGE: &str = "@AGENTS.md\n";
 
+pub const BEGIN_PREFIX: &str = "<!-- BEGIN workbench managed block";
 const BEGIN: &str =
     "<!-- BEGIN workbench managed block: workbench sync rewrites everything up to END -->";
 const END: &str = "<!-- END workbench managed block -->";
@@ -57,7 +58,7 @@ pub fn block(skills: &[Skill], lock: Option<&Lock>) -> String {
         ));
     }
     out.push_str(
-        "- The tracks (small, medium, large) and the settings workbench reads are in \
+        "- The tracks (small, medium, large) and what workbench's code reads are in \
          `workbench.toml`; `workbench config` prints the resolved configuration.\n\
          - `workbench update` brings a new harness version in on its own branch; \
          `workbench sync` regenerates derived files. Edit harness files freely: updates merge \
@@ -68,13 +69,17 @@ pub fn block(skills: &[Skill], lock: Option<&Lock>) -> String {
     out
 }
 
-/// Inserts or refreshes the managed block; text outside it is kept byte for byte.
-pub fn with_block(agents_md: &str, block: &str) -> String {
-    if let Some(start) = agents_md.find("<!-- BEGIN workbench managed block")
-        && let Some(end_offset) = agents_md[start..].find(END)
-    {
+/// Inserts or refreshes the managed block; text outside it is kept byte for byte. `None` when a
+/// BEGIN marker has no END, since the block's extent is then unknown.
+pub fn with_block(agents_md: &str, block: &str) -> Option<String> {
+    if let Some(start) = agents_md.find(BEGIN_PREFIX) {
+        let end_offset = agents_md[start..].find(END)?;
         let end = start + end_offset + END.len();
-        return format!("{}{block}{}", &agents_md[..start], &agents_md[end..]);
+        return Some(format!(
+            "{}{block}{}",
+            &agents_md[..start],
+            &agents_md[end..]
+        ));
     }
     let mut out = agents_md.to_owned();
     if !out.is_empty() && !out.ends_with('\n') {
@@ -85,7 +90,7 @@ pub fn with_block(agents_md: &str, block: &str) -> String {
     }
     out.push_str(block);
     out.push('\n');
-    out
+    Some(out)
 }
 
 pub fn has_bridge(claude_md: &str) -> bool {

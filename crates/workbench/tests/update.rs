@@ -85,6 +85,7 @@ fn update_merges_a_non_overlapping_edit_cleanly() {
         "1. Write one failing test first.",
     );
     fs::write(project.join(".agents/skills/tdd/SKILL.md"), &edited).unwrap();
+    commit_all(&project, "edit tdd");
 
     let run = env.ok(&project, &["update", "--to", "v2.0.0"]);
     assert!(
@@ -116,6 +117,7 @@ fn update_leaves_conflict_markers_for_an_overlapping_edit() {
         "Keep tests at the public interface, always.",
     );
     fs::write(project.join(".agents/skills/tdd/SKILL.md"), &edited).unwrap();
+    commit_all(&project, "edit tdd");
 
     let run = env.ok(&project, &["update", "--to", "v2.0.0"]);
     assert!(
@@ -147,6 +149,7 @@ fn update_applies_the_rename_and_removal_map() {
         read(&old).replace("Line three.", "Line three, edited."),
     )
     .unwrap();
+    commit_all(&project, "edit old-name");
 
     let run = env.ok(&project, &["update", "--to", "v2.0.0"]);
     let out = run.stdout();
@@ -180,4 +183,61 @@ fn update_refuses_an_existing_branch_without_writing() {
     );
     assert_eq!(lock(&project)["source"]["ref"], "v1.0.0");
     assert_eq!(read(project.join(".agents/skills/tdd/SKILL.md")), TDD_V1);
+}
+
+#[test]
+fn update_retires_a_skill_the_release_still_ships() {
+    let env = Env::new();
+    let project = on_v1(&env, "still-shipped");
+    let source = env.source();
+    git(&source, &["checkout", "-q", "v2.0.0"]);
+    fs::write(
+        source.join("harness.toml"),
+        read(source.join("harness.toml"))
+            .replace("version = \"2.0.0\"", "version = \"2.1.0\"")
+            .replace(
+                "removed = [\"retired\"]",
+                "removed = [\"retired\", \"grilling\"]",
+            ),
+    )
+    .unwrap();
+    commit_all(&source, "retire grilling but keep shipping it");
+    git(&source, &["tag", "v2.1.0"]);
+
+    let run = env.ok(&project, &["update", "--to", "v2.1.0"]);
+    assert!(
+        run.stdout().contains("retired skill: grilling"),
+        "{}",
+        run.all()
+    );
+    assert!(!project.join(".agents/skills/grilling").exists());
+    assert!(lock(&project)["skills"].get("grilling").is_none());
+}
+
+#[test]
+fn update_refuses_a_dirty_working_tree_without_writing() {
+    let env = Env::new();
+    let project = on_v1(&env, "dirty");
+    fs::write(project.join("notes.txt"), "work in progress\n").unwrap();
+    let run = env.run(&project, &["update", "--to", "v2.0.0"]);
+    assert!(!run.success());
+    assert!(
+        run.stderr().contains("uncommitted changes"),
+        "{}",
+        run.all()
+    );
+    assert_eq!(git(&project, &["branch", "--show-current"]).trim(), "main");
+    assert_eq!(lock(&project)["source"]["ref"], "v1.0.0");
+}
+
+#[test]
+fn a_relative_source_path_is_recorded_as_given_and_used_by_update() {
+    let env = Env::new();
+    env.source();
+    let project = env.project("relative", &[]);
+    env.ok(&project, &["init", "--from", "../harness-source@v1.0.0"]);
+    assert_eq!(lock(&project)["source"]["repository"], "../harness-source");
+    commit_all(&project, "install");
+    env.ok(&project, &["update"]);
+    assert_eq!(lock(&project)["source"]["ref"], "v2.0.0");
 }

@@ -11,7 +11,7 @@ use crate::config::{self, Config};
 use crate::files;
 use crate::guard;
 use crate::lock::{self, Lock};
-use crate::source::{Checkout, Spec};
+use crate::source::{Checkout, Spec, short};
 use crate::sync;
 
 pub fn run(project: &Path, from: &str) -> Result<()> {
@@ -22,7 +22,7 @@ pub fn run(project: &Path, from: &str) -> Result<()> {
     }
     let config = Config::load(project)?;
 
-    let checkout = Checkout::clone(&spec.repository)?;
+    let checkout = Checkout::clone(project, &spec.repository)?;
     let reference = match spec.reference {
         Some(reference) => reference,
         None => checkout.default_branch()?,
@@ -95,7 +95,7 @@ pub fn run(project: &Path, from: &str) -> Result<()> {
     }
     let config_path = project.join(config::FILE);
     if !config_path.exists() {
-        files::write(&config_path, config::TEMPLATE.as_bytes())?;
+        files::write(&config_path, config::STARTER.as_bytes())?;
         notes.push(format!("created {}", config::FILE));
     }
 
@@ -131,15 +131,16 @@ pub fn run(project: &Path, from: &str) -> Result<()> {
     for path in &kept {
         println!("- kept the project's edited {path}");
     }
-    for (path, _) in &report.stale {
-        println!("- wrote {path}");
+    for (path, kind) in &report.stale {
+        let verb = if *kind == sync::Kind::Removed {
+            "removed"
+        } else {
+            "wrote"
+        };
+        println!("- {verb} {path}");
     }
     for warning in install.warnings.iter().chain(&report.warnings) {
         eprintln!("warning: {warning}");
     }
     Ok(())
-}
-
-pub fn short(commit: &str) -> &str {
-    &commit[..commit.len().min(12)]
 }

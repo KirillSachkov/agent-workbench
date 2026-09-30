@@ -214,6 +214,7 @@ fn nothing_is_written_into_user_level_agent_configuration() {
     let project = env.project("user-level", &[]);
     env.ok(&project, &["init", "--from", &from_v1(&env)]);
     env.ok(&project, &["sync"]);
+    common::commit_all(&project, "install");
     env.ok(&project, &["update", "--to", "v2.0.0"]);
     env.ok(&project, &["config"]);
     assert_eq!(files_under(&env.home()), Vec::<String>::new());

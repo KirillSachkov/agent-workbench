@@ -12,7 +12,7 @@ const DEFAULT: &str = include_str!("default.toml");
 
 /// Written by `init` when the project has no configuration yet. Everything is commented out, so
 /// the built-in default applies until the project changes something.
-pub const TEMPLATE: &str = r#"# Project configuration of the harness. It holds only what workbench's code reads; everything
+pub const STARTER: &str = r#"# Project configuration of the harness. It holds only what workbench's code reads; everything
 # else is customised by editing the project's own files. Values here win over the built-in
 # default; `workbench config` prints the resolved configuration.
 

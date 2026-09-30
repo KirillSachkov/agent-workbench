@@ -380,10 +380,17 @@ fn managed_block(
     };
     let text =
         String::from_utf8(bytes).with_context(|| format!("{} is not UTF-8", agents_md::FILE))?;
-    let updated = agents_md::with_block(&text, &agents_md::block(skills, lock));
+    let Some(updated) = agents_md::with_block(&text, &agents_md::block(skills, lock)) else {
+        report.warnings.push(format!(
+            "{} has a managed block BEGIN marker without its END marker; the block was not \
+             written — restore the END marker or remove the BEGIN line",
+            agents_md::FILE
+        ));
+        return Ok(());
+    };
     if updated != text {
         files::write(&path, updated.as_bytes())?;
-        let kind = if text.contains("<!-- BEGIN workbench managed block") {
+        let kind = if text.contains(agents_md::BEGIN_PREFIX) {
             Kind::Changed
         } else {
             Kind::Missing

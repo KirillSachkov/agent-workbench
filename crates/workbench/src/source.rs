@@ -15,12 +15,17 @@ use crate::files::Blob;
 use crate::lock;
 use crate::skills;
 
+/// The short form of a commit id used in messages and branch names.
+pub fn short(commit: &str) -> &str {
+    &commit[..commit.len().min(12)]
+}
+
 pub const MANIFEST: &str = "harness.toml";
 const STABLE_DIR: &str = "skills";
 const BETA_DIR: &str = "beta";
 
-/// `--from <repository>@<ref>`, with the repository normalised: a local path becomes absolute and
-/// `owner/repo` becomes a GitHub URL.
+/// `--from <repository>@<ref>`, with `owner/repo` expanded to a GitHub URL. A local path is kept
+/// as given (relative to the project), so the committed lock names no machine-specific directory.
 pub struct Spec {
     pub repository: String,
     pub reference: Option<String>,
@@ -29,8 +34,11 @@ pub struct Spec {
 impl Spec {
     pub fn parse(from: &str) -> Result<Spec> {
         let (repository, reference) = match from.rsplit_once('@') {
-            // `git@host:owner/repo` has an `@` that is not a ref separator.
-            Some((repo, reference)) if !repo.is_empty() && !reference.contains(':') => {
+            // `git@host:owner/repo` and `https://user@host/repo` have an `@` that is not a ref
+            // separator.
+            Some((repo, reference))
+                if !repo.is_empty() && !reference.contains(':') && !is_userinfo(repo) =>
+            {
                 (repo, Some(reference.to_owned()))
             }
             _ => (from, None),
@@ -45,13 +53,16 @@ impl Spec {
     }
 }
 
+/// `https://user` before an `@`: the user part of a URL, not a repository.
+fn is_userinfo(before_at: &str) -> bool {
+    before_at
+        .split_once("://")
+        .is_some_and(|(_, rest)| !rest.contains('/'))
+}
+
 fn normalise(repository: &str) -> Result<String> {
-    let path = Path::new(repository);
-    if path.exists() {
-        let absolute = path
-            .canonicalize()
-            .with_context(|| format!("resolve {repository}"))?;
-        return Ok(absolute.display().to_string());
+    if Path::new(repository).exists() {
+        return Ok(repository.trim_end_matches('/').to_owned());
     }
     let is_github_shorthand = repository.split('/').count() == 2
         && !repository.contains(':')
@@ -71,7 +82,15 @@ pub struct Checkout {
 }
 
 impl Checkout {
-    pub fn clone(repository: &str) -> Result<Checkout> {
+    /// Clones `repository`; a relative local path is resolved against the project.
+    pub fn clone(project: &Path, repository: &str) -> Result<Checkout> {
+        let local = project.join(repository);
+        let repository = if Path::new(repository).is_relative() && local.exists() {
+            local.display().to_string()
+        } else {
+            repository.to_owned()
+        };
+        let repository = repository.as_str();
         let dir = TempDir::new()?;
         let target = dir.path().join("source");
         git(
@@ -210,12 +229,24 @@ impl Release {
         let stable = self.skill_names(STABLE_DIR);
         let beta = self.skill_names(BETA_DIR);
         let mut warnings = Vec::new();
+        // The release's rename/removal map wins over what it still ships.
+        let changes = &self.manifest.changes;
+        let retired = |name: &str| {
+            changes.removed.iter().any(|r| r == name) || changes.renamed.contains_key(name)
+        };
         let mut chosen = BTreeMap::new();
-        for name in stable.iter().filter(|name| config.is_enabled(name)) {
+        for name in stable
+            .iter()
+            .filter(|name| config.is_enabled(name) && !retired(name))
+        {
             chosen.insert(name.clone(), "stable");
         }
         for name in &config.beta {
-            if beta.contains(name) {
+            if retired(name) {
+                warnings.push(format!(
+                    "beta skill `{name}` is retired or renamed by the harness source; skipped"
+                ));
+            } else if beta.contains(name) {
                 chosen.insert(name.clone(), "beta");
             } else {
                 warnings.push(format!(
@@ -248,10 +279,15 @@ impl Release {
                 STABLE_DIR
             };
             let prefix = format!("{dir}/{name}/");
+            let mut found = false;
             for (path, blob) in &self.files {
                 if let Some(rest) = path.strip_prefix(&prefix) {
                     files.insert(format!("{}/{name}/{rest}", skills::DIR), blob.clone());
+                    found = true;
                 }
+            }
+            if !found {
+                continue;
             }
             skills.insert(
                 name.clone(),
@@ -269,7 +305,7 @@ impl Release {
     }
 }
 
-fn git(dir: &Path, args: &[&str]) -> Result<Vec<u8>> {
+pub fn git(dir: &Path, args: &[&str]) -> Result<Vec<u8>> {
     let output = Command::new("git")
         .args(args)
         .current_dir(dir)
