@@ -6,6 +6,17 @@ Owner decisions, newest first. Each entry has a date, the decision and where it 
 
 Decisions taken while charting the command center map (#41) and resolving its tickets, newest first.
 
+- **Adopt or build** (CC7, #48). We build only our Herdr plugin: the Overview and result-card
+  popups, the action menu and "start", the sidebar tag, the tab-bar counter, tidy-up, and the
+  binding agent ↔ branch ↔ worktree ↔ task derived from Herdr, git and GitHub. Everything else is
+  adopted: Herdr for agents and notifications; nvim (the owner's LazyVim with codediff.nvim,
+  render-markdown, snacks.image) for files and diffs; herdr-nvim for line remarks on code and
+  documents back to the agent; `gh` for PRs and merge; the regular browser for the app and
+  screenshots. Not used: herdr-radar (competes for the single agent view), annotate (document
+  review moves to nvim and the spec PR; amends CC6), the owner's agent-context plugin and Hunk. The
+  workspace setup installs only our plugin, pinned; the nvim configuration stays the owner's own and
+  the command center only opens `nvim +N path` in the agent's worktree.
+
 - **Labels stay as agents know them; the command center translates** (CC9, #50). The five triage
   roles, `acceptance:human` / `acceptance:auto` and `wayfinder:*` keep their strings and the
   mapping in `docs/agents/triage-labels.md`; the command center shows plain phrases built from
@@ -27,8 +38,8 @@ Decisions taken while charting the command center map (#41) and resolving its ti
   Overview offers to tidy up the worktree and branch. Before code the same flow runs on a spec with
   annotate. Parts: Herdr is the workspace; our Herdr plugin provides the Overview and result-card
   popups, the sidebar tag, the tab-bar counter, open-at-line and tidy-up; files and changes are read
-  in the terminal in nvim (LazyVim) set up minimally as a viewer (research CC16, #60); existing
-  plugins carry diff comments and document annotation (CC7); the regular browser shows the app and
+  in the terminal in nvim (LazyVim) set up minimally as a viewer (research CC16, #60); remarks go
+  back through herdr-nvim (CC7); the regular browser shows the app and
   screenshots; GitHub holds the PR and the merge; our own UI comes later.
 - **The result card is the PR body plus derived facts** (CC4, #45). The agent writes into the PR
   through the forked `pr` skill: the result in one line, decisions needed, where to look first
