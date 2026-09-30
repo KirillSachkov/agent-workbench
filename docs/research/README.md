@@ -22,3 +22,9 @@ is marked "unconfirmed". The owner's local paths are anonymized.
 | [cross-runtime-portability](2026-09-29-cross-runtime-portability.md) | AGENTS.md, Agent Skills, plugins, hooks, MCP, headless modes: parity across runtimes |
 | [agent-instructions-in-repos](2026-09-29-agent-instructions-in-repos.md) | AGENTS.md, CLAUDE.md and skills in 46 popular repositories; skill installers; component inventory of 19 harnesses |
 | [harness-requirements-agenda](2026-09-29-harness-requirements-agenda.md) | Synthesis: 33 open questions for the harness requirements grilling |
+| [herdr-hosting](2026-09-29-herdr-hosting.md) | What a Herdr plugin can host; which command-center jobs existing plugins cover |
+| [canvas-workspaces](2026-09-29-canvas-workspaces.md) | CanvasTTY and spatial workspaces; combining a canvas overview with Herdr |
+| [opening-results-from-terminal](2026-09-29-opening-results-from-terminal.md) | Files at a line, PRs, running apps, images and Markdown from the terminal |
+| [human-task-lists](2026-09-29-human-task-lists.md) | Human task lists beside agents' trackers; launching work from a task |
+| [herdr-plugins-built](2026-09-30-herdr-plugins-built.md) | How the leading Herdr plugins are built; what to borrow and what collides |
+| [neovim-agent-work-viewer](2026-09-30-neovim-agent-work-viewer.md) | Minimal Neovim as the viewer of agents' work inside Herdr |
