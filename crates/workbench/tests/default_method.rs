@@ -63,7 +63,7 @@ fn user_invoked(skill_md: &str) -> bool {
 }
 
 /// Our own skills; every other skill is a fork and must name its upstream commit.
-const OWN: &[&str] = &["coordinate", "editing-agents-md"];
+const OWN: &[&str] = &["conduct", "coordinate", "editing-agents-md"];
 
 #[test]
 fn a_project_installed_from_this_repository_locks_every_forked_skill_to_its_upstream_commit() {

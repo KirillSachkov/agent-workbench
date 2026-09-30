@@ -110,6 +110,7 @@ Off the main flow entirely.
 ## Seeing where things stand
 
 - **`coordinate`** — a short control brief of the project: the current stage, the progress of each spec or map, blockers with the action that unblocks them, work ready now split into lanes that can run in parallel, gates waiting for you, and the single next step. It reads the tracker, PRs and checks and changes nothing; it starts no sessions.
+- **`conduct`** — for a coordination session in Herdr: proposes lanes of ready work, starts the lanes you approve, each in its own worktree with the agent you pick, watches them and calls you when one stops. It never merges, pushes or answers for you.
 
 ## Precondition
 

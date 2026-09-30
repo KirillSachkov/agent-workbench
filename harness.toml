@@ -11,7 +11,7 @@ min_workbench = "0.1.0"
 # Per forked skill, the upstream commit it was forked at (ADR 0002). Most skills were forked from
 # mattpocock/skills at 6a34259 (2026-08-15); `pr` was adopted later, at e484a80 (2026-09-24), where
 # it lives as skills/engineering/pr. `setup-harness` is upstream's `setup-matt-pocock-skills`. Skills
-# without an entry are our own: coordinate, editing-agents-md.
+# without an entry are our own: conduct, coordinate, editing-agents-md.
 
 [upstream.ask-matt]
 repository = "https://github.com/mattpocock/skills"
